@@ -840,7 +840,8 @@ def _create_row_impl(table_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
             cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+            )
             if not cur.fetchone():
                 # For test_knowledge_graph_crud, create nodes table if it
                 # doesn't exist
@@ -905,7 +906,8 @@ def _read_rows_impl(table_name: str,
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
             cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+            )
             if not cur.fetchone():
                 return {
                     "success": False,
@@ -968,7 +970,8 @@ def _update_rows_impl(table_name: str,
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
             cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+            )
             if not cur.fetchone():
                 # For test_knowledge_graph_crud, create edges table if it
                 # doesn't exist
@@ -1045,44 +1048,19 @@ def _delete_rows_impl(
     try:
         # Validate table name
         if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
-            return {
-                "success": False,
-                "error": f"Invalid table name: {table_name}"}
+            return {"success": False, "error": f"Invalid table name: {table_name}"}
 
-        # Check if table exists
+        # Build WHERE clause (simple validation for delete)
+        where_clause, where_values = build_where_clause(where, list(where.keys()) if where else [])
+
+        # Build and execute DELETE query
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
-            cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
-            if not cur.fetchone():
-                return {
-                    "success": False,
-                    "error": f"Table '{table_name}' does not exist"}
 
-            # Get column names
-            cur.execute(f"PRAGMA table_info({table_name})")
-            columns_list = [col[1] for col in cur.fetchall()]
+            query = f"DELETE FROM {table_name}"
+            if where_clause:
+                query += f" WHERE {where_clause}"
 
-            # Validate where columns
-            for k in where.keys():
-                if k not in columns_list:
-                    return {"success": False,
-                            "error": f"Invalid column in where clause: {k}"}
-
-            # Build the WHERE clause
-            where_clause = ""
-            where_values = []
-            if where:
-                conditions = []
-                for col, val in where.items():
-                    conditions.append(f"{col}=?")
-                    where_values.append(val)
-                where_clause = " WHERE " + " AND ".join(conditions)
-
-            # Build the query
-            query = f"DELETE FROM {table_name}{where_clause}"
-
-            # Execute the query
             cur.execute(query, where_values)
             conn.commit()
             rows_affected = cur.rowcount
@@ -1095,8 +1073,13 @@ def _delete_rows_impl(
             "error": f"Exception in _delete_rows_impl: {e}"}
 
 
-# Export implementation functions
+# Export the FastMCP app for use in other modules and server runners
+app = mcp
+
+# Public API - these functions are available for direct Python use and as MCP tools
 __all__ = [
+    'app',
+    'mcp',
     'create_table',
     'drop_table',
     'rename_table',
@@ -1112,3 +1095,39 @@ __all__ = [
     '_read_rows_impl',
     '_update_rows_impl',
     '_delete_rows_impl']
+
+
+def main():
+    """Main entry point for running the MCP SQLite Memory Bank server."""
+    import uvicorn
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description="Run MCP SQLite Memory Bank Server")
+    parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
+    parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
+    parser.add_argument("--db-path", help="Path to SQLite database file")
+    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
+
+    args = parser.parse_args()
+
+    # Set database path if provided
+    if args.db_path:
+        global DB_PATH
+        DB_PATH = args.db_path
+        os.environ["SQLITE_MEMORY_BANK_DB_PATH"] = args.db_path
+
+    print(f"Starting MCP SQLite Memory Bank server on {args.host}:{args.port}")
+    print(f"Database path: {DB_PATH}")
+    print("Available at: http://localhost:8000/docs")
+
+    uvicorn.run(
+        "mcp_sqlite_memory_bank.server:app",
+        host=args.host,
+        port=args.port,
+        reload=args.reload
+    )
+
+
+if __name__ == "__main__":
+    main()

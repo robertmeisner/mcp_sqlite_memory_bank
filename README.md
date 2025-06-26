@@ -98,7 +98,7 @@ curl -fsSL https://uvx.zip/install.sh | bash
 uvx run mcp_sqlite_memory_bank
 
 # Or, specify a version
-uvx run mcp_sqlite_memory_bank@1.0.0
+uvx run mcp_sqlite_memory_bank@latest
 ```
 
 ### Option 5: Docker (Containerized) # Coming soon - not yet implemented
