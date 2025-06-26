@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-06-27
+
+### Added
+- Console script entry point for uvx compatibility
+- `mcp-sqlite-memory-bank` command-line executable
+- Main function with argument parsing for server configuration
+- Support for `uvx mcp-sqlite-memory-bank` execution
+
+### Fixed
+- Syntax errors in `_delete_rows_impl` function
+- Console script compatibility with modern Python packaging
+
+### Changed
+- Package now provides executable via `[project.scripts]` in pyproject.toml
+- Server can now be started with command-line arguments: `--host`, `--port`, `--db-path`, `--reload`
+
+## [1.1.1] - 2025-06-26
+
+### Changed
+- Updated PyPI description with improved README content
+
 ## [1.1.0] - 2025-06-26
 
 ### Added
