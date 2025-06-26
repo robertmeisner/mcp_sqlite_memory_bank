@@ -111,7 +111,7 @@ docker run -i --rm \
   --mount type=bind,src=/path/to/data/dir,dst=/data \
   robertmeisner/mcp_sqlite_memory_bank:latest stdio
 
-# Run with HTTP transport (for API access)
+# Run with HTTP transport (for API access) 
 docker run -p 8000:8000 --rm \
   --mount type=bind,src=/path/to/data/dir,dst=/data \
   robertmeisner/mcp_sqlite_memory_bank:latest http
