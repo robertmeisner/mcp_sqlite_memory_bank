@@ -19,10 +19,8 @@ def extract_result(resp: Sequence[T]) -> Dict[str, Any]:
         except json.JSONDecodeError:
             return {
                 "success": False,
-                "error": f"Invalid JSON response in TextContent: {
-                    getattr(
-                        r,
-                        'text')}"}
+                "error": f"Invalid JSON response in TextContent: {getattr(r, 'text')}"
+            }
     if isinstance(r, str):
         try:
             return json.loads(r)
