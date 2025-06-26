@@ -1,7 +1,7 @@
 # mcp_sqlite_memory_bank
 
 ![PyPI](https://img.shields.io/pypi/v/mcp_sqlite_memory_bank)
-![CI](https://github.com/yourusername/mcp_sqlite_memory_bank/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/robertmeisner/mcp_sqlite_memory_bank/actions/workflows/ci.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## Overview
@@ -78,7 +78,7 @@ pip install mcp_sqlite_memory_bank
 
 ### Option 2: Clone and Install from Source (For Contributors)
 ```bash
-git clone https://github.com/yourusername/mcp_sqlite_memory_bank.git
+git clone https://github.com/robertmeisner/mcp_sqlite_memory_bank.git
 cd mcp_sqlite_memory_bank
 pip install -e .
 ```
@@ -104,17 +104,17 @@ uvx run mcp_sqlite_memory_bank@1.0.0
 ### Option 5: Docker (Containerized)
 ```bash
 # Pull the image
-docker pull yourusername/mcp_sqlite_memory_bank:latest
+docker pull robertmeisner/mcp_sqlite_memory_bank:latest
 
 # Run with stdio transport (for Claude Desktop)
 docker run -i --rm \
   --mount type=bind,src=/path/to/data/dir,dst=/data \
-  yourusername/mcp_sqlite_memory_bank:latest stdio
+  robertmeisner/mcp_sqlite_memory_bank:latest stdio
 
 # Run with HTTP transport (for API access)
 docker run -p 8000:8000 --rm \
   --mount type=bind,src=/path/to/data/dir,dst=/data \
-  yourusername/mcp_sqlite_memory_bank:latest http
+  robertmeisner/mcp_sqlite_memory_bank:latest http
 ```
 
 ### Transport Options
@@ -156,7 +156,7 @@ DB_PATH=./test.db
 #### Quick Install
 [Install with Python Module in VS Code](https://insiders.vscode.dev/redirect/mcp/install?name=sqlite-memory&config=%7B%22command%22%3A%22python%22%2C%22args%22%3A%5B%22-m%22%2C%22mcp_sqlite_memory_bank%22%5D%7D)
 
-[Install with Docker in VS Code](https://insiders.vscode.dev/redirect/mcp/install?name=sqlite-memory&config=%7B%22command%22%3A%22docker%22%2C%22args%22%3A%5B%22run%22%2C%22-i%22%2C%22--rm%22%2C%22--mount%22%2C%22type%3Dbind%2Csrc%3D%24%7BworkspaceFolder%7D%2Cdst%3D%2Fdata%22%2C%22yourusername%2Fmcp_sqlite_memory_bank%3Alatest%22%5D%7D)
+[Install with Docker in VS Code](https://insiders.vscode.dev/redirect/mcp/install?name=sqlite-memory&config=%7B%22command%22%3A%22docker%22%2C%22args%22%3A%5B%22run%22%2C%22-i%22%2C%22--rm%22%2C%22--mount%22%2C%22type%3Dbind%2Csrc%3D%24%7BworkspaceFolder%7D%2Cdst%3D%2Fdata%22%2C%22robertmeisner%2Fmcp_sqlite_memory_bank%3Alatest%22%5D%7D)
 
 #### Manual Configuration
 
@@ -213,7 +213,7 @@ Add to your `claude_desktop_config.json`:
         "-i",
         "--rm",
         "--mount", "type=bind,src=/path/to/data/dir,dst=/data",
-        "yourusername/mcp_sqlite_memory_bank:latest"
+        "robertmeisner/mcp_sqlite_memory_bank:latest"
       ],
       "env": {
         "DB_PATH": "/data/memory.db"
@@ -405,8 +405,8 @@ pytest --import-mode=importlib
 
 ## Support & Contact
 
-- [GitHub Issues](https://github.com/yourusername/mcp_sqlite_memory_bank/issues) — Bug reports & feature requests
-- [GitHub Discussions](https://github.com/yourusername/mcp_sqlite_memory_bank/discussions) — Q&A and community support
+- [GitHub Issues](https://github.com/robertmeisner/mcp_sqlite_memory_bank/issues) — Bug reports & feature requests
+- [GitHub Discussions](https://github.com/robertmeisner/mcp_sqlite_memory_bank/discussions) — Q&A and community support
 - Email: your@email.com
 
 ---
