@@ -101,7 +101,7 @@ uvx run mcp_sqlite_memory_bank
 uvx run mcp_sqlite_memory_bank@1.0.0
 ```
 
-### Option 5: Docker (Containerized)
+### Option 5: Docker (Containerized) # Coming soon - not yet implemented
 ```bash
 # Pull the image
 docker pull robertmeisner/mcp_sqlite_memory_bank:latest
