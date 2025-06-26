@@ -2,7 +2,7 @@
 mcp_sqlite_memory_bank: A dynamic, agent/LLM-friendly SQLite memory bank for MCP servers.
 
 This package provides tools for creating, exploring, and managing SQLite tables and
-knowledge graphs—enabling Copilot, Claude Desktop, VS Code, Cursor, and other
+knowledge graphs - enabling Copilot, Claude Desktop, VS Code, Cursor, and other
 LLM-powered tools to interact with structured data in a safe, explicit, and extensible way.
 
 Author: Robert Meisner
@@ -23,13 +23,14 @@ from .server import (
     update_rows,
     delete_rows,
     run_select_query,
-    
+
     # FastMCP app
     app,
-    
+
     # Constants
-    DB_PATH
+    DB_PATH,
 )
+
 
 from .types import (
     # Response types
@@ -46,7 +47,7 @@ from .types import (
     SelectQueryResponse,
     ErrorResponse,
     ToolResponse,
-    
+
     # Error types
     ValidationError,
     DatabaseError,
@@ -54,10 +55,10 @@ from .types import (
     DataError,
     MemoryBankError,
     ErrorCategory,
-    
+
     # Data types
     TableColumn,
-    SqliteType
+    SqliteType,
 )
 
 # Package metadata
@@ -76,13 +77,13 @@ __all__ = [
     "update_rows",
     "delete_rows",
     "run_select_query",
-    
+
     # FastMCP app
     "app",
-    
+
     # Constants
     "DB_PATH",
-    
+
     # Response types
     "CreateTableResponse",
     "DropTableResponse",
@@ -97,7 +98,7 @@ __all__ = [
     "SelectQueryResponse",
     "ErrorResponse",
     "ToolResponse",
-    
+
     # Error types
     "ValidationError",
     "DatabaseError",
@@ -105,8 +106,8 @@ __all__ = [
     "DataError",
     "MemoryBankError",
     "ErrorCategory",
-    
+
     # Data types
     "TableColumn",
-    "SqliteType"
+    "SqliteType",
 ]
