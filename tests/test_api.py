@@ -1,16 +1,14 @@
 import os
 import tempfile
-import sqlite3
 import pytest
-import asyncio
 import json
-from typing import Any, Dict, List, Optional, Union, cast, TypeVar, Sequence
+from typing import Any, Dict, cast, TypeVar, Sequence
 from fastmcp import Client
 from mcp_sqlite_memory_bank import server as smb
-from mcp.types import TextContent, Tool
 
 # Define a type variable for MCPContent or any other response type
 T = TypeVar('T')
+
 
 def extract_result(resp: Sequence[T]) -> Dict[str, Any]:
     """Helper to extract tool output as dict from FastMCP Client response."""
@@ -19,7 +17,12 @@ def extract_result(resp: Sequence[T]) -> Dict[str, Any]:
         try:
             return json.loads(getattr(r, 'text'))
         except json.JSONDecodeError:
-            return {"success": False, "error": f"Invalid JSON response in TextContent: {getattr(r, 'text')}"}
+            return {
+                "success": False,
+                "error": f"Invalid JSON response in TextContent: {
+                    getattr(
+                        r,
+                        'text')}"}
     if isinstance(r, str):
         try:
             return json.loads(r)
@@ -30,6 +33,7 @@ def extract_result(resp: Sequence[T]) -> Dict[str, Any]:
     if hasattr(r, "model_dump") and callable(getattr(r, "model_dump")):
         return cast(Dict[str, Any], getattr(r, "model_dump")())
     return {"success": False, "error": f"Unexpected response format: {r}"}
+
 
 @pytest.fixture()
 def temp_db(monkeypatch):
@@ -71,7 +75,8 @@ async def test_create_and_read_table(temp_db):
         rows = await client.call_tool("read_rows", {"table_name": "notes"})
         rows_out = extract_result(rows)
         assert rows_out["success"]  # type: ignore
-        assert any(r["content"] == "Hello, agent!" for r in rows_out["rows"])  # type: ignore
+        # type: ignore
+        assert any(r["content"] == "Hello, agent!" for r in rows_out["rows"])
 
 
 @pytest.mark.asyncio
@@ -103,16 +108,16 @@ async def test_tool_discovery_and_introspection(temp_db):
         # 1. Tool Discovery via FastMCP protocol
         tools = await client.list_tools()
         tool_names = [t.name for t in tools]
-        
+
         # Verify all required tools are available
         required_tools = {
-            "create_table", "drop_table", "rename_table", "list_tables", 
-            "describe_table", "create_row", "read_rows", "update_rows", 
+            "create_table", "drop_table", "rename_table", "list_tables",
+            "describe_table", "create_row", "read_rows", "update_rows",
             "delete_rows", "run_select_query", "list_all_columns"
         }
         assert all(tool in tool_names for tool in required_tools), \
             f"Missing required tools. Found: {tool_names}"
-        
+
         # 2. Schema Introspection
         # Create a test table
         create_result = await client.call_tool("create_table", {
@@ -125,12 +130,12 @@ async def test_tool_discovery_and_introspection(temp_db):
         })
         create_out = extract_result(create_result)
         assert create_out["success"]
-        
+
         # Verify table description
         desc_result = await client.call_tool("describe_table", {"table_name": "test_table"})
         desc_out = extract_result(desc_result)
         assert desc_out["success"]
-        
+
         # Check column definitions
         columns = {col["name"]: col["type"] for col in desc_out["columns"]}
         assert "id" in columns
@@ -138,6 +143,8 @@ async def test_tool_discovery_and_introspection(temp_db):
         assert "created_at" in columns
 
     # --- Additional integration tests for schema management tools ---
+
+
 @pytest.mark.asyncio
 async def test_drop_table_success_and_error(temp_db):
     async with Client(smb.app) as client:
@@ -161,6 +168,7 @@ async def test_drop_table_success_and_error(temp_db):
         assert not drop2_out["success"]
         assert "error" in drop2_out
 
+
 @pytest.mark.asyncio
 async def test_update_rows_and_list_columns(temp_db):
     """Test row updates and schema listing capabilities."""
@@ -174,7 +182,7 @@ async def test_update_rows_and_list_columns(temp_db):
                 {"name": "price", "type": "DECIMAL(10,2)"}
             ]
         })
-        
+
         await client.call_tool("create_table", {
             "table_name": "categories",
             "columns": [
@@ -182,7 +190,7 @@ async def test_update_rows_and_list_columns(temp_db):
                 {"name": "name", "type": "TEXT"}
             ]
         })
-        
+
         # Insert test data
         create_result = await client.call_tool("create_row", {
             "table_name": "products",
@@ -191,7 +199,7 @@ async def test_update_rows_and_list_columns(temp_db):
         row_out = extract_result(create_result)
         assert row_out["success"]
         product_id = row_out["id"]
-        
+
         # Update row
         update_result = await client.call_tool("update_rows", {
             "table_name": "products",
@@ -200,7 +208,7 @@ async def test_update_rows_and_list_columns(temp_db):
         })
         update_out = extract_result(update_result)
         assert update_out["success"]
-        
+
         # Verify update
         read_result = await client.call_tool("read_rows", {
             "table_name": "products",
@@ -210,12 +218,12 @@ async def test_update_rows_and_list_columns(temp_db):
         assert read_out["success"]
         # SQLite returns DECIMAL as float/numeric, not string
         assert float(read_out["rows"][0]["price"]) == 19.99
-        
+
         # Test list_all_columns
         columns_result = await client.call_tool("list_all_columns")
         columns_out = extract_result(columns_result)
         assert columns_out["success"]
-        
+
         # Verify both tables and their columns are listed
         schemas = columns_out["schemas"]
         assert "products" in schemas
@@ -223,6 +231,7 @@ async def test_update_rows_and_list_columns(temp_db):
         assert "id" in schemas["products"]
         assert "name" in schemas["products"]
         assert "price" in schemas["products"]
+
 
 @pytest.mark.asyncio
 async def test_numeric_types_handling(temp_db):
@@ -265,11 +274,12 @@ async def test_numeric_types_handling(temp_db):
         rows = await client.call_tool("read_rows", {"table_name": "numerics"})
         rows_out = extract_result(rows)
         assert rows_out["success"]
-        
+
         # Check first row (max values)
         row1 = rows_out["rows"][0]
         assert row1["int_val"] == 2147483647
-        assert abs(row1["real_val"] - 1.23456789) < 1e-6  # Account for float precision
+        # Account for float precision
+        assert abs(row1["real_val"] - 1.23456789) < 1e-6
         assert float(row1["decimal_val"]) == 1234567.8901
 
         # Check second row (min/scientific values)
@@ -277,6 +287,7 @@ async def test_numeric_types_handling(temp_db):
         assert row2["int_val"] == -2147483648
         assert abs(row2["real_val"] - 0.000123) < 1e-6
         assert float(row2["decimal_val"]) == 0.0001
+
 
 @pytest.mark.asyncio
 async def test_null_and_optional_columns(temp_db):
@@ -344,6 +355,7 @@ async def test_null_and_optional_columns(temp_db):
         assert not bad_out["success"]
         assert "error" in bad_out
 
+
 @pytest.mark.asyncio
 async def test_batch_operations(temp_db):
     """Test batch operations and implicit transactions."""
@@ -362,7 +374,7 @@ async def test_batch_operations(temp_db):
         bulk_data = [
             {"name": f"item{i}", "value": i} for i in range(1, 6)
         ]
-        
+
         for data in bulk_data:
             create = await client.call_tool("create_row", {
                 "table_name": "batch_test",

@@ -1,8 +1,8 @@
 """
 Type definitions for SQLite Memory Bank.
 
-This module contains type definitions and custom error classes used throughout the project.
-Designed for explicit, discoverable use by LLMs and FastMCP clients.
+This module contains type definitions and custom error classes used throughout
+the project. Designed for explicit, discoverable use by LLMs and FastMCP clients.
 """
 
 from typing import TypedDict, Dict, Any, Literal, List, Union, Optional
@@ -49,24 +49,28 @@ class MemoryBankError(Exception):
 
 class ValidationError(MemoryBankError):
     """Error for invalid inputs (table names, column names, data types, etc)."""
+
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
         super().__init__(message, ErrorCategory.VALIDATION, details)
 
 
 class DatabaseError(MemoryBankError):
     """Error for SQLite database operations."""
+
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
         super().__init__(message, ErrorCategory.DATABASE, details)
 
 
 class SchemaError(MemoryBankError):
     """Error for schema-related operations (create/alter table, etc)."""
+
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
         super().__init__(message, ErrorCategory.SCHEMA, details)
 
 
 class DataError(MemoryBankError):
     """Error for data operations (insert/update/delete)."""
+
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
         super().__init__(message, ErrorCategory.DATA, details)
 

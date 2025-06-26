@@ -15,7 +15,6 @@ from .types import (
     ValidationError,
     DatabaseError,
     SchemaError,
-    DataError,
     MemoryBankError,
     ToolResponse
 )
@@ -60,7 +59,8 @@ def validate_identifier(name: str, context: str = "identifier") -> None:
     """
     if not bool(re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', name)):
         raise ValidationError(
-            f"Invalid {context}: {name}. Must start with letter/underscore and contain only letters, numbers, underscores.",
+            f"Invalid {context}: {name}. Must start with letter/underscore and "
+            f"contain only letters, numbers, underscores.",
             {"invalid_name": name}
         )
 
@@ -110,7 +110,10 @@ def get_table_columns(conn: sqlite3.Connection, table_name: str) -> List[str]:
     return columns
 
 # Compatibility function for direct table_name usage
-def get_table_columns_by_name(table_name: str) -> Union[List[str], Dict[str, Any]]:
+
+
+def get_table_columns_by_name(
+        table_name: str) -> Union[List[str], Dict[str, Any]]:
     """
     Get list of column names for a table by name.
     Compatibility function for the old implementation.
@@ -130,8 +133,10 @@ def get_table_columns_by_name(table_name: str) -> Union[List[str], Dict[str, Any
                 (table_name,)
             )
             if not cur.fetchone():
-                return {"success": False, "error": f"Table '{table_name}' does not exist"}
-                
+                return {
+                    "success": False,
+                    "error": f"Table '{table_name}' does not exist"}
+
             # Get column information
             cur.execute(f"PRAGMA table_info({table_name})")
             columns = [col[1] for col in cur.fetchall()]
@@ -139,7 +144,9 @@ def get_table_columns_by_name(table_name: str) -> Union[List[str], Dict[str, Any
     except MemoryBankError as e:
         return e.to_dict()
     except Exception as e:
-        return {"success": False, "error": f"Exception in get_table_columns: {e}"}
+        return {
+            "success": False,
+            "error": f"Exception in get_table_columns: {e}"}
 
 
 def validate_table_exists(conn: sqlite3.Connection, table_name: str) -> None:
@@ -163,10 +170,11 @@ def validate_table_exists(conn: sqlite3.Connection, table_name: str) -> None:
         )
 
 
-def build_where_clause(where: Dict[str, Any], valid_columns: List[str]) -> Union[Tuple[str, list], Dict[str, Any]]:
+def build_where_clause(
+        where: Dict[str, Any], valid_columns: List[str]) -> Union[Tuple[str, list], Dict[str, Any]]:
     """
     Build a WHERE clause from a dictionary of column-value pairs.
-    
+
     Args:
         where: Dictionary of {column: value} pairs
         valid_columns: List of valid column names for validation
@@ -181,13 +189,15 @@ def build_where_clause(where: Dict[str, Any], valid_columns: List[str]) -> Union
         # Validate column names
         conditions = []
         values = []
-        
+
         for col, val in where.items():
             if col not in valid_columns:
-                return {"success": False, "error": f"Invalid column in where clause: {col}"}
+                return {
+                    "success": False,
+                    "error": f"Invalid column in where clause: {col}"}
             conditions.append(f"{col}=?")
             values.append(val)
-            
+
         clause = ' AND '.join(conditions)
         return clause, values
     except Exception as e:
