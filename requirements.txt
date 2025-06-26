@@ -7,3 +7,4 @@ fastmcp
 # Development tools
 flake8
 pre-commit
+pytest-asyncio
