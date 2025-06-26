@@ -74,8 +74,9 @@ from .utils import (
     build_where_clause
 )
 
+
 # Initialize FastMCP app with explicit name
-mcp = FastMCP("SQLite Memory Bank for Copilot/AI Agents")
+mcp: FastMCP = FastMCP("SQLite Memory Bank for Copilot/AI Agents")
 
 # Configure database path from environment or default
 DB_PATH = os.environ.get("DB_PATH", "./test.db")
