@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp_sqlite_memory_bank"
-version = "1.2.0"
+version = "1.2.1"
 description = "A dynamic, agent/LLM-friendly SQLite memory bank for MCP servers."
 authors = [
     { name="Robert Meisner", email="robert@catchit.pl" }
@@ -25,6 +25,7 @@ dependencies = [
 
 [project.scripts]
 mcp-sqlite-memory-bank = "mcp_sqlite_memory_bank.server:main"
+mcp_sqlite_memory_bank = "mcp_sqlite_memory_bank.server:main"
 
 [project.urls]
 Homepage = "https://github.com/robertmeisner/mcp_sqlite_memory_bank"
