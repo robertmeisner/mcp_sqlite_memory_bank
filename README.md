@@ -1,27 +1,3 @@
-## Development Setup
-
-To ensure code quality and consistent style, this project uses `flake8` and `pre-commit` hooks.
-
-**Install development dependencies:**
-
-```sh
-pip install -r requirements.txt
-```
-
-**Enable pre-commit hooks (recommended):**
-
-```sh
-pre-commit install
-```
-
-This will automatically run `flake8` on staged files before every commit. To manually check all files:
-
-```sh
-pre-commit run --all-files
-```
-
-If you see lint errors, fix them before committing. You can configure linting rules in the `.flake8` file.
-
 # mcp_sqlite_memory_bank
 
 ![PyPI](https://img.shields.io/pypi/v/mcp_sqlite_memory_bank)
@@ -426,6 +402,29 @@ pytest --import-mode=importlib
 
 ---
 
+## Development Setup
+
+To ensure code quality and consistent style, this project uses `flake8` and `pre-commit` hooks.
+
+**Install development dependencies:**
+
+```sh
+pip install -r requirements.txt
+```
+
+**Enable pre-commit hooks (recommended):**
+
+```sh
+pre-commit install
+```
+
+This will automatically run `flake8` on staged files before every commit. To manually check all files:
+
+```sh
+pre-commit run --all-files
+```
+
+If you see lint errors, fix them before committing. You can configure linting rules in the `.flake8` file.
 
 ## Support & Contact
 
