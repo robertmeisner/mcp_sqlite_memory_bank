@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp_sqlite_memory_bank"
-version = "1.2.1"
+version = "1.2.2"
 description = "A dynamic, agent/LLM-friendly SQLite memory bank for MCP servers."
 authors = [
     { name="Robert Meisner", email="robert@catchit.pl" }
@@ -20,7 +20,8 @@ classifiers = [
 dependencies = [
     "fastapi>=0.100.0",
     "uvicorn>=0.22.0",
-    "pydantic>=1.10.0"
+    "pydantic>=1.10.0",
+    "fastmcp"
 ]
 
 [project.scripts]
