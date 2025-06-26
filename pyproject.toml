@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp_sqlite_memory_bank"
-version = "0.1.0"
+version = "0.1.1"
 description = "A dynamic, agent/LLM-friendly SQLite memory bank for MCP servers."
 authors = [
     { name="Robert Meisner", email="your-email@example.com" }
@@ -22,6 +22,11 @@ dependencies = [
     "uvicorn>=0.22.0",
     "pydantic>=1.10.0"
 ]
+
+[project.urls]
+Homepage = "https://github.com/robertmeisner/mcp_sqlite_memory_bank"
+Source = "https://github.com/robertmeisner/mcp_sqlite_memory_bank"
+Issues = "https://github.com/robertmeisner/mcp_sqlite_memory_bank/issues"
   
 [project.optional-dependencies]
 test = ["pytest"]
