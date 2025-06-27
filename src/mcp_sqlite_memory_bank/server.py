@@ -809,20 +809,6 @@ Available tools:
 - run_select_query: Run a safe SELECT query (no arbitrary SQL)
 """
 
-# Main entrypoint for direct execution
-if __name__ == "__main__":
-    # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-
-    # Log startup information
-    logging.info(f"Starting SQLite Memory Bank with database at {DB_PATH}")
-
-    # Run the FastMCP app
-    app.run()
-
 # Implementation functions for backwards compatibility with tests
 
 
@@ -951,11 +937,8 @@ def _read_rows_impl(table_name: str,
 
 
 def _update_rows_impl(table_name: str,
-                      data: Dict[str,
-                                 Any],
-                      where: Optional[Dict[str,
-                                           Any]] = None) -> Dict[str,
-                                                                 Any]:
+                      data: Dict[str, Any],
+                      where: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Legacy implementation function for tests."""
     # Accepts any table created by agents; validates columns dynamically
     where = where or {}
@@ -1097,13 +1080,27 @@ __all__ = [
     '_delete_rows_impl']
 
 
+def mcp_server():
+    """Entry point for MCP stdio server (for uvx and package installations)."""
+    # Configure logging for MCP server
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    # Log startup information
+    logging.info(f"Starting SQLite Memory Bank MCP server with database at {DB_PATH}")
+
+    # Run the FastMCP app in stdio mode
+    app.run()
+
+
 def main():
-    """Main entry point for running the MCP SQLite Memory Bank server."""
+    """Alternative entry point for HTTP server mode (development/testing only)."""
     import uvicorn
     import argparse
-    import os
 
-    parser = argparse.ArgumentParser(description="Run MCP SQLite Memory Bank Server")
+    parser = argparse.ArgumentParser(description="Run MCP SQLite Memory Bank Server in HTTP mode")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
     parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
     parser.add_argument("--db-path", help="Path to SQLite database file")
@@ -1115,9 +1112,9 @@ def main():
     if args.db_path:
         global DB_PATH
         DB_PATH = args.db_path
-        os.environ["SQLITE_MEMORY_BANK_DB_PATH"] = args.db_path
+        os.environ["DB_PATH"] = args.db_path
 
-    print(f"Starting MCP SQLite Memory Bank server on {args.host}:{args.port}")
+    print(f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}")
     print(f"Database path: {DB_PATH}")
     print("Available at: http://localhost:8000/docs")
 
@@ -1130,4 +1127,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+    # Log startup information
+    logging.info(f"Starting SQLite Memory Bank with database at {DB_PATH}")
+
+    # Run the FastMCP app in stdio mode for MCP clients
+    app.run()
