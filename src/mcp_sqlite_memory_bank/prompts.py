@@ -11,7 +11,7 @@ stored memory content into LLM conversations.
 Author: Robert Meisner
 """
 
-from typing import Optional
+from typing import Optional, Dict, List, Any, cast
 from fastmcp import FastMCP
 from .database import get_database
 import json
@@ -35,7 +35,7 @@ class MemoryBankPrompts:
             
             if table_name:
                 # Analyze specific table
-                result = db.read_rows(table_name, {})
+                result = cast(Dict[str, Any], db.read_rows(table_name, {}))
                 if not result.get("success"):
                     return f"Error: Could not access table '{table_name}'. Please check if it exists."
                 
@@ -55,7 +55,7 @@ Please provide:
 Focus on actionable insights that could help improve how this information is stored and retrieved."""
             else:
                 # Analyze all tables
-                tables_result = db.list_tables()
+                tables_result = cast(Dict[str, Any], db.list_tables())
                 if not tables_result.get("success"):
                     return "Error: Could not access memory bank tables."
                 
@@ -63,10 +63,11 @@ Focus on actionable insights that could help improve how this information is sto
                 overview = {"tables": len(tables), "total_content": []}
                 
                 for table in tables[:5]:  # Limit to first 5 tables
-                    rows_result = db.read_rows(table, {})
+                    rows_result = cast(Dict[str, Any], db.read_rows(table, {}))
                     if rows_result.get("success"):
                         rows = rows_result.get("rows", [])
-                        overview["total_content"].append({
+                        total_content = cast(List[Any], overview["total_content"])
+                        total_content.append({
                             "table": table,
                             "rows": len(rows),
                             "sample": rows[:2] if rows else []
@@ -93,7 +94,7 @@ Focus on high-level strategic insights about the memory bank's utility and organ
             db = get_database(self.db_path)
             
             # Perform search
-            result = db.search_content(query, None, max_results or 10)
+            result = cast(Dict[str, Any], db.search_content(query, None, max_results or 10))
             if not result.get("success"):
                 return f"Error: Could not search for '{query}'. {result.get('error', 'Unknown error')}"
             
@@ -130,7 +131,7 @@ Use this information to provide a thorough, well-organized response that synthes
             db = get_database(self.db_path)
             
             # Try to find technical_decisions table
-            tables_result = db.list_tables()
+            tables_result = cast(Dict[str, Any], db.list_tables())
             if not tables_result.get("success"):
                 return "Error: Could not access memory bank."
             
@@ -162,7 +163,8 @@ The table should include fields like: decision_name, chosen_approach, rationale,
             
             # Format decisions for analysis
             formatted_decisions = []
-            for i, decision in enumerate(decisions, 1):
+            decisions_list = cast(List[Dict[str, Any]], decisions)
+            for i, decision in enumerate(decisions_list, 1):
                 formatted_decisions.append(f"{i}. Decision: {decision.get('decision_name', 'Unknown')}")
                 formatted_decisions.append(f"   Approach: {decision.get('chosen_approach', 'Not specified')}")
                 formatted_decisions.append(f"   Rationale: {decision.get('rationale', 'Not provided')}")
@@ -215,19 +217,21 @@ Focus on actionable insights that can improve technical decision-making processe
             }
             
             if context_type == "brief":
+                tables_list = cast(List[str], tables)
                 prompt = f"""Memory Bank Context (Brief):
-Available tables: {', '.join(tables)}
-Total tables: {len(tables)}
+Available tables: {', '.join(tables_list)}
+Total tables: {len(tables_list)}
 
 This memory bank contains structured information that can be searched and analyzed. Use the available tools to access specific content as needed."""
             else:
                 # Get sample content from a few tables
                 sample_content = {}
-                for table in tables[:3]:  # Sample from first 3 tables
+                tables_list = cast(List[str], tables)
+                for table in tables_list[:3]:  # Sample from first 3 tables
                     try:
-                        result = db.read_rows(table, {})
+                        result = cast(Dict[str, Any], db.read_rows(table, {}))
                         if result.get("success"):
-                            rows = result.get("rows", [])
+                            rows = cast(List[Any], result.get("rows", []))
                             sample_content[table] = {
                                 "row_count": len(rows),
                                 "sample_row": rows[0] if rows else None

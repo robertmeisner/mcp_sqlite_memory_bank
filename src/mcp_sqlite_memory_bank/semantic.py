@@ -19,8 +19,8 @@ try:
     SENTENCE_TRANSFORMERS_AVAILABLE = True
 except ImportError:
     SENTENCE_TRANSFORMERS_AVAILABLE = False
-    SentenceTransformer = None
-    util = None
+    SentenceTransformer = None  # type: ignore
+    util = None  # type: ignore
     logging.warning("sentence-transformers not available. Install with: pip install sentence-transformers")
 
 try:
@@ -29,7 +29,7 @@ try:
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
-    torch = None
+    torch = None  # type: ignore
     logging.warning("torch not available. Install with: pip install torch")
 
 from .types import ValidationError, DatabaseError
@@ -50,7 +50,7 @@ class SemanticSearchEngine:
         """Initialize the semantic search engine."""
         self.model_name = model_name
         self._model = None
-        self._embedding_cache = {}
+        self._embedding_cache: Dict[str, Any] = {}
 
         if not SENTENCE_TRANSFORMERS_AVAILABLE:
             raise ValueError(

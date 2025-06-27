@@ -429,7 +429,12 @@ class SQLiteMemoryDatabase:
                             )
 
             # Sort by relevance and limit results
-            results.sort(key=lambda x: x["relevance"], reverse=True)
+            def get_relevance(x: Dict[str, Any]) -> float:
+                rel = x.get("relevance", 0)
+                if isinstance(rel, (int, float)):
+                    return float(rel)
+                return 0.0
+            results.sort(key=get_relevance, reverse=True)
             results = results[:limit]
 
             return {
@@ -453,7 +458,7 @@ class SQLiteMemoryDatabase:
             if pattern:
                 table_names = [name for name in table_names if pattern.replace("%", "") in name]
 
-            exploration = {"tables": [], "total_tables": len(table_names), "total_rows": 0}
+            exploration: Dict[str, Any] = {"tables": [], "total_tables": len(table_names), "total_rows": 0}
 
             with self.get_connection() as conn:
                 for table_name in table_names:
@@ -461,7 +466,7 @@ class SQLiteMemoryDatabase:
 
                     # Build column info and identify text columns
                     columns = []
-                    text_columns = []
+                    text_columns: List[str] = []
 
                     for col in table.columns:
                         col_data = {
@@ -476,7 +481,7 @@ class SQLiteMemoryDatabase:
                         if "TEXT" in str(col.type).upper() or "VARCHAR" in str(col.type).upper():
                             text_columns.append(col.name)
 
-                    table_info = {"name": table_name, "columns": columns, "text_columns": text_columns}
+                    table_info: Dict[str, Any] = {"name": table_name, "columns": columns, "text_columns": text_columns}
 
                     # Add row count if requested
                     if include_row_counts:
@@ -493,11 +498,11 @@ class SQLiteMemoryDatabase:
 
                     # Add content preview for text columns
                     if text_columns:
-                        content_preview = {}
+                        content_preview: Dict[str, List[Any]] = {}
                         for col_name in text_columns[:3]:  # Limit to first 3 text columns
                             col = table.c[col_name]
                             preview_result = conn.execute(select(col).distinct().where(col.isnot(None)).limit(5))
-                            unique_values = [row[0] for row in preview_result.fetchall() if row[0]]
+                            unique_values: List[Any] = [row[0] for row in preview_result.fetchall() if row[0]]
                             if unique_values:
                                 content_preview[col_name] = unique_values
 
@@ -1001,6 +1006,9 @@ def get_database(db_path: Optional[str] = None) -> SQLiteMemoryDatabase:
     global _db_instance
 
     actual_path = db_path or os.environ.get("DB_PATH", "./test.db")
+    if actual_path is None:
+        actual_path = "./test.db"
+    
     if _db_instance is None or (db_path and db_path != _db_instance.db_path):
         # Close previous instance if it exists
         if _db_instance is not None:

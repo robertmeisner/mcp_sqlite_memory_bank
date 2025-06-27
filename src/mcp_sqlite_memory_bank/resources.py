@@ -11,6 +11,7 @@ the standardized MCP protocol.
 Author: Robert Meisner
 """
 
+from typing import Dict, Any, cast
 from fastmcp import FastMCP
 from .database import get_database
 import json
@@ -31,7 +32,7 @@ class MemoryBankResources:
         async def get_tables_list() -> str:
             """Provide a list of all available tables as an MCP resource."""
             db = get_database(self.db_path)
-            result = db.list_tables()
+            result = cast(Dict[str, Any], db.list_tables())
             
             if not result.get("success"):
                 return json.dumps({"error": "Failed to fetch tables", "details": result})
@@ -50,7 +51,7 @@ class MemoryBankResources:
         async def get_table_schema(table_name: str) -> str:
             """Provide table schema information as an MCP resource."""
             db = get_database(self.db_path)
-            result = db.describe_table(table_name)
+            result = cast(Dict[str, Any], db.describe_table(table_name))
             
             if not result.get("success"):
                 return json.dumps({"error": f"Failed to fetch schema for table '{table_name}'", "details": result})
@@ -70,7 +71,7 @@ class MemoryBankResources:
         async def get_table_data(table_name: str) -> str:
             """Provide table data as an MCP resource."""
             db = get_database(self.db_path)
-            result = db.read_rows(table_name, {})
+            result = cast(Dict[str, Any], db.read_rows(table_name, {}))
             
             if not result.get("success"):
                 return json.dumps({"error": f"Failed to fetch data for table '{table_name}'", "details": result})
@@ -91,7 +92,7 @@ class MemoryBankResources:
         async def search_memory_content(query: str) -> str:
             """Provide search results as an MCP resource."""
             db = get_database(self.db_path)
-            result = db.search_content(query, None, 50)  # Search all tables, limit to 50 results
+            result = cast(Dict[str, Any], db.search_content(query, None, 50))  # Search all tables, limit to 50 results
             
             if not result.get("success"):
                 return json.dumps({"error": f"Failed to search for '{query}'", "details": result})
@@ -114,7 +115,7 @@ class MemoryBankResources:
             db = get_database(self.db_path)
             
             # Get table list
-            tables_result = db.list_tables()
+            tables_result = cast(Dict[str, Any], db.list_tables())
             if not tables_result.get("success"):
                 return json.dumps({"error": "Failed to fetch memory overview", "details": tables_result})
             
@@ -125,7 +126,7 @@ class MemoryBankResources:
             # Get row counts for each table
             for table in tables:
                 try:
-                    rows_result = db.read_rows(table, {})
+                    rows_result = cast(Dict[str, Any], db.read_rows(table, {}))
                     if rows_result.get("success"):
                         row_count = len(rows_result.get("rows", []))
                         table_stats[table] = {
@@ -144,13 +145,24 @@ class MemoryBankResources:
                         "status": f"error: {str(e)}"
                     }
             
+            # Find largest table
+            largest_table = None
+            if table_stats:
+                max_rows = 0
+                for table_name, stats in table_stats.items():
+                    row_count_obj = stats.get("row_count", 0)
+                    row_count = int(row_count_obj) if isinstance(row_count_obj, (int, str)) else 0
+                    if row_count > max_rows:
+                        max_rows = row_count
+                        largest_table = table_name
+
             resource_content = {
                 "resource_type": "memory_overview",
                 "description": "Overview of memory bank contents and usage",
                 "summary": {
                     "total_tables": len(tables),
                     "total_rows": total_rows,
-                    "largest_table": max(table_stats.items(), key=lambda x: x[1]["row_count"])[0] if table_stats else None
+                    "largest_table": largest_table
                 },
                 "table_statistics": table_stats,
                 "last_updated": "dynamic"

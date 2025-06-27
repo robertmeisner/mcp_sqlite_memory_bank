@@ -186,7 +186,7 @@ def tool_function(params):
 2. Verify no new type errors
 3. Update memory bank with new context
 4. Validate error handling works correctly
-
+5. Fix linting issues with `flake8` and type issues with mypy
 ## PROJECT-SPECIFIC COMMANDS
 
 ### Running Tests

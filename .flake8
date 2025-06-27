@@ -9,4 +9,5 @@ exclude =
     env,
     build,
     dist,
-    *.egg-info
+    *.egg-info,
+    examples
