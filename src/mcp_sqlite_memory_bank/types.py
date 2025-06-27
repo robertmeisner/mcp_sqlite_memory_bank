@@ -179,6 +179,73 @@ class ExploreTablesResponse(SuccessResponse):
     exploration: Dict[str, Any]
 
 
+# Semantic Search Response Types
+class SemanticSearchResponse(TypedDict):
+    """Response type for semantic search operations."""
+
+    success: bool
+    results: List[Dict[str, Any]]
+    query: str
+    tables_searched: List[str]
+    total_results: int
+    model: str
+    similarity_threshold: float
+
+
+class RelatedContentResponse(TypedDict, total=False):
+    """Response type for find related content operations."""
+
+    success: bool
+    results: List[Dict[str, Any]]
+    target_row: Dict[str, Any]
+    total_results: int
+    similarity_threshold: float
+    model: str
+    message: str  # Optional field
+
+
+class HybridSearchResponse(TypedDict):
+    """Response type for hybrid search operations."""
+
+    success: bool
+    results: List[Dict[str, Any]]
+    query: str
+    search_type: str
+    semantic_weight: float
+    text_weight: float
+    total_results: int
+    model: str
+
+
+class EmbeddingStatsResponse(TypedDict):
+    """Response type for embedding statistics."""
+
+    success: bool
+    table_name: str
+    total_rows: int
+    embedded_rows: int
+    coverage_percent: float
+    embedding_dimensions: Optional[int]
+    embedding_column: str
+
+
+class GenerateEmbeddingsResponse(TypedDict):
+    """Response type for embedding generation operations."""
+
+    success: bool
+    message: str
+    processed: int
+    model: str
+    embedding_dimension: int
+
+
+class EmbeddingColumnResponse(TypedDict):
+    """Response type for adding embedding columns."""
+
+    success: bool
+    message: str
+
+
 # Type alias for all possible responses
 ToolResponse = Union[
     CreateTableResponse,
@@ -195,4 +262,10 @@ ToolResponse = Union[
     SearchContentResponse,
     ExploreTablesResponse,
     ErrorResponse,
+    SemanticSearchResponse,
+    RelatedContentResponse,
+    HybridSearchResponse,
+    EmbeddingStatsResponse,
+    GenerateEmbeddingsResponse,
+    EmbeddingColumnResponse,
 ]

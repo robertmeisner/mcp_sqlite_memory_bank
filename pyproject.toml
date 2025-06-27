@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp_sqlite_memory_bank"
-version = "1.2.5"
-description = "A dynamic, agent/LLM-friendly SQLite memory bank for MCP servers."
+version = "1.3.0"
+description = "A dynamic, agent/LLM-friendly SQLite memory bank for MCP servers with semantic search capabilities."
 authors = [
     { name="Robert Meisner", email="robert@catchit.pl" }
 ]

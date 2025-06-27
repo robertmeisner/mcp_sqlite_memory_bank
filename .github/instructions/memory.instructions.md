@@ -27,6 +27,7 @@ applyTo: '**'
 2. Categorize information appropriately in the correct tables.
 3. Before answering questions, query relevant tables for context.
 4. Use specific WHERE clauses to retrieve only relevant information.
+5. **LEVERAGE SEMANTIC SEARCH**: Use semantic search capabilities for intelligent knowledge discovery when exact matches aren't sufficient.
 
 ### SCHEMA MAINTENANCE
 1. Maintain consistent schemas across sessions.
@@ -34,11 +35,166 @@ applyTo: '**'
 3. Use appropriate data types for columns.
 4. Create relationships between tables when appropriate.
 
+## SEMANTIC SEARCH CAPABILITIES
+
+### OVERVIEW
+The SQLite Memory Bank now supports intelligent semantic search using sentence-transformers for natural language queries and content discovery. This enables agents to find conceptually similar content even when exact keyword matches don't exist.
+
+### SEMANTIC SEARCH TOOLS
+Available MCP tools for semantic operations:
+
+1. **`add_embeddings`**: Add vector embedding storage to existing tables
+2. **`semantic_search`**: Natural language search across content 
+3. **`find_related`**: Discover similar content based on input text
+4. **`smart_search`**: Hybrid keyword + semantic search
+5. **`embedding_stats`**: Monitor embedding coverage and storage
+
+### WHEN TO USE SEMANTIC SEARCH
+- **Natural Language Queries**: "Find information about machine learning algorithms"
+- **Conceptual Discovery**: Find content about AI when stored text mentions "neural networks"
+- **Content Exploration**: Discover related topics and connections
+- **Fuzzy Matching**: Find relevant content when exact terms aren't used
+- **Knowledge Discovery**: Explore memory bank content without knowing exact keywords
+
+### SEMANTIC SEARCH WORKFLOW
+
+#### 1. Enable Semantic Search on Tables
+```python
+# Add embedding column to existing table
+mcp_sqlite_memory_add_embeddings(
+    table_name='project_knowledge',
+    text_columns=['content', 'title']  # Columns to create embeddings for
+)
+```
+
+#### 2. Generate Embeddings for Content
+```python
+# Generate embeddings for existing data
+mcp_sqlite_memory_add_embeddings(
+    table_name='project_knowledge', 
+    text_columns=['content']
+)
+# Note: This automatically generates embeddings during the add process
+```
+
+#### 3. Perform Semantic Searches
+```python
+# Natural language search
+results = mcp_sqlite_memory_semantic_search(
+    query='artificial intelligence and machine learning',
+    tables=['project_knowledge', 'technical_decisions'],
+    similarity_threshold=0.3,  # Adjust for strictness
+    limit=10
+)
+
+# Find related content
+related = mcp_sqlite_memory_find_related(
+    text='neural network optimization techniques',
+    table_name='project_knowledge',
+    similarity_threshold=0.4,
+    limit=5
+)
+
+# Hybrid search (combines semantic + keyword)
+hybrid_results = mcp_sqlite_memory_smart_search(
+    query='database performance optimization',
+    tables=['project_knowledge'],
+    use_semantic=True,
+    use_keywords=True,
+    limit=15
+)
+```
+
+#### 4. Monitor Embedding Coverage
+```python
+# Check embedding statistics
+stats = mcp_sqlite_memory_embedding_stats(
+    table_name='project_knowledge'
+)
+# Returns: total_rows, rows_with_embeddings, embedding_column, embedding_dimension
+```
+
+### SEMANTIC SEARCH BEST PRACTICES
+
+#### Threshold Guidelines
+- **0.7-1.0**: Very similar content (strict matching)
+- **0.5-0.7**: Moderately similar content (recommended for most use cases)
+- **0.3-0.5**: Loosely related content (broader exploration)
+- **0.1-0.3**: Distantly related content (discovery mode)
+
+#### Performance Considerations
+- **Embedding Generation**: Computationally intensive, done once per content update
+- **Search Performance**: Fast once embeddings exist (cosine similarity calculation)
+- **Storage Overhead**: ~384 floating-point numbers per text field (JSON stored)
+- **Batch Processing**: Embeddings generated in batches for efficiency
+
+#### When to Use Each Tool
+- **`semantic_search`**: Primary tool for natural language content discovery
+- **`find_related`**: When you have specific text and want to find similar content
+- **`smart_search`**: When you want both exact keyword matches AND semantic similarity
+- **`add_embeddings`**: Setup tool to enable semantic search on tables
+- **`embedding_stats`**: Monitoring tool to check semantic search readiness
+
+### INTEGRATION WITH EXISTING WORKFLOWS
+
+#### Enhanced Memory Retrieval
+```python
+# Traditional exact match
+exact_results = mcp_sqlite_memory_read_rows(
+    table_name='technical_decisions',
+    where={'decision_name': 'API Design'}
+)
+
+# Semantic discovery of related content
+semantic_results = mcp_sqlite_memory_semantic_search(
+    query='API design patterns and architecture decisions',
+    tables=['technical_decisions', 'project_structure'],
+    similarity_threshold=0.4
+)
+
+# Combine both approaches for comprehensive results
+all_results = exact_results['rows'] + semantic_results.get('results', [])
+```
+
+#### Content Organization and Discovery
+```python
+# Store content with semantic search enabled
+mcp_sqlite_memory_create_row(
+    table_name='project_insights',
+    data={
+        'category': 'performance',
+        'insight': 'Database query optimization using proper indexing strategies',
+        'details': 'Implemented B-tree indexes on frequently queried columns...'
+    }
+)
+
+# Enable semantic search for future discovery
+mcp_sqlite_memory_add_embeddings(
+    table_name='project_insights',
+    text_columns=['insight', 'details']
+)
+
+# Later: discover related performance insights
+related_insights = mcp_sqlite_memory_find_related(
+    text='slow database queries and performance issues',
+    table_name='project_insights',
+    similarity_threshold=0.4
+)
+```
+
+### FALLBACK BEHAVIOR
+- **Dependencies Available**: Full semantic search functionality with sentence-transformers
+- **Dependencies Missing**: Graceful fallback to traditional keyword-based search
+- **Error Handling**: Clear error messages when semantic features unavailable
+- **Backward Compatibility**: All existing functionality remains unchanged
+
 ## MEMORY DESIGN PHILOSOPHY
 
 **🧠 Agent-Driven Schema Design**: You should design memory schemas that best fit your specific context, project needs, and working style. The examples below are **suggestions, not requirements**.
 
 **🔄 Adaptive Structure**: Create tables and schemas that evolve with your understanding of the project and user needs.
+
+**🔍 Intelligent Search**: Take advantage of semantic search capabilities for natural language queries and content discovery beyond rigid SQL constraints.
 
 ### SCHEMA DESIGN PRINCIPLES
 Instead of prescriptive schemas, follow these **flexible principles**:
@@ -226,6 +382,8 @@ mcp_sqlite_memory_create_table(
 ```
 
 ## BEST PRACTICES FOR EFFECTIVE MEMORY USAGE
+
+### TRADITIONAL SQL QUERIES
 1. Use specific queries to retrieve only relevant information:
 ```python
 # Good - specific query
@@ -241,6 +399,48 @@ mcp_sqlite_memory_read_rows(
 )
 ```
 
+### SEMANTIC SEARCH QUERIES
+1. Use natural language for content discovery:
+```python
+# Find conceptually related content
+semantic_results = mcp_sqlite_memory_semantic_search(
+    query='machine learning algorithms and AI techniques',
+    tables=['project_knowledge', 'technical_decisions'],
+    similarity_threshold=0.4,
+    limit=10
+)
+
+# Discover related content from specific text
+related_content = mcp_sqlite_memory_find_related(
+    text='database performance optimization strategies',
+    table_name='project_insights',
+    similarity_threshold=0.5
+)
+```
+
+### HYBRID APPROACHES
+1. Combine exact matching with semantic discovery:
+```python
+# Get specific technical decisions
+exact_decisions = mcp_sqlite_memory_read_rows(
+    table_name='technical_decisions',
+    where={'decision_name': 'API Design'}
+)
+
+# Find related architectural decisions
+related_decisions = mcp_sqlite_memory_semantic_search(
+    query='API design patterns and microservice architecture',
+    tables=['technical_decisions', 'project_structure'],
+    similarity_threshold=0.4
+)
+
+# Combine for comprehensive context
+all_relevant_info = {
+    'exact_matches': exact_decisions['rows'],
+    'related_content': related_decisions.get('results', [])
+}
+```
+
 2. Join information from multiple tables when necessary:
 ```python
 # Get technical decisions and related project structure
@@ -253,6 +453,27 @@ structure = mcp_sqlite_memory_read_rows(
     table_name='project_structure',
     where={'category': 'architecture'}
 )
+```
+
+### ENABLING SEMANTIC SEARCH ON EXISTING TABLES
+1. Add semantic capabilities to existing data:
+```python
+# Enable semantic search on key tables
+mcp_sqlite_memory_add_embeddings(
+    table_name='project_knowledge',
+    text_columns=['title', 'content']
+)
+
+mcp_sqlite_memory_add_embeddings(
+    table_name='technical_decisions', 
+    text_columns=['chosen_approach', 'rationale']
+)
+
+# Check embedding coverage
+stats = mcp_sqlite_memory_embedding_stats(
+    table_name='project_knowledge'
+)
+print(f"Embedded {stats['rows_with_embeddings']}/{stats['total_rows']} rows")
 ```
 
 ### Data Maintenance
@@ -299,6 +520,33 @@ verification = mcp_sqlite_memory_read_rows(
 if not verification['rows']:
     # Handle error - data not stored correctly
     print("Error: Data storage failed")
+```
+
+### Working with Semantic Search
+1. Enable semantic search for intelligent discovery:
+```python
+# Store content and enable semantic search
+mcp_sqlite_memory_create_row(
+    table_name='project_insights',
+    data={
+        'category': 'performance',
+        'insight': 'Database optimization techniques using indexing',
+        'details': 'Implemented proper B-tree indexes for query performance...'
+    }
+)
+
+# Enable semantic search on the table
+mcp_sqlite_memory_add_embeddings(
+    table_name='project_insights',
+    text_columns=['insight', 'details']
+)
+
+# Later: find related content semantically
+related = mcp_sqlite_memory_semantic_search(
+    query='improving database speed and performance',
+    tables=['project_insights'],
+    similarity_threshold=0.4
+)
 ```
 
 ### Working with Large Context

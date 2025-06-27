@@ -21,11 +21,12 @@ Transform the SQLite Memory Bank from a rigid, column-based query system into a 
 
 ## 🚀 **Enhancement Phases**
 
-### **Phase 1: Full-Text Search (IMPLEMENTED)**
+### **Phase 1: Full-Text Search (COMPLETED)**
 - ✅ `search_content()` - Natural language search across all text columns
 - ✅ `explore_tables()` - Content discovery and data exploration
 - ✅ Relevance scoring and ranking
 - ✅ Multi-table search with result aggregation
+- ⚠️ **Performance Note**: Uses LIKE-based search (functional but slow on large datasets)
 
 **Capabilities Added:**
 ```python
@@ -39,24 +40,37 @@ explore_tables()  # See what data is available
 explore_tables("user%")  # Explore user-related tables
 ```
 
-### **Phase 2: SQLite FTS Integration (PLANNED)**
-**Objective:** Add proper full-text search with indexing
+### **Phase 2: SQLite FTS Integration (IN PROGRESS)**
+**Objective:** Add proper full-text search with indexing for production performance
 
-**Implementation:**
-- Create FTS5 virtual tables for text content
-- Automatic indexing of text columns
-- Advanced search operators (AND, OR, NOT, phrases)
-- Highlighting and snippets
+**Implementation Plan:**
+- ✅ Maintain existing `search_content()` and `explore_tables()` APIs
+- 🔄 Add FTS5 virtual tables with automatic indexing
+- 🔄 Implement `advanced_search()` with FTS5 operators (AND, OR, NOT, phrases)
+- 🔄 Add search highlighting and snippets
+- 🔄 Performance monitoring and metrics
+- 🔄 Comprehensive test suite
 
-**New Tools:**
+**Enhanced Tools (Phase 2):**
 ```python
+# Existing tools remain unchanged for backward compatibility
+search_content("API design patterns")  # Now uses FTS5 backend
+explore_tables()  # Enhanced with better performance
+
+# New advanced search capabilities
 @mcp.tool
-def create_fts_index(table_name: str, text_columns: List[str]) -> ToolResponse:
-    """Create FTS5 index for fast full-text search."""
-    
+def advanced_search(query: str, tables: Optional[List[str]] = None, 
+                   operators: bool = True, highlight: bool = False) -> ToolResponse:
+    """Advanced full-text search with FTS5 operators and highlighting."""
+
 @mcp.tool  
-def fts_search(query: str, **options) -> ToolResponse:
-    """Advanced full-text search with FTS5."""
+def create_search_index(table_name: str, text_columns: List[str], 
+                       rebuild: bool = False) -> ToolResponse:
+    """Create or rebuild FTS5 index for optimized search performance."""
+
+@mcp.tool
+def search_performance() -> ToolResponse:
+    """Get search performance metrics and index statistics."""
 ```
 
 ### **Phase 3: Vector Embeddings & Semantic Search (PLANNED)**
@@ -74,18 +88,6 @@ def add_embeddings(table_name: str, text_column: str, model: str = "all-MiniLM-L
 @mcp.tool
 def semantic_search(query: str, similarity_threshold: float = 0.7) -> ToolResponse:
     """Find semantically similar content using vector similarity."""
-```
-
-#### Option B: External Vector Database Integration
-```python
-# Integration with Chroma/Pinecone/Weaviate
-@mcp.tool
-def sync_to_vector_db(table_name: str) -> ToolResponse:
-    """Sync table content to external vector database."""
-
-@mcp.tool
-def hybrid_search(query: str, use_vector: bool = True, use_text: bool = True) -> ToolResponse:
-    """Combine SQL, FTS, and vector search."""
 ```
 
 ### **Phase 4: Intelligent Query Understanding (PLANNED)**
@@ -196,10 +198,10 @@ smart_query("What decisions were made about user authentication?")
 
 ## 🚦 **Implementation Priority**
 
-1. **Phase 1**: ✅ COMPLETED - Basic full-text search
-2. **Phase 2**: 🟨 HIGH - SQLite FTS integration  
-3. **Phase 3**: 🟨 MEDIUM - Vector embeddings
-4. **Phase 4**: 🟩 LOW - Advanced NLP features
+1. **Phase 1**: ✅ COMPLETED - Basic full-text search (LIKE-based)
+2. **Phase 2**: � IN PROGRESS - SQLite FTS5 integration (production-ready performance)
+3. **Phase 3**: 🟨 MEDIUM - Vector embeddings and semantic search
+4. **Phase 4**: 🟩 LOW - Advanced NLP features and query understanding
 
 ## 💡 **Benefits for Agents/LLMs**
 
@@ -220,4 +222,17 @@ smart_query("What decisions were made about user authentication?")
 
 ---
 
-**Next Steps:** Implement Phase 2 (SQLite FTS) for production-ready full-text search capabilities.
+**CRITICAL INSIGHT FROM USER FEEDBACK:**
+The current implementation doesn't allow agents to freely find memories/knowledge. Need semantic search, vector embeddings, and graph-like discovery - while keeping the codebase small and using Python libraries.
+
+**REVISED PRIORITY:** Implement semantic search immediately using sentence-transformers
+
+**Current Status:** Implementing semantic search with vector embeddings using sentence-transformers for intelligent knowledge discovery.
+
+**Next Immediate Steps:**
+1. ✅ Research sentence-transformers integration
+2. 🔄 Add sentence-transformers dependency 
+3. 🔄 Create embedding storage schema
+4. 🔄 Implement semantic_search() and find_related() tools
+5. 🔄 Add automatic embedding generation
+6. 🔄 Create hybrid search combining semantic + keyword matching

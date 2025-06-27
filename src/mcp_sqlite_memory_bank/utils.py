@@ -31,7 +31,9 @@ def catch_errors(f: T) -> T:
             return cast(ToolResponse, e.to_dict())
         except sqlite3.Error as e:
             logging.error(f"{f.__name__} database error: {e}")
-            return cast(ToolResponse, DatabaseError(f"Database error in {f.__name__}: {e}", {"sqlite_error": str(e)}).to_dict())
+            return cast(
+                ToolResponse, DatabaseError(f"Database error in {f.__name__}: {e}", {"sqlite_error": str(e)}).to_dict()
+            )
         except Exception as e:
             logging.error(f"Unexpected error in {f.__name__}: {e}")
             return cast(ToolResponse, DatabaseError(f"Unexpected error in {f.__name__}: {e}").to_dict())
@@ -50,7 +52,8 @@ def validate_identifier(name: str, context: str = "identifier") -> None:
     """
     if not bool(re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name)):
         raise ValidationError(
-            f"Invalid {context}: {name}. Must start with letter/underscore and " f"contain only letters, numbers, underscores.",
+            f"Invalid {context}: {name}. Must start with letter/underscore and "
+            f"contain only letters, numbers, underscores.",
             {"invalid_name": name},
         )
 

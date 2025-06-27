@@ -5,6 +5,10 @@ pydantic>=1.10.0
 pytest
 fastmcp
 sqlalchemy>=2.0.0
+# Semantic search dependencies
+sentence-transformers>=2.2.0
+torch>=1.9.0
+numpy>=1.21.0
 # Development tools
 flake8
 pre-commit

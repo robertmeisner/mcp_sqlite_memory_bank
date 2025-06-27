@@ -8,15 +8,28 @@ Author: Robert Meisner
 """
 
 import os
+import json
 import logging
 from functools import wraps
-from typing import Dict, List, Any, Optional, Callable
+from typing import Dict, List, Any, Optional, Callable, cast
 from sqlalchemy import create_engine, MetaData, Table, select, insert, update, delete, text, inspect, and_, or_
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 from contextlib import contextmanager
 
-from .types import ValidationError, DatabaseError, SchemaError, ToolResponse
+from .types import (
+    ValidationError,
+    DatabaseError,
+    SchemaError,
+    ToolResponse,
+    EmbeddingColumnResponse,
+    GenerateEmbeddingsResponse,
+    SemanticSearchResponse,
+    RelatedContentResponse,
+    HybridSearchResponse,
+    EmbeddingStatsResponse,
+)
+from .semantic import get_semantic_engine, is_semantic_search_available
 
 
 class SQLiteMemoryDatabase:
@@ -235,7 +248,9 @@ class SQLiteMemoryDatabase:
                 raise e
             raise DatabaseError(f"Failed to insert into table {table_name}: {str(e)}")
 
-    def read_rows(self, table_name: str, where: Optional[Dict[str, Any]] = None, limit: Optional[int] = None) -> ToolResponse:
+    def read_rows(
+        self, table_name: str, where: Optional[Dict[str, Any]] = None, limit: Optional[int] = None
+    ) -> ToolResponse:
         """Read rows from a table with optional filtering."""
         try:
             table = self._ensure_table_exists(table_name)
@@ -260,7 +275,9 @@ class SQLiteMemoryDatabase:
                 raise e
             raise DatabaseError(f"Failed to read from table {table_name}: {str(e)}")
 
-    def update_rows(self, table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None) -> ToolResponse:
+    def update_rows(
+        self, table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None
+    ) -> ToolResponse:
         """Update rows in a table."""
         if not data:
             raise ValidationError("Update data cannot be empty")
@@ -304,7 +321,11 @@ class SQLiteMemoryDatabase:
             raise DatabaseError(f"Failed to delete from table {table_name}: {str(e)}")
 
     def select_query(
-        self, table_name: str, columns: Optional[List[str]] = None, where: Optional[Dict[str, Any]] = None, limit: int = 100
+        self,
+        table_name: str,
+        columns: Optional[List[str]] = None,
+        where: Optional[Dict[str, Any]] = None,
+        limit: int = 100,
     ) -> ToolResponse:
         """Run a SELECT query with specified columns and conditions."""
         if limit < 1:
@@ -342,7 +363,9 @@ class SQLiteMemoryDatabase:
         """List all columns for all tables."""
         try:
             self._refresh_metadata()
-            schemas = {table_name: [col.name for col in table.columns] for table_name, table in self.metadata.tables.items()}
+            schemas = {
+                table_name: [col.name for col in table.columns] for table_name, table in self.metadata.tables.items()
+            }
             return {"success": True, "schemas": schemas}
         except SQLAlchemyError as e:
             raise DatabaseError(f"Failed to list all columns: {str(e)}")
@@ -366,7 +389,9 @@ class SQLiteMemoryDatabase:
 
                     table = self.metadata.tables[table_name]
                     text_columns = [
-                        col for col in table.columns if "TEXT" in str(col.type).upper() or "VARCHAR" in str(col.type).upper()
+                        col
+                        for col in table.columns
+                        if "TEXT" in str(col.type).upper() or "VARCHAR" in str(col.type).upper()
                     ]
 
                     if not text_columns:
@@ -484,6 +509,487 @@ class SQLiteMemoryDatabase:
             return {"success": True, "exploration": exploration}
         except SQLAlchemyError as e:
             raise DatabaseError(f"Failed to explore tables: {str(e)}")
+
+    # --- Semantic Search Methods ---
+
+    def add_embedding_column(self, table_name: str, embedding_column: str = "embedding") -> EmbeddingColumnResponse:
+        """Add an embedding column to a table for semantic search."""
+        try:
+            table = self._ensure_table_exists(table_name)
+
+            # Check if embedding column already exists
+            if embedding_column in [col.name for col in table.columns]:
+                return {"success": True, "message": f"Embedding column '{embedding_column}' already exists"}
+
+            # Add embedding column as TEXT (JSON storage)
+            with self.get_connection() as conn:
+                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {embedding_column} TEXT"))
+                conn.commit()
+
+            self._refresh_metadata()
+            return {"success": True, "message": f"Added embedding column '{embedding_column}' to table '{table_name}'"}
+
+        except (ValidationError, SQLAlchemyError) as e:
+            if isinstance(e, ValidationError):
+                raise e
+            raise DatabaseError(f"Failed to add embedding column: {str(e)}")
+
+    def generate_embeddings(
+        self,
+        table_name: str,
+        text_columns: List[str],
+        embedding_column: str = "embedding",
+        model_name: str = "all-MiniLM-L6-v2",
+        batch_size: int = 50,
+    ) -> GenerateEmbeddingsResponse:
+        """Generate embeddings for text content in a table."""
+        if not is_semantic_search_available():
+            raise ValidationError("Semantic search is not available. Please install sentence-transformers.")
+
+        try:
+            table = self._ensure_table_exists(table_name)
+            semantic_engine = get_semantic_engine(model_name)
+
+            # Validate text columns exist
+            table_columns = [col.name for col in table.columns]
+            for col in text_columns:
+                if col not in table_columns:
+                    raise ValidationError(f"Column '{col}' not found in table '{table_name}'")
+
+            # Add embedding column if it doesn't exist
+            if embedding_column not in table_columns:
+                self.add_embedding_column(table_name, embedding_column)
+                table = self._ensure_table_exists(table_name)  # Refresh
+
+            # Get all rows that need embeddings
+            with self.get_connection() as conn:
+                # Select rows without embeddings or with null embeddings
+                stmt = select(table).where(
+                    or_(
+                        table.c[embedding_column].is_(None),
+                        table.c[embedding_column] == "",
+                        table.c[embedding_column] == "null",
+                    )
+                )
+                rows = conn.execute(stmt).fetchall()
+
+                if not rows:
+                    embedding_dim = semantic_engine.get_embedding_dimensions() or 0
+                    return {
+                        "success": True,
+                        "message": "All rows already have embeddings",
+                        "processed": 0,
+                        "model": model_name,
+                        "embedding_dimension": embedding_dim,
+                    }
+
+                processed = 0
+                for i in range(0, len(rows), batch_size):
+                    batch = rows[i : i + batch_size]
+
+                    for row in batch:
+                        row_dict = dict(row._mapping)
+
+                        # Combine text from specified columns
+                        text_parts = []
+                        for col in text_columns:
+                            if col in row_dict and row_dict[col]:
+                                text_parts.append(str(row_dict[col]))
+
+                        if text_parts:
+                            combined_text = " ".join(text_parts)
+
+                            # Generate embedding
+                            embedding = semantic_engine.generate_embedding(combined_text)
+                            embedding_json = json.dumps(embedding)
+
+                            # Update row with embedding
+                            update_stmt = (
+                                update(table)
+                                .where(table.c["id"] == row_dict["id"])
+                                .values({embedding_column: embedding_json})
+                            )
+
+                            conn.execute(update_stmt)
+                            processed += 1
+
+                    conn.commit()
+                    logging.info(f"Generated embeddings for batch {i//batch_size + 1}, processed {processed} rows")
+
+                return {
+                    "success": True,
+                    "message": f"Generated embeddings for {processed} rows",
+                    "processed": processed,
+                    "model": model_name,
+                    "embedding_dimension": semantic_engine.get_embedding_dimensions() or 0,
+                }
+
+        except (ValidationError, SQLAlchemyError) as e:
+            if isinstance(e, ValidationError):
+                raise e
+            raise DatabaseError(f"Failed to generate embeddings: {str(e)}")
+
+    def semantic_search(
+        self,
+        query: str,
+        tables: Optional[List[str]] = None,
+        embedding_column: str = "embedding",
+        text_columns: Optional[List[str]] = None,
+        similarity_threshold: float = 0.5,
+        limit: int = 10,
+        model_name: str = "all-MiniLM-L6-v2",
+    ) -> SemanticSearchResponse:
+        """Perform semantic search across tables using vector embeddings."""
+        if not is_semantic_search_available():
+            raise ValidationError("Semantic search is not available. Please install sentence-transformers.")
+
+        if not query or not query.strip():
+            raise ValidationError("Search query cannot be empty")
+
+        try:
+            self._refresh_metadata()
+            search_tables = tables or list(self.metadata.tables.keys())
+            semantic_engine = get_semantic_engine(model_name)
+
+            all_results = []
+
+            with self.get_connection() as conn:
+                for table_name in search_tables:
+                    if table_name not in self.metadata.tables:
+                        continue
+
+                    table = self.metadata.tables[table_name]
+
+                    # Check if table has embedding column
+                    if embedding_column not in [col.name for col in table.columns]:
+                        logging.warning(f"Table '{table_name}' does not have embedding column '{embedding_column}'")
+                        continue
+
+                    # Get all rows with embeddings
+                    stmt = select(table).where(
+                        and_(
+                            table.c[embedding_column].isnot(None),
+                            table.c[embedding_column] != "",
+                            table.c[embedding_column] != "null",
+                        )
+                    )
+                    rows = conn.execute(stmt).fetchall()
+
+                    if not rows:
+                        continue
+
+                    # Convert to list of dicts for semantic search
+                    content_data = [dict(row._mapping) for row in rows]
+
+                    # Determine text columns for highlighting
+                    if text_columns is None:
+                        text_cols = [
+                            col.name
+                            for col in table.columns
+                            if "TEXT" in str(col.type).upper() or "VARCHAR" in str(col.type).upper()
+                        ]
+                    else:
+                        text_cols = text_columns
+
+                    # Perform semantic search on this table
+                    table_results = semantic_engine.semantic_search(
+                        query,
+                        content_data,
+                        embedding_column,
+                        text_cols,
+                        similarity_threshold,
+                        limit * 2,  # Get more for global ranking
+                    )
+
+                    # Add table name to results
+                    for result in table_results:
+                        result["table_name"] = table_name
+
+                    all_results.extend(table_results)
+
+            # Sort all results by similarity score and limit
+            all_results.sort(key=lambda x: x.get("similarity_score", 0), reverse=True)
+            final_results = all_results[:limit]
+
+            return {
+                "success": True,
+                "results": final_results,
+                "query": query,
+                "tables_searched": search_tables,
+                "total_results": len(final_results),
+                "model": model_name,
+                "similarity_threshold": similarity_threshold,
+            }
+
+        except (ValidationError, SQLAlchemyError) as e:
+            if isinstance(e, ValidationError):
+                raise e
+            raise DatabaseError(f"Semantic search failed: {str(e)}")
+
+    def find_related_content(
+        self,
+        table_name: str,
+        row_id: int,
+        embedding_column: str = "embedding",
+        similarity_threshold: float = 0.5,
+        limit: int = 5,
+        model_name: str = "all-MiniLM-L6-v2",
+    ) -> RelatedContentResponse:
+        """Find content related to a specific row by semantic similarity."""
+        if not is_semantic_search_available():
+            raise ValidationError("Semantic search is not available. Please install sentence-transformers.")
+
+        try:
+            table = self._ensure_table_exists(table_name)
+            semantic_engine = get_semantic_engine(model_name)
+
+            with self.get_connection() as conn:
+                # Get the target row
+                target_stmt = select(table).where(table.c["id"] == row_id)
+                target_row = conn.execute(target_stmt).fetchone()
+
+                if not target_row:
+                    raise ValidationError(f"Row with id {row_id} not found in table '{table_name}'")
+
+                target_dict = dict(target_row._mapping)
+
+                # Check if target has embedding
+                if (
+                    embedding_column not in target_dict
+                    or not target_dict[embedding_column]
+                    or target_dict[embedding_column] in ["", "null"]
+                ):
+                    raise ValidationError(f"Row {row_id} does not have an embedding")
+
+                # Get target embedding
+                target_embedding = json.loads(target_dict[embedding_column])
+
+                # Get all other rows with embeddings
+                stmt = select(table).where(
+                    and_(
+                        table.c["id"] != row_id,
+                        table.c[embedding_column].isnot(None),
+                        table.c[embedding_column] != "",
+                        table.c[embedding_column] != "null",
+                    )
+                )
+                rows = conn.execute(stmt).fetchall()
+
+                if not rows:
+                    return {
+                        "success": True,
+                        "results": [],
+                        "target_row": target_dict,
+                        "total_results": 0,
+                        "similarity_threshold": similarity_threshold,
+                        "model": model_name,
+                        "message": "No other rows with embeddings found",
+                    }
+
+                # Find similar rows
+                content_data = [dict(row._mapping) for row in rows]
+                candidate_embeddings = []
+                valid_indices = []
+
+                for idx, row_dict in enumerate(content_data):
+                    try:
+                        embedding = json.loads(row_dict[embedding_column])
+                        candidate_embeddings.append(embedding)
+                        valid_indices.append(idx)
+                    except json.JSONDecodeError:
+                        continue
+
+                if not candidate_embeddings:
+                    return {
+                        "success": True,
+                        "results": [],
+                        "target_row": target_dict,
+                        "total_results": 0,
+                        "similarity_threshold": similarity_threshold,
+                        "model": model_name,
+                        "message": "No valid embeddings found for comparison",
+                    }
+
+                # Calculate similarities
+                similar_indices = semantic_engine.find_similar_embeddings(
+                    target_embedding, candidate_embeddings, similarity_threshold, limit
+                )
+
+                # Build results
+                results = []
+                for candidate_idx, similarity_score in similar_indices:
+                    original_idx = valid_indices[candidate_idx]
+                    row_dict = content_data[original_idx].copy()
+                    row_dict["similarity_score"] = round(similarity_score, 3)
+                    results.append(row_dict)
+
+                return {
+                    "success": True,
+                    "results": results,
+                    "target_row": target_dict,
+                    "total_results": len(results),
+                    "similarity_threshold": similarity_threshold,
+                    "model": model_name,
+                    "message": f"Found {len(results)} related items",
+                }
+
+        except (ValidationError, SQLAlchemyError) as e:
+            if isinstance(e, ValidationError):
+                raise e
+            raise DatabaseError(f"Failed to find related content: {str(e)}")
+
+    def hybrid_search(
+        self,
+        query: str,
+        tables: Optional[List[str]] = None,
+        text_columns: Optional[List[str]] = None,
+        embedding_column: str = "embedding",
+        semantic_weight: float = 0.7,
+        text_weight: float = 0.3,
+        limit: int = 10,
+        model_name: str = "all-MiniLM-L6-v2",
+    ) -> HybridSearchResponse:
+        """Combine semantic search with keyword matching for optimal results."""
+        if not is_semantic_search_available():
+            # Fallback to text search only
+            fallback_result = self.search_content(query, tables, limit)
+            # Convert to HybridSearchResponse format
+            return cast(
+                HybridSearchResponse,
+                {
+                    **fallback_result,
+                    "search_type": "text_only",
+                    "semantic_weight": 0.0,
+                    "text_weight": 1.0,
+                    "model": "none",
+                },
+            )
+
+        try:
+            # Get semantic search results
+            semantic_response = self.semantic_search(
+                query,
+                tables,
+                embedding_column,
+                text_columns,
+                similarity_threshold=0.3,
+                limit=limit * 2,
+                model_name=model_name,
+            )
+
+            if not semantic_response.get("success"):
+                return cast(
+                    HybridSearchResponse,
+                    {
+                        **semantic_response,
+                        "search_type": "semantic_failed",
+                        "semantic_weight": semantic_weight,
+                        "text_weight": text_weight,
+                        "model": model_name,
+                    },
+                )
+
+            semantic_results = semantic_response.get("results", [])
+
+            if not semantic_results:
+                # Fallback to text search
+                fallback_result = self.search_content(query, tables, limit)
+                return cast(
+                    HybridSearchResponse,
+                    {
+                        **fallback_result,
+                        "search_type": "text_fallback",
+                        "semantic_weight": semantic_weight,
+                        "text_weight": text_weight,
+                        "model": model_name,
+                    },
+                )
+
+            # Enhance with text matching scores
+            semantic_engine = get_semantic_engine(model_name)
+            enhanced_results = semantic_engine.hybrid_search(
+                query, semantic_results, text_columns or [], embedding_column, semantic_weight, text_weight, limit
+            )
+
+            return {
+                "success": True,
+                "results": enhanced_results,
+                "query": query,
+                "search_type": "hybrid",
+                "semantic_weight": semantic_weight,
+                "text_weight": text_weight,
+                "total_results": len(enhanced_results),
+                "model": model_name,
+            }
+
+        except (ValidationError, SQLAlchemyError) as e:
+            if isinstance(e, ValidationError):
+                raise e
+            raise DatabaseError(f"Hybrid search failed: {str(e)}")
+
+    def get_embedding_stats(self, table_name: str, embedding_column: str = "embedding") -> EmbeddingStatsResponse:
+        """Get statistics about embeddings in a table."""
+        try:
+            table = self._ensure_table_exists(table_name)
+
+            with self.get_connection() as conn:
+                # Count total rows
+                total_count = conn.execute(select(text("COUNT(*)")).select_from(table)).scalar() or 0
+
+                # Count rows with embeddings
+                embedded_count = (
+                    conn.execute(
+                        select(text("COUNT(*)"))
+                        .select_from(table)
+                        .where(
+                            and_(
+                                table.c[embedding_column].isnot(None),
+                                table.c[embedding_column] != "",
+                                table.c[embedding_column] != "null",
+                            )
+                        )
+                    ).scalar()
+                    or 0
+                )
+
+                # Get sample embedding to check dimensions
+                sample_stmt = (
+                    select(table.c[embedding_column])
+                    .where(
+                        and_(
+                            table.c[embedding_column].isnot(None),
+                            table.c[embedding_column] != "",
+                            table.c[embedding_column] != "null",
+                        )
+                    )
+                    .limit(1)
+                )
+
+                sample_result = conn.execute(sample_stmt).fetchone()
+                dimensions = None
+                if sample_result and sample_result[0]:
+                    try:
+                        sample_embedding = json.loads(sample_result[0])
+                        dimensions = len(sample_embedding)
+                    except json.JSONDecodeError:
+                        pass
+
+                coverage_percent = (embedded_count / total_count * 100) if total_count > 0 else 0.0
+
+                return {
+                    "success": True,
+                    "table_name": table_name,
+                    "total_rows": total_count,
+                    "embedded_rows": embedded_count,
+                    "coverage_percent": round(coverage_percent, 1),
+                    "embedding_dimensions": dimensions,
+                    "embedding_column": embedding_column,
+                }
+
+        except (ValidationError, SQLAlchemyError) as e:
+            if isinstance(e, ValidationError):
+                raise e
+            raise DatabaseError(f"Failed to get embedding stats: {str(e)}")
 
 
 # Global database instance

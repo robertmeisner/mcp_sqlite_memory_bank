@@ -370,3 +370,119 @@ applyTo: '**'
 	- **Document Changes**: Store instruction updates in the memory system with rationale
 	- **Verify Examples**: Ensure all code examples in instructions remain accurate and functional
 	- **Test Instructions**: Validate that updated instructions are clear and complete
+
+## TERMINAL COMMAND EFFICIENCY PROTOCOL
+
+### MANDATORY COMMAND BATCHING STRATEGY
+**NEVER make dozens of separate terminal calls**. Always group related commands and execute them efficiently to minimize tool calls and improve performance.
+
+### COMMAND GROUPING PATTERNS
+
+#### Single Command Line with Multiple Operations
+```
+# WRONG - Multiple separate terminal calls
+1. run_in_terminal: "cd project_directory"
+2. run_in_terminal: "npm install"
+3. run_in_terminal: "npm run build"
+4. run_in_terminal: "npm test"
+5. run_in_terminal: "npm run lint"
+
+# RIGHT - Group related commands
+run_in_terminal: "cd project_directory; npm install; npm run build; npm test; npm run lint"
+```
+
+#### Multi-line Commands for Complex Operations
+```
+# WRONG - Fragmented file operations
+1. run_in_terminal: "mkdir -p src/components"
+2. run_in_terminal: "mkdir -p src/utils"
+3. run_in_terminal: "mkdir -p tests"
+4. run_in_terminal: "touch src/index.js"
+5. run_in_terminal: "touch README.md"
+
+# RIGHT - Batch directory and file creation
+run_in_terminal: "mkdir -p src/components src/utils tests && touch src/index.js README.md"
+```
+
+#### Conditional Command Chains
+```
+# WRONG - Multiple checks and actions
+1. run_in_terminal: "test -f package.json"
+2. run_in_terminal: "npm install"
+3. run_in_terminal: "test -f requirements.txt"  
+4. run_in_terminal: "pip install -r requirements.txt"
+
+# RIGHT - Conditional execution in one call
+run_in_terminal: "[ -f package.json ] && npm install; [ -f requirements.txt ] && pip install -r requirements.txt"
+```
+
+### EFFICIENT COMMAND STRATEGIES
+
+#### Use Shell Features for Batching
+- **Command chaining**: Use `;` to run commands sequentially
+- **Conditional execution**: Use `&&` for success-dependent chains
+- **Parallel execution**: Use `&` for background processes when appropriate
+- **Error handling**: Use `||` for fallback commands
+
+#### Windows PowerShell Specific Patterns
+```
+# PowerShell command chaining
+run_in_terminal: "New-Item -ItemType Directory -Path 'src','tests' -Force; New-Item -ItemType File -Path 'src/index.js','README.md' -Force"
+
+# PowerShell conditional execution
+run_in_terminal: "if (Test-Path 'package.json') { npm install }; if (Test-Path 'requirements.txt') { pip install -r requirements.txt }"
+```
+
+#### Cross-Platform Command Considerations
+- Use appropriate separators for the detected shell (`;` for most shells, `;` for PowerShell)
+- Consider path separators and command syntax differences
+- Test commands work in the target environment
+
+### PLANNING TERMINAL OPERATIONS
+
+#### Before Running Commands
+1. **Analyze all needed operations** for the current task
+2. **Group by logical dependencies** (setup → build → test → deploy)
+3. **Identify which commands can be chained** vs need separate calls
+4. **Consider error handling** and what should happen if a command fails
+
+#### Command Grouping Strategy
+1. **Setup/Installation Commands**: Group package installs, environment setup
+2. **Build/Compilation Commands**: Chain build steps that depend on each other
+3. **Testing Commands**: Combine test runs, linting, validation
+4. **Deployment/Publishing**: Group deployment-related operations
+
+#### When to Use Separate Calls
+- **Long-running background processes** (servers, watch modes)
+- **Interactive commands** that require user input
+- **Commands with complex output** that need individual analysis
+- **Error-prone operations** that need individual error handling
+
+### COMMAND EFFICIENCY BEST PRACTICES
+
+#### Output Management
+- **Combine related information gathering**: `ls -la; pwd; git status` instead of three separate calls
+- **Use command substitution**: Capture and use output within the same command chain
+- **Filter output appropriately**: Use `grep`, `head`, `tail` to limit output size
+
+#### Performance Optimization
+- **Minimize context switching**: Fewer tool calls = better performance
+- **Use built-in command features**: Leverage shell built-ins for file operations
+- **Avoid redundant operations**: Don't repeat directory changes or environment setup
+
+#### Error Handling in Command Chains
+```
+# Good error handling in command chains
+run_in_terminal: "npm install && npm run build && npm test || echo 'Build process failed'"
+
+# Complex error handling with recovery
+run_in_terminal: "npm install || (echo 'npm install failed, trying yarn'; yarn install) && npm run build"
+```
+
+### VALIDATION AFTER COMMAND EXECUTION
+1. **Check command output** for success indicators
+2. **Verify expected files/directories** were created
+3. **Test that subsequent commands** will work with the changes
+4. **Document any complex command chains** for future reference
+
+**Remember**: Efficient terminal usage reduces tool calls, improves performance, and makes the development process smoother. Always think about grouping related operations before executing them.

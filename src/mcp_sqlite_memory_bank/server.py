@@ -453,6 +453,224 @@ def explore_tables(pattern: Optional[str] = None, include_row_counts: bool = Tru
     return cast(ToolResponse, get_database(DB_PATH).explore_tables(pattern, include_row_counts))
 
 
+# --- Semantic Search and AI-Enhanced Discovery Tools ---
+
+
+@mcp.tool
+@catch_errors
+def add_embeddings(
+    table_name: str, text_columns: List[str], embedding_column: str = "embedding", model_name: str = "all-MiniLM-L6-v2"
+) -> ToolResponse:
+    """
+    Generate and store vector embeddings for semantic search on table content.
+
+    This tool enables intelligent knowledge discovery by creating vector representations
+    of text content that can be searched semantically rather than just by exact keywords.
+
+    Args:
+        table_name (str): Name of the table to add embeddings to
+        text_columns (List[str]): List of text columns to generate embeddings from
+        embedding_column (str): Column name to store embeddings (default: "embedding")
+        model_name (str): Sentence transformer model to use (default: "all-MiniLM-L6-v2")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "processed": int, "model": str}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> add_embeddings("technical_decisions", ["decision_name", "rationale"])
+        {"success": True, "processed": 15, "model": "all-MiniLM-L6-v2", "embedding_dimension": 384}
+
+    FastMCP Tool Info:
+        - Automatically creates embedding column if it doesn't exist
+        - Combines multiple text columns into single embedding
+        - Only processes rows that don't already have embeddings
+        - Uses efficient batch processing for large datasets
+        - Supports various sentence-transformer models for different use cases
+    """
+    return cast(
+        ToolResponse, get_database(DB_PATH).generate_embeddings(table_name, text_columns, embedding_column, model_name)
+    )
+
+
+@mcp.tool
+@catch_errors
+def semantic_search(
+    query: str,
+    tables: Optional[List[str]] = None,
+    similarity_threshold: float = 0.5,
+    limit: int = 10,
+    model_name: str = "all-MiniLM-L6-v2",
+) -> ToolResponse:
+    """
+    Find content using natural language semantic similarity rather than exact keyword matching.
+
+    This enables intelligent knowledge discovery - find related concepts even when
+    they use different terminology or phrasing.
+
+    Args:
+        query (str): Natural language search query
+        tables (Optional[List[str]]): Specific tables to search (default: all tables with embeddings)
+        similarity_threshold (float): Minimum similarity score (0.0-1.0, default: 0.5)
+        limit (int): Maximum number of results to return (default: 10)
+        model_name (str): Model to use for query embedding (default: "all-MiniLM-L6-v2")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "results": List[...], "total_results": int}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> semantic_search("API design patterns")
+        {"success": True, "results": [
+            {"table_name": "technical_decisions", "similarity_score": 0.87, "decision_name": "REST API Structure", ...},
+            {"table_name": "project_structure", "similarity_score": 0.72, "component": "API Gateway", ...}
+        ]}
+
+        >>> semantic_search("machine learning", tables=["technical_decisions"], similarity_threshold=0.7)
+        # Finds content about "ML", "AI", "neural networks", etc.
+
+    FastMCP Tool Info:
+        - Works across multiple tables simultaneously
+        - Finds conceptually similar content regardless of exact wording
+        - Returns relevance scores for ranking results
+        - Supports fuzzy matching and concept discovery
+        - Much more powerful than keyword-based search for knowledge discovery
+    """
+    return cast(
+        ToolResponse,
+        get_database(DB_PATH).semantic_search(
+            query, tables, "embedding", None, similarity_threshold, limit, model_name
+        ),
+    )
+
+
+@mcp.tool
+@catch_errors
+def find_related(
+    table_name: str,
+    row_id: int,
+    similarity_threshold: float = 0.5,
+    limit: int = 5,
+    model_name: str = "all-MiniLM-L6-v2",
+) -> ToolResponse:
+    """
+    Find content related to a specific row by semantic similarity.
+
+    Discover connections and related information that might not be obvious
+    from direct references or tags.
+
+    Args:
+        table_name (str): Table containing the reference row
+        row_id (int): ID of the row to find related content for
+        similarity_threshold (float): Minimum similarity score (default: 0.5)
+        limit (int): Maximum number of related items to return (default: 5)
+        model_name (str): Model for similarity comparison (default: "all-MiniLM-L6-v2")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "results": List[...], "target_row": Dict}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> find_related("technical_decisions", 5)
+        {"success": True, "results": [
+            {"id": 12, "similarity_score": 0.84, "decision_name": "Related Architecture Choice", ...},
+            {"id": 3, "similarity_score": 0.71, "decision_name": "Similar Technology Decision", ...}
+        ], "target_row": {"id": 5, "decision_name": "API Framework Selection", ...}}
+
+    FastMCP Tool Info:
+        - Helps discover hidden relationships between data
+        - Useful for finding similar decisions, related problems, or connected concepts
+        - Can reveal patterns and themes across your knowledge base
+        - Enables serendipitous discovery of relevant information
+    """
+    return cast(
+        ToolResponse,
+        get_database(DB_PATH).find_related_content(
+            table_name, row_id, "embedding", similarity_threshold, limit, model_name
+        ),
+    )
+
+
+@mcp.tool
+@catch_errors
+def smart_search(
+    query: str,
+    tables: Optional[List[str]] = None,
+    semantic_weight: float = 0.7,
+    text_weight: float = 0.3,
+    limit: int = 10,
+    model_name: str = "all-MiniLM-L6-v2",
+) -> ToolResponse:
+    """
+    Intelligent hybrid search combining semantic understanding with keyword matching.
+
+    Provides the best of both worlds - semantic similarity for concept discovery
+    plus exact text matching for precise searches.
+
+    Args:
+        query (str): Search query (natural language or keywords)
+        tables (Optional[List[str]]): Tables to search (default: all)
+        semantic_weight (float): Weight for semantic similarity (0.0-1.0, default: 0.7)
+        text_weight (float): Weight for keyword matching (0.0-1.0, default: 0.3)
+        limit (int): Maximum results (default: 10)
+        model_name (str): Semantic model to use (default: "all-MiniLM-L6-v2")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "results": List[...], "search_type": "hybrid"}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> smart_search("user authentication security")
+        {"success": True, "results": [
+            {"combined_score": 0.89, "semantic_score": 0.92, "text_score": 0.82, ...},
+            {"combined_score": 0.76, "semantic_score": 0.71, "text_score": 0.85, ...}
+        ], "search_type": "hybrid"}
+
+    FastMCP Tool Info:
+        - Automatically balances semantic and keyword search
+        - Provides separate scores for transparency
+        - Falls back gracefully if semantic search unavailable
+        - Optimal for both exploratory and precise searches
+        - Recommended for general-purpose knowledge discovery
+    """
+    return cast(
+        ToolResponse,
+        get_database(DB_PATH).hybrid_search(
+            query, tables, None, "embedding", semantic_weight, text_weight, limit, model_name
+        ),
+    )
+
+
+@mcp.tool
+@catch_errors
+def embedding_stats(table_name: str, embedding_column: str = "embedding") -> ToolResponse:
+    """
+    Get statistics about semantic search readiness for a table.
+
+    Check which content has embeddings and can be searched semantically.
+
+    Args:
+        table_name (str): Table to analyze
+        embedding_column (str): Embedding column to check (default: "embedding")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "coverage_percent": float, "total_rows": int}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> embedding_stats("technical_decisions")
+        {"success": True, "total_rows": 25, "embedded_rows": 25, "coverage_percent": 100.0,
+         "embedding_dimensions": 384}
+
+    FastMCP Tool Info:
+        - Shows how much content is ready for semantic search
+        - Helps identify tables that need embedding generation
+        - Provides embedding dimension info for debugging
+        - Useful for monitoring semantic search capabilities
+    """
+    return cast(ToolResponse, get_database(DB_PATH).get_embedding_stats(table_name, embedding_column))
+
+
 # Export the FastMCP app for use in other modules and server runners
 app = mcp
 
@@ -494,7 +712,10 @@ def _create_row_impl(table_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
             try:
                 current_db.create_table(
                     "nodes",
-                    [{"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"}, {"name": "label", "type": "TEXT NOT NULL"}],
+                    [
+                        {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
+                        {"name": "label", "type": "TEXT NOT NULL"},
+                    ],
                 )
             except Exception:
                 pass  # Table might already exist
