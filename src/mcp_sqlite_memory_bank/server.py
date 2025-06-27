@@ -715,23 +715,29 @@ def auto_semantic_search(
     """
     try:
         db = get_database(DB_PATH)
-        auto_embedded_tables = []
+        auto_embedded_tables: List[str] = []
         
         # Get tables to search
+        search_tables: List[str]
         if tables:
             search_tables = tables
         else:
             tables_result = db.list_tables()
             if not tables_result.get("success"):
                 return cast(ToolResponse, tables_result)
-            search_tables = tables_result.get("tables", [])
+            all_tables = tables_result.get("tables", [])
+            if isinstance(all_tables, list):
+                search_tables = all_tables
+            else:
+                search_tables = []
         
         # Auto-embed text columns in tables that don't have embeddings
         for table_name in search_tables:
             try:
                 # Check if table has embeddings
                 stats_result = db.get_embedding_stats(table_name, "embedding")
-                if stats_result.get("success") and stats_result.get("coverage_percent", 0) > 0:
+                coverage_percent = stats_result.get("coverage_percent", 0)
+                if stats_result.get("success") and isinstance(coverage_percent, (int, float)) and coverage_percent > 0:
                     continue  # Table already has embeddings
                 
                 # Get table schema to find text columns
@@ -741,9 +747,11 @@ def auto_semantic_search(
                 
                 # Find text columns
                 text_columns = []
-                for col in schema_result.get("columns", []):
-                    if "TEXT" in col.get("type", "").upper():
-                        text_columns.append(col["name"])
+                columns = schema_result.get("columns", [])
+                if isinstance(columns, list):
+                    for col in columns:
+                        if isinstance(col, dict) and "TEXT" in col.get("type", "").upper():
+                            text_columns.append(col["name"])
                 
                 # Auto-embed text columns
                 if text_columns:
@@ -822,12 +830,54 @@ def auto_smart_search(
         - Perfect for agents - ultimate search tool that just works!
     """
     try:
-        # First try auto semantic search to ensure embeddings exist
-        auto_semantic_result = auto_semantic_search(query, tables, 0.3, limit, model_name)
-        auto_embedded_tables = []
+        db = get_database(DB_PATH)
+        auto_embedded_tables: List[str] = []
         
-        if auto_semantic_result.get("success"):
-            auto_embedded_tables = auto_semantic_result.get("auto_embedded_tables", [])
+        # Get tables to search
+        search_tables: List[str]
+        if tables:
+            search_tables = tables
+        else:
+            tables_result = db.list_tables()
+            if not tables_result.get("success"):
+                return cast(ToolResponse, tables_result)
+            all_tables = tables_result.get("tables", [])
+            if isinstance(all_tables, list):
+                search_tables = all_tables
+            else:
+                search_tables = []
+        
+        # Auto-embed text columns in tables that don't have embeddings
+        for table_name in search_tables:
+            try:
+                # Check if table has embeddings
+                stats_result = db.get_embedding_stats(table_name, "embedding")
+                coverage_percent = stats_result.get("coverage_percent", 0)
+                if stats_result.get("success") and isinstance(coverage_percent, (int, float)) and coverage_percent > 0:
+                    continue  # Table already has embeddings
+                
+                # Get table schema to find text columns
+                schema_result = db.describe_table(table_name)
+                if not schema_result.get("success"):
+                    continue
+                
+                # Find text columns
+                text_columns = []
+                columns = schema_result.get("columns", [])
+                if isinstance(columns, list):
+                    for col in columns:
+                        if isinstance(col, dict) and "TEXT" in col.get("type", "").upper():
+                            text_columns.append(col["name"])
+                
+                # Auto-embed text columns
+                if text_columns:
+                    embed_result = db.generate_embeddings(table_name, text_columns, "embedding", model_name)
+                    if embed_result.get("success"):
+                        auto_embedded_tables.append(table_name)
+                        
+            except Exception:
+                # If auto-embedding fails, continue without it
+                continue
         
         # Now perform hybrid search
         db = get_database(DB_PATH)
@@ -836,13 +886,16 @@ def auto_smart_search(
         )
         
         # Add auto-embedding info to result
-        if isinstance(hybrid_result, dict):
-            hybrid_result["search_type"] = "auto_hybrid"
-            hybrid_result["auto_embedded_tables"] = auto_embedded_tables
+        if isinstance(hybrid_result, dict) and hybrid_result.get("success"):
+            # Convert to mutable dict to add extra fields
+            final_result = dict(hybrid_result)
+            final_result["search_type"] = "auto_hybrid"
+            final_result["auto_embedded_tables"] = auto_embedded_tables
             if auto_embedded_tables:
-                hybrid_result["auto_embedding_note"] = f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
-        
-        return cast(ToolResponse, hybrid_result)
+                final_result["auto_embedding_note"] = f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
+            return cast(ToolResponse, final_result)
+        else:
+            return cast(ToolResponse, hybrid_result)
         
     except Exception as e:
         return cast(ToolResponse, {
@@ -851,6 +904,36 @@ def auto_smart_search(
             "category": "HYBRID_SEARCH_ERROR", 
             "details": {"query": query, "tables": tables}
         })
+
+
+@mcp.tool
+@catch_errors 
+def embedding_stats(table_name: str, embedding_column: str = "embedding") -> ToolResponse:
+    """
+    Get statistics about semantic search readiness for a table.
+
+    Check which content has embeddings and can be searched semantically.
+
+    Args:
+        table_name (str): Table to analyze
+        embedding_column (str): Embedding column to check (default: "embedding")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "coverage_percent": float, "total_rows": int}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> embedding_stats("technical_decisions")
+        {"success": True, "total_rows": 25, "embedded_rows": 25, "coverage_percent": 100.0,
+         "embedding_dimensions": 384}
+
+    FastMCP Tool Info:
+        - Shows how much content is ready for semantic search
+        - Helps identify tables that need embedding generation  
+        - Provides embedding dimension info for debugging
+        - Useful for monitoring semantic search capabilities
+    """
+    return cast(ToolResponse, get_database(DB_PATH).get_embedding_stats(table_name, embedding_column))
 
 
 # --- Enhanced Tool Discovery and Categorization ---

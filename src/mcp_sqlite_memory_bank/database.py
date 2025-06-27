@@ -27,7 +27,6 @@ from .types import (
     SemanticSearchResponse,
     RelatedContentResponse,
     HybridSearchResponse,
-    EmbeddingStatsResponse,
 )
 from .semantic import get_semantic_engine, is_semantic_search_available
 
@@ -932,10 +931,27 @@ class SQLiteMemoryDatabase:
                 raise e
             raise DatabaseError(f"Hybrid search failed: {str(e)}")
 
-    def get_embedding_stats(self, table_name: str, embedding_column: str = "embedding") -> EmbeddingStatsResponse:
+    def get_embedding_stats(self, table_name: str, embedding_column: str = "embedding") -> ToolResponse:
         """Get statistics about embeddings in a table."""
         try:
             table = self._ensure_table_exists(table_name)
+
+            # Check if embedding column exists
+            if embedding_column not in [col.name for col in table.columns]:
+                # Return 0% coverage when column doesn't exist (for compatibility with tests)
+                total_count = 0
+                with self.get_connection() as conn:
+                    total_count = conn.execute(select(text("COUNT(*)")).select_from(table)).scalar() or 0
+                
+                return {
+                    "success": True,
+                    "table_name": table_name,
+                    "total_rows": total_count,
+                    "embedded_rows": 0,
+                    "coverage_percent": 0.0,
+                    "embedding_dimensions": None,
+                    "embedding_column": embedding_column,
+                }
 
             with self.get_connection() as conn:
                 # Count total rows

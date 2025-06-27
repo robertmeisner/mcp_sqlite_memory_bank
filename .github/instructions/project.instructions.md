@@ -186,7 +186,16 @@ def tool_function(params):
 2. Verify no new type errors
 3. Update memory bank with new context
 4. Validate error handling works correctly
-5. Fix linting issues with `flake8` and type issues with mypy
+5. Always before build and Fix linting issues with `flake8` and type issues with mypy and pylance errors
+6. When I say “DEPLOY!”, perform these steps in order:
+    1. Review CHANGELOG.md
+    2. Bump the version if needed
+    3. Update the documentation
+    4. Commit all changes
+    5. Push to GitHub
+    6. Publish the package to PyPI
+    7. Create a new GitHub release
+
 ## PROJECT-SPECIFIC COMMANDS
 
 ### Running Tests

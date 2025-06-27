@@ -180,7 +180,7 @@ class ExploreTablesResponse(SuccessResponse):
 
 
 # Semantic Search Response Types
-class SemanticSearchResponse(TypedDict):
+class SemanticSearchResponse(TypedDict, total=False):
     """Response type for semantic search operations."""
 
     success: bool
@@ -190,6 +190,8 @@ class SemanticSearchResponse(TypedDict):
     total_results: int
     model: str
     similarity_threshold: float
+    auto_embedded_tables: List[str]  # Tables that had embeddings auto-generated
+    auto_embedding_note: str  # Message about auto-embedding
 
 
 class RelatedContentResponse(TypedDict, total=False):
