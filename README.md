@@ -14,10 +14,14 @@ This project provides a robust, discoverable API for creating, exploring, and ma
 - Build and query knowledge graphs for semantic search and reasoning
 - Store, retrieve, and organize notes or structured data for LLM agents
 - Enable natural language workflows for database management and exploration
+- Intelligent content discovery with semantic search capabilities
+- Access memory content through standardized MCP Resources and Prompts
 - Integrate with FastMCP, Claude Desktop, and other agent platforms for seamless tool discovery
 
 **Why mcp_sqlite_memory_bank?**
-- Explicit, discoverable APIs for LLMs and agents
+- **Full MCP Compliance:** Resources, Prompts, and 20+ organized tools
+- **Semantic Search:** Natural language content discovery with AI-powered similarity matching
+- **Explicit, discoverable APIs** for LLMs and agents with enhanced categorization
 - Safe, parameterized queries and schema management
 - Designed for extensibility and open source collaboration
 
@@ -82,9 +86,48 @@ Restart your IDE and try asking your AI assistant:
 - **Dynamic Table Management:** Create, list, describe, rename, and drop tables at runtime
 - **CRUD Operations:** Insert, read, update, and delete rows in any table
 - **Safe SQL:** Run parameterized SELECT queries with input validation
+- **Semantic Search:** Natural language search using sentence-transformers for intelligent content discovery
+- **MCP Resources:** Access memory content through standardized MCP resource URIs
+- **MCP Prompts:** Built-in intelligent prompts for common memory analysis workflows
+- **Tool Categorization:** Organized tool discovery with detailed usage examples for enhanced LLM integration
 - **Knowledge Graph Tools:** Built-in support for node/edge schemas and property graphs
 - **Agent/LLM Integration:** Explicit, tool-based APIs for easy discovery and automation
 - **Open Source:** MIT licensed, fully tested, and ready for community use
+
+---
+
+## MCP Compliance & Enhanced Integration
+
+SQLite Memory Bank v1.4.0+ provides full Model Context Protocol (MCP) compliance with advanced features for enhanced LLM and agent integration:
+
+### 🔧 MCP Tools (20 Available)
+Organized into logical categories for easy discovery:
+- **Schema Management** (6 tools): Table creation, modification, and inspection
+- **Data Operations** (5 tools): CRUD operations with validation
+- **Search & Discovery** (2 tools): Content search and exploration
+- **Semantic Search** (5 tools): AI-powered natural language content discovery
+- **Analytics** (2 tools): Memory bank insights and statistics
+
+### 📄 MCP Resources (5 Available)
+Real-time access to memory content via standardized URIs:
+- `memory://tables/list` - List of all available tables
+- `memory://tables/{table_name}/schema` - Table schema information
+- `memory://tables/{table_name}/data` - Table data content
+- `memory://search/{query}` - Search results as resources
+- `memory://analytics/overview` - Memory bank overview analytics
+
+### 💡 MCP Prompts (4 Available)
+Intelligent prompts for common memory analysis workflows:
+- `analyze-memory-content` - Analyze memory bank content and provide insights
+- `search-and-summarize` - Search and create summary prompts
+- `technical-decision-analysis` - Analyze technical decisions from memory
+- `memory-bank-context` - Provide memory bank context for AI conversations
+
+### 🎯 Enhanced Discoverability
+- **Tool Categorization:** `list_tool_categories()` for organized tool discovery
+- **Usage Examples:** `get_tools_by_category()` with detailed examples for each tool
+- **Semantic Search:** Natural language queries for intelligent content discovery
+- **LLM-Friendly APIs:** Explicit, descriptive tool names and comprehensive documentation
 
 ---
 
@@ -93,7 +136,9 @@ Restart your IDE and try asking your AI assistant:
 
 All tools are designed for explicit, discoverable use by LLMs, agents, and developers. Each function is available as a direct Python import and as an MCP tool.
 
-### Table Management Tools
+**🔍 Tool Discovery:** Use `list_tool_categories()` to see all organized tool categories, or `get_tools_by_category(category)` for detailed information about specific tool groups with usage examples.
+
+### Schema Management Tools (6 tools)
 
 | Tool | Description | Required Parameters | Optional Parameters |
 |------|-------------|---------------------|---------------------|
@@ -104,7 +149,7 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 | `describe_table` | Get schema details | `table_name` (str) | None |
 | `list_all_columns` | List all columns for all tables | None | None |
 
-### Data Management Tools
+### Data Operations Tools (5 tools)
 
 | Tool | Description | Required Parameters | Optional Parameters |
 |------|-------------|---------------------|---------------------|
@@ -113,6 +158,30 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 | `update_rows` | Update existing rows | `table_name` (str), `data` (dict), `where` (dict) | None |
 | `delete_rows` | Delete rows from table | `table_name` (str), `where` (dict) | None |
 | `run_select_query` | Run safe SELECT query | `table_name` (str) | `columns` (list[str]), `where` (dict), `limit` (int) |
+
+### Search & Discovery Tools (2 tools)
+
+| Tool | Description | Required Parameters | Optional Parameters |
+|------|-------------|---------------------|---------------------|
+| `search_content` | Full-text search across table content | `query` (str) | `tables` (list[str]), `limit` (int) |
+| `explore_tables` | Explore and discover table structures | None | `pattern` (str), `include_row_counts` (bool) |
+
+### Semantic Search Tools (5 tools)
+
+| Tool | Description | Required Parameters | Optional Parameters |
+|------|-------------|---------------------|---------------------|
+| `add_embeddings` | Generate vector embeddings for semantic search | `table_name` (str), `text_columns` (list[str]) | `embedding_column` (str), `model_name` (str) |
+| `semantic_search` | Natural language search using vector similarity | `query` (str) | `tables` (list[str]), `similarity_threshold` (float), `limit` (int) |
+| `find_related` | Find content related to specific row by similarity | `table_name` (str), `row_id` (int) | `similarity_threshold` (float), `limit` (int) |
+| `smart_search` | Hybrid keyword + semantic search | `query` (str) | `tables` (list[str]), `semantic_weight` (float), `text_weight` (float) |
+| `embedding_stats` | Get statistics about semantic search readiness | `table_name` (str) | `embedding_column` (str) |
+
+### Tool Discovery & Organization (2 tools)
+
+| Tool | Description | Required Parameters | Optional Parameters |
+|------|-------------|---------------------|---------------------|
+| `list_tool_categories` | List all available tool categories | None | None |
+| `get_tools_by_category` | Get detailed tool information by category | `category` (str) | None |
 
 Each tool validates inputs and returns consistent response formats with success/error indicators and appropriate data payloads.
 
@@ -439,6 +508,97 @@ Find all rows in the user_preferences table
 ```
 
 For a complete agent memory implementation example, see [examples/agent_memory_example.py](examples/agent_memory_example.py) and the detailed [memory usage instructions](examples/memory_instructions.md).
+
+---
+
+## MCP Resources and Prompts Usage
+
+### Using MCP Resources
+
+MCP Resources provide real-time access to memory content through standardized URIs:
+
+```python
+# Access resource via MCP client
+resource_uri = "memory://tables/list"
+tables_resource = await client.read_resource(resource_uri)
+
+# Get table schema
+schema_uri = "memory://tables/user_preferences/schema"
+schema_resource = await client.read_resource(schema_uri)
+
+# Access table data
+data_uri = "memory://tables/user_preferences/data"
+data_resource = await client.read_resource(data_uri)
+
+# Search as resource
+search_uri = "memory://search/user preferences coding style"
+search_resource = await client.read_resource(search_uri)
+
+# Analytics overview
+analytics_uri = "memory://analytics/overview"
+analytics_resource = await client.read_resource(analytics_uri)
+```
+
+### Using MCP Prompts
+
+MCP Prompts provide intelligent analysis workflows:
+
+```python
+# Analyze memory content
+analysis_prompt = await client.get_prompt("analyze-memory-content", {
+    "focus_area": "technical_decisions"
+})
+
+# Search and summarize
+summary_prompt = await client.get_prompt("search-and-summarize", {
+    "query": "database performance optimization",
+    "max_results": 10
+})
+
+# Technical decision analysis
+decision_analysis = await client.get_prompt("technical-decision-analysis", {
+    "decision_category": "architecture"
+})
+
+# Get memory context for conversations
+context_prompt = await client.get_prompt("memory-bank-context", {
+    "conversation_topic": "API design patterns"
+})
+```
+
+### Semantic Search Examples
+
+```python
+# Enable semantic search on existing table
+add_embeddings("technical_decisions", ["decision_name", "rationale"])
+
+# Natural language search
+results = semantic_search("machine learning algorithms", 
+                         similarity_threshold=0.4, 
+                         limit=5)
+
+# Find related content
+related = find_related("technical_decisions", 
+                      row_id=123, 
+                      similarity_threshold=0.5)
+
+# Hybrid search (keyword + semantic)
+hybrid_results = smart_search("API design patterns",
+                             semantic_weight=0.7,
+                             text_weight=0.3)
+```
+
+### Tool Organization Discovery
+
+```python
+# Discover tool categories
+categories = list_tool_categories()
+# Returns: {"schema_management": 6, "data_operations": 5, ...}
+
+# Get detailed tool information
+schema_tools = get_tools_by_category("schema_management")
+# Returns detailed info with usage examples for each tool
+```
 
 ---
 

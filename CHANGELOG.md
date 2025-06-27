@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - Code Quality and Documentation Update (2025-06-27)
+
+### 🔧 Fixes
+- **Code Quality**: Fixed flake8 linting issues including unused imports, import order, and whitespace
+- **Import Organization**: Moved dynamic imports to top-level to fix E402 errors
+- **Documentation**: Enhanced README.md with comprehensive MCP features documentation
+- **Configuration**: Updated flake8 configuration for better code quality standards
+
+### 📝 Documentation
+- **Enhanced README**: Added detailed MCP Resources and Prompts usage examples
+- **Tool Organization**: Updated documentation to reflect new tool categorization
+- **MCP Compliance**: Added comprehensive documentation of MCP features and capabilities
+
+## [1.4.0] - MCP Compliance Enhancement (2025-06-27)
+
+### 🚀 Major Features
+- **MCP Resources Support**: Added 5 MCP resources for exposing memory content (`memory://tables/list`, `memory://tables/{table}/schema`, `memory://tables/{table}/data`, `memory://search/{query}`, `memory://analytics/overview`)
+- **MCP Prompts Support**: Added 4 intelligent prompts for enhanced workflows (`analyze-memory-content`, `search-and-summarize`, `technical-decision-analysis`, `memory-bank-context`)
+- **Tool Categorization**: Added `list_tool_categories()` and `get_tools_by_category()` for better tool organization and discoverability
+
+### 💡 Improvements
+- **Enhanced Agent Experience**: Better tool organization and discovery for LLM/agent frameworks
+- **MCP Specification Compliance**: Significant improvement in MCP protocol compliance with Resources and Prompts support
+- **Dynamic Context Provision**: Resources provide real-time access to memory content for AI applications
+- **Workflow Templates**: Prompts offer pre-built templates for common memory analysis tasks
+
+### 🎯 Developer Experience
+- All new features are properly typed and tested
+- Resources provide JSON-formatted content for easy consumption
+- Prompts leverage existing search and analytics capabilities
+- Backward compatible with existing tool interfaces
+
+### 📊 Impact
+- Enhanced discoverability: Tools now organized in logical categories
+- Better MCP compliance: Resources and Prompts bring the server closer to full MCP specification
+- Improved agent usability: Structured access to memory content through standardized MCP interfaces
+- Workflow acceleration: Pre-built prompts for common analysis tasks
+
 ## [1.3.1] - 2025-06-27
 
 ### Fixed

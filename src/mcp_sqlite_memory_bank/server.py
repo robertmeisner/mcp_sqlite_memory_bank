@@ -65,6 +65,8 @@ from .types import (
     SelectQueryResponse,
 )
 from .utils import catch_errors
+from .resources import setup_mcp_resources
+from .prompts import setup_mcp_prompts
 
 # Initialize FastMCP app with explicit name
 mcp: FastMCP = FastMCP("SQLite Memory Bank for Copilot/AI Agents")
@@ -77,6 +79,12 @@ os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
 
 # Initialize database
 db = get_database(DB_PATH)
+
+# Set up MCP Resources for enhanced context provision
+setup_mcp_resources(mcp, DB_PATH)
+
+# Set up MCP Prompts for enhanced workflow support
+setup_mcp_prompts(mcp, DB_PATH)
 
 
 # --- Schema Management Tools for SQLite Memory Bank ---
@@ -669,6 +677,122 @@ def embedding_stats(table_name: str, embedding_column: str = "embedding") -> Too
         - Useful for monitoring semantic search capabilities
     """
     return cast(ToolResponse, get_database(DB_PATH).get_embedding_stats(table_name, embedding_column))
+
+
+# --- Enhanced Tool Discovery and Categorization ---
+
+
+@mcp.tool
+@catch_errors
+def list_tool_categories() -> ToolResponse:
+    """
+    List all available tool categories for better organization and discovery.
+    
+    Returns organized view of available functionality for LLMs and agents.
+    
+    Returns:
+        ToolResponse: {"success": True, "categories": {category: [tool_names]}}
+    """
+    categories = {
+        "schema_management": [
+            "create_table", "list_tables", "describe_table", 
+            "drop_table", "rename_table", "list_all_columns"
+        ],
+        "data_operations": [
+            "create_row", "read_rows", "update_rows", 
+            "delete_rows", "run_select_query"
+        ],
+        "search_discovery": [
+            "search_content", "explore_tables"
+        ],
+        "semantic_search": [
+            "add_embeddings", "semantic_search", "find_related", 
+            "smart_search", "embedding_stats"
+        ],
+        "workflow_shortcuts": [
+            "quick_note", "remember_decision", "store_context"
+        ],
+        "analytics_insights": [
+            "memory_usage_stats", "content_analytics"
+        ]
+    }
+    
+    return cast(ToolResponse, {
+        "success": True,
+        "categories": categories,
+        "total_tools": sum(len(tools) for tools in categories.values()),
+        "description": "Organized view of all available memory bank capabilities"
+    })
+
+
+@mcp.tool  
+@catch_errors
+def get_tools_by_category(category: str) -> ToolResponse:
+    """
+    Get detailed information about tools in a specific category.
+    
+    Args:
+        category (str): Category name (schema_management, data_operations, 
+                       search_discovery, semantic_search, workflow_shortcuts, analytics_insights)
+    
+    Returns:
+        ToolResponse: {"success": True, "tools": [{"name": str, "description": str, "usage": str}]}
+    """
+    tool_details = {
+        "schema_management": [
+            {"name": "create_table", "description": "Create new tables with custom schemas", "usage": "create_table('table_name', [{'name': 'col', 'type': 'TEXT'}])"},
+            {"name": "list_tables", "description": "List all available tables", "usage": "list_tables()"},
+            {"name": "describe_table", "description": "Get detailed schema for a table", "usage": "describe_table('table_name')"},
+            {"name": "drop_table", "description": "Delete a table permanently", "usage": "drop_table('table_name')"},
+            {"name": "rename_table", "description": "Rename an existing table", "usage": "rename_table('old_name', 'new_name')"},
+            {"name": "list_all_columns", "description": "Get all columns across all tables", "usage": "list_all_columns()"},
+        ],
+        "data_operations": [
+            {"name": "create_row", "description": "Insert new data into any table", "usage": "create_row('table', {'col': 'value'})"},
+            {"name": "read_rows", "description": "Query data with optional filtering", "usage": "read_rows('table', {'filter_col': 'value'})"},
+            {"name": "update_rows", "description": "Modify existing data", "usage": "update_rows('table', {'new_data': 'value'}, {'where_col': 'value'})"},
+            {"name": "delete_rows", "description": "Remove data from tables", "usage": "delete_rows('table', {'filter_col': 'value'})"},
+            {"name": "run_select_query", "description": "Execute safe SELECT queries", "usage": "run_select_query('table', ['col1', 'col2'], {'filter': 'value'})"},
+        ],
+        "search_discovery": [
+            {"name": "search_content", "description": "Full-text search across all content", "usage": "search_content('search query', ['table1', 'table2'])"},
+            {"name": "explore_tables", "description": "Discover table structures and sample data", "usage": "explore_tables('pattern*')"},
+        ],
+        "semantic_search": [
+            {"name": "add_embeddings", "description": "Enable semantic search on tables", "usage": "add_embeddings('table', ['text_col1', 'text_col2'])"},
+            {"name": "semantic_search", "description": "Natural language content discovery", "usage": "semantic_search('find ML algorithms')"},
+            {"name": "find_related", "description": "Discover similar content", "usage": "find_related('table', row_id, 0.5)"},
+            {"name": "smart_search", "description": "Hybrid keyword + semantic search", "usage": "smart_search('search query')"},
+            {"name": "embedding_stats", "description": "Check semantic search readiness", "usage": "embedding_stats('table')"},
+        ],
+        "workflow_shortcuts": [
+            {"name": "quick_note", "description": "Rapidly store notes and observations", "usage": "quick_note('content', 'category')"},
+            {"name": "remember_decision", "description": "Store technical decisions with context", "usage": "remember_decision('decision', 'approach', 'rationale')"},
+            {"name": "store_context", "description": "Save session context and progress", "usage": "store_context('topic', 'current_state', 'next_steps')"},
+        ],
+        "analytics_insights": [
+            {"name": "memory_usage_stats", "description": "Analyze memory bank usage patterns", "usage": "memory_usage_stats()"},
+            {"name": "content_analytics", "description": "Get insights on stored content", "usage": "content_analytics('table_name')"},
+        ],
+    }
+    
+    if category not in tool_details:
+        return cast(ToolResponse, {
+            "success": False,
+            "error": f"Unknown category '{category}'. Available: {list(tool_details.keys())}",
+            "category": "VALIDATION",
+            "details": {"available_categories": list(tool_details.keys())},
+        })
+    
+    return cast(ToolResponse, {
+        "success": True,
+        "category": category,
+        "tools": tool_details[category],
+        "tool_count": len(tool_details[category]),
+    })
+
+
+# ...existing code...
 
 
 # Export the FastMCP app for use in other modules and server runners
