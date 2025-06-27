@@ -23,6 +23,60 @@ This project provides a robust, discoverable API for creating, exploring, and ma
 
 ---
 
+## Quick Start
+
+Get started with SQLite Memory Bank in your IDE in under 2 minutes:
+
+### 1. Install and Run
+```bash
+# Install uvx if you don't have it
+pip install uvx
+
+# Run SQLite Memory Bank
+uvx mcp-sqlite-memory-bank
+```
+
+### 2. Configure Your IDE
+
+**VS Code / Cursor:** Add to `.vscode/mcp.json`:
+```jsonc
+{
+  "servers": {
+    "SQLite_Memory": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--refresh", "mcp-sqlite-memory-bank"],
+      "env": {
+        "DB_PATH": "${workspaceFolder}/.vscode/project_memory.sqlite"
+      }
+    }
+  }
+}
+```
+
+**Claude Desktop:** Add to `claude_desktop_config.json`:
+```jsonc
+{
+  "mcpServers": {
+    "sqlite_memory": {
+      "command": "uvx",
+      "args": ["mcp-sqlite-memory-bank"],
+      "env": {
+        "DB_PATH": "/path/to/your/memory.db"
+      }
+    }
+  }
+}
+```
+
+### 3. Test It
+Restart your IDE and try asking your AI assistant:
+> "Create a table called 'notes' with columns 'id' (integer, primary key) and 'content' (text). Then add a note saying 'Hello SQLite Memory Bank!'"
+
+✅ You should see the AI using the SQLite Memory Bank tools to create the table and add the note!
+
+---
+
 ## Features
 
 - **Dynamic Table Management:** Create, list, describe, rename, and drop tables at runtime
@@ -64,6 +118,22 @@ Each tool validates inputs and returns consistent response formats with success/
 
 ---
 
+## Transport Modes
+
+### Stdio Mode (Default)
+- **Use case**: MCP clients (VS Code, Claude Desktop, etc.)
+- **Protocol**: JSON-RPC over stdin/stdout
+- **Command**: `uvx mcp-sqlite-memory-bank`
+- **Benefits**: Direct integration with AI assistants and IDEs
+
+### HTTP Mode (Development)
+- **Use case**: Development, testing, web APIs
+- **Protocol**: HTTP REST API
+- **Command**: `python -m mcp_sqlite_memory_bank.server main --port 8000`
+- **Benefits**: Web browser access, curl testing, API integration
+
+---
+
 ## Installation & Transport Options
 
 **Requirements:**
@@ -89,47 +159,29 @@ python -m pip install --user pipx
 pipx run mcp_sqlite_memory_bank
 ```
 
-### Option 4: Run via UVX
+### Option 4: Run via UVX (Recommended for MCP clients)
 ```bash
-# Install UVX if you don't have it
-curl -fsSL https://uvx.zip/install.sh | bash
+# Run directly with latest version (recommended)
+uvx mcp-sqlite-memory-bank
 
-# Run directly without installation
-uvx run mcp_sqlite_memory_bank
-
-# Or, specify a version
-uvx run mcp_sqlite_memory_bank@latest
+# Force refresh to get latest updates
+uvx --refresh mcp-sqlite-memory-bank
 ```
 
-### Option 5: Docker (Containerized) # Coming soon - not yet implemented
-```bash
-# Pull the image
-docker pull robertmeisner/mcp_sqlite_memory_bank:latest
-
-# Run with stdio transport (for Claude Desktop)
-docker run -i --rm \
-  --mount type=bind,src=/path/to/data/dir,dst=/data \
-  robertmeisner/mcp_sqlite_memory_bank:latest stdio
-
-# Run with HTTP transport (for API access) 
-docker run -p 8000:8000 --rm \
-  --mount type=bind,src=/path/to/data/dir,dst=/data \
-  robertmeisner/mcp_sqlite_memory_bank:latest http
-```
+---
 
 ### Transport Options
 
-SQLite Memory Bank currently supports:
+SQLite Memory Bank currently supports **stdio transport** for MCP clients:
 
-- **stdio** (default): For direct integration with Claude Desktop and other MCP clients
-
-Planned transport options (not yet implemented):
-- **http**: For web access and API usage
-- **streamable-http**: For the latest MCP specification
-
-Run with the default transport:
+**Stdio Transport (Default - for MCP clients like VS Code, Claude Desktop):**
 ```bash
-python -m mcp_sqlite_memory_bank.server
+uvx mcp-sqlite-memory-bank
+```
+
+**HTTP Transport (Development/Testing only):**
+```bash
+python -m mcp_sqlite_memory_bank.server main --host 127.0.0.1 --port 8000
 ```
 
 ---
@@ -153,11 +205,6 @@ DB_PATH=./test.db
 
 ### VS Code Integration
 
-#### Quick Install
-[Install with Python Module in VS Code](https://insiders.vscode.dev/redirect/mcp/install?name=sqlite-memory&config=%7B%22command%22%3A%22python%22%2C%22args%22%3A%5B%22-m%22%2C%22mcp_sqlite_memory_bank%22%5D%7D)
-
-[Install with Docker in VS Code](https://insiders.vscode.dev/redirect/mcp/install?name=sqlite-memory&config=%7B%22command%22%3A%22docker%22%2C%22args%22%3A%5B%22run%22%2C%22-i%22%2C%22--rm%22%2C%22--mount%22%2C%22type%3Dbind%2Csrc%3D%24%7BworkspaceFolder%7D%2Cdst%3D%2Fdata%22%2C%22robertmeisner%2Fmcp_sqlite_memory_bank%3Alatest%22%5D%7D)
-
 #### Manual Configuration
 
 Add or update `.vscode/mcp.json` in your project root:
@@ -166,21 +213,14 @@ Add or update `.vscode/mcp.json` in your project root:
   "servers": {
     "SQLite_Memory": {
       "type": "stdio",
-      "command": "python",
-      "args": ["-m", "mcp_sqlite_memory_bank.server"],
+      "command": "uvx",
+      "args": ["--refresh", "mcp-sqlite-memory-bank"],
       "env": {
-        "DB_PATH": "${workspaceFolder}/data/memory.db"
+        "DB_PATH": "${workspaceFolder}/.vscode/project_memory.sqlite"
       }
     }
   }
 }
-```
-
-## FastMCP Integration (Planned)
-
-```bash
-# Coming soon - not yet implemented
-fastmcp install mcp_sqlite_memory_bank/server.py --name "SQLite Memory Bank"
 ```
 
 ### Claude Desktop Integration
@@ -191,32 +231,10 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "sqlite_memory": {
-      "command": "python",
-      "args": ["-m", "mcp_sqlite_memory_bank.server"],
+      "command": "uvx",
+      "args": ["mcp-sqlite-memory-bank"],
       "env": {
         "DB_PATH": "/path/to/your/memory.db"
-      }
-    }
-  }
-}
-```
-
-#### Docker Option for Claude Desktop
-
-```jsonc
-{
-  "mcpServers": {
-    "sqlite_memory": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "--mount", "type=bind,src=/path/to/data/dir,dst=/data",
-        "robertmeisner/mcp_sqlite_memory_bank:latest"
-      ],
-      "env": {
-        "DB_PATH": "/data/memory.db"
       }
     }
   }
@@ -230,36 +248,28 @@ Add to your `claude_desktop_config.json`:
 
 ## Running the Server
 
-### Transport Options
+### MCP Stdio Mode (Recommended)
 
-SQLite Memory Bank currently supports stdio transport only:
+For use with VS Code, Claude Desktop, and other MCP clients:
 
-**Stdio Transport (Default - for Claude Desktop):**
+```bash
+# Run with uvx (automatically gets latest version)
+uvx mcp-sqlite-memory-bank
+
+# Force refresh to latest version
+uvx --refresh mcp-sqlite-memory-bank
+```
+
+### Development/Testing Modes
+
+**HTTP Server Mode (for development and testing):**
+```bash
+python -m mcp_sqlite_memory_bank.server main --port 8000
+```
+
+**Direct Python Module:**
 ```bash
 python -m mcp_sqlite_memory_bank.server
-```
-
-**HTTP Transport (REST API - Planned):**
-```bash
-# Coming soon - not yet implemented
-python -m mcp_sqlite_memory_bank.server http --port 8000
-```
-
-**Streamable HTTP Transport (Latest MCP Spec - Planned):**
-```bash
-# Coming soon - not yet implemented
-python -m mcp_sqlite_memory_bank.server streamable-http --port 8000
-```
-
-**With the example runner:**
-```bash
-python examples/run_server.py
-```
-
-**With FastMCP (Planned):**
-```bash
-# Coming soon - not yet implemented
-fastmcp install mcp_sqlite_memory_bank/server.py --name "SQLite Memory Bank"
 ```
 
 ---
@@ -378,6 +388,43 @@ Find all rows in the user_preferences table
 ```
 
 For a complete agent memory implementation example, see [examples/agent_memory_example.py](examples/agent_memory_example.py) and the detailed [memory usage instructions](examples/memory_instructions.md).
+
+---
+
+## Troubleshooting
+
+### Common MCP Connection Issues
+
+**Server not starting / Connection timeout:**
+```bash
+# Force refresh uvx cache and try again
+uvx --refresh mcp-sqlite-memory-bank
+
+# Check if the command works directly
+uvx mcp-sqlite-memory-bank --help
+```
+
+**VS Code: "Server exited before responding to initialize request":**
+1. Check the MCP configuration in `.vscode/mcp.json`
+2. Ensure `uvx` is installed and in your PATH
+3. Try restarting VS Code or running "MCP: Restart Server" from Command Palette
+
+**Tools not appearing in IDE:**
+1. Verify the server is running: `uvx mcp-sqlite-memory-bank` should start without errors
+2. Check that `"type": "stdio"` is set in your MCP configuration
+3. Restart your IDE or reload MCP configuration
+
+**Database permission errors:**
+- Ensure the directory for `DB_PATH` exists and is writable
+- Check file permissions on the SQLite database file
+- Use absolute paths in `DB_PATH` to avoid path resolution issues
+
+**Package not found / outdated version:**
+```bash
+# Clear uvx cache completely
+uvx cache remove mcp-sqlite-memory-bank
+uvx mcp-sqlite-memory-bank
+```
 
 ---
 
