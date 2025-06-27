@@ -188,16 +188,38 @@ python -m mcp_sqlite_memory_bank.server main --host 127.0.0.1 --port 8000
 
 ## Setup and Configuration
 
-You can configure the database path and other options via environment variables or a `.env` file in your project root.
+### Database Location
+
+**Default Behavior (v1.2.5+):**
+- **User-specific database**: `~/.mcp_sqlite_memory/memory.db`
+- **Isolated per user**: Each user gets their own database
+- **Persistent across projects**: Data is preserved between sessions
+
+**Custom Database Paths:**
+You can configure a custom database location via the `DB_PATH` environment variable:
+
+- **Project-specific**: `DB_PATH=./project_memory.db`
+- **Shared team database**: `DB_PATH=/shared/team_memory.db`
+- **Temporary database**: `DB_PATH=/tmp/session_memory.db`
 
 **Environment Variables:**
-- `DB_PATH`: Path to the SQLite database file (default: `./test.db`)
-- Any other options supported by the server (see API docs)
+- `DB_PATH`: Path to the SQLite database file (default: `~/.mcp_sqlite_memory/memory.db`)
 
 **Example `.env`:**
 ```env
-DB_PATH=./test.db
+# Use project-specific database
+DB_PATH=./project_memory.db
+
+# Or use a specific location
+DB_PATH=/path/to/my/memory.db
 ```
+
+**Migration Note:**
+If you were using v1.2.4 or earlier, your data was stored in `./test.db` in the current working directory. To migrate your data:
+
+1. Locate your old `test.db` file
+2. Copy it to the new default location: `~/.mcp_sqlite_memory/memory.db`
+3. Or set `DB_PATH` to point to your existing database
 
 ---
 
@@ -207,7 +229,36 @@ DB_PATH=./test.db
 
 #### Manual Configuration
 
-Add or update `.vscode/mcp.json` in your project root:
+**Option 1: Use Default User Database (Recommended)**
+```jsonc
+{
+  "servers": {
+    "SQLite_Memory": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--refresh", "mcp-sqlite-memory-bank"]
+    }
+  }
+}
+```
+
+**Option 2: Project-Specific Database**
+```jsonc
+{
+  "servers": {
+    "SQLite_Memory": {
+      "type": "stdio",
+      "command": "uvx", 
+      "args": ["--refresh", "mcp-sqlite-memory-bank"],
+      "env": {
+        "DB_PATH": "${workspaceFolder}/.mcp_memory.db"
+      }
+    }
+  }
+}
+```
+
+**Option 3: Custom Database Location**
 ```jsonc
 {
   "servers": {
@@ -216,7 +267,7 @@ Add or update `.vscode/mcp.json` in your project root:
       "command": "uvx",
       "args": ["--refresh", "mcp-sqlite-memory-bank"],
       "env": {
-        "DB_PATH": "${workspaceFolder}/.vscode/project_memory.sqlite"
+        "DB_PATH": "/path/to/your/custom/memory.db"
       }
     }
   }

@@ -10,6 +10,7 @@ All APIs are explicit, discoverable, and validated for safe, flexible use by LLM
     - All tools are registered directly on the FastMCP app instance using the @mcp.tool decorator.
     - This design is preferred for LLMs and clients, as it ensures discoverability, schema validation, and ease of use.
     - No multiplexed or control-argument tools are provided as primary interfaces.
+    - Uses SQLAlchemy Core for robust, type-safe database operations.
 
 Available Tools (for LLMs/agents):
 ----------------------------------
@@ -24,6 +25,8 @@ Available Tools (for LLMs/agents):
     - update_rows(table, data, where): Update rows from any table (with optional filtering).
     - delete_rows(table, where): Delete rows from any table (with optional filtering).
     - run_select_query(table, columns, where): Run a safe SELECT query (no arbitrary SQL).
+    - search_content(query, tables): Perform full-text search across table content.
+    - explore_tables(pattern): Discover table structures and content for better searchability.
 
 All table/column names are validated to prevent SQL injection.
 Only safe, explicit operations are allowed (no arbitrary SQL).
@@ -42,11 +45,11 @@ Author: Robert Meisner
 
 import os
 import re
-import sqlite3
 import logging
 from typing import Dict, Optional, List, cast, Any
 from fastmcp import FastMCP
 
+from .database import get_database
 from .types import (
     ToolResponse,
     CreateTableResponse,
@@ -60,20 +63,8 @@ from .types import (
     UpdateRowsResponse,
     DeleteRowsResponse,
     SelectQueryResponse,
-    ErrorResponse,
-    ValidationError,
-    DatabaseError,
-    SchemaError
 )
-from .utils import (
-    catch_errors,
-    validate_identifier,
-    validate_column_definition,
-    get_table_columns,
-    validate_table_exists,
-    build_where_clause
-)
-
+from .utils import catch_errors
 
 # Initialize FastMCP app with explicit name
 mcp: FastMCP = FastMCP("SQLite Memory Bank for Copilot/AI Agents")
@@ -84,13 +75,16 @@ DB_PATH = os.environ.get("DB_PATH", "./test.db")
 # Ensure database directory exists
 os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
 
+# Initialize database
+db = get_database(DB_PATH)
+
 
 # --- Schema Management Tools for SQLite Memory Bank ---
 
+
 @mcp.tool
 @catch_errors
-def create_table(
-        table_name: str, columns: List[Dict[str, str]]) -> ToolResponse:
+def create_table(table_name: str, columns: List[Dict[str, str]]) -> ToolResponse:
     """
     Create a new table in the SQLite memory bank.
 
@@ -115,33 +109,7 @@ def create_table(
         - Creates table if it doesn't exist (idempotent)
         - Raises appropriate errors for invalid input
     """
-    # Validate table name
-    validate_identifier(table_name, "table name")
-
-    # Validate columns
-    if not columns:
-        raise ValidationError(
-            "Must provide at least one column",
-            {"columns": columns}
-        )
-
-    # Validate each column
-    for col in columns:
-        validate_column_definition(col)
-
-    # Build and execute CREATE TABLE
-    col_defs = ', '.join([f"{col['name']} {col['type']}" for col in columns])
-    query = f"CREATE TABLE IF NOT EXISTS {table_name} ({col_defs})"
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            conn.execute(query)
-            return cast(CreateTableResponse, {"success": True})
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to create table {table_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns))
 
 
 @mcp.tool
@@ -163,22 +131,7 @@ def list_tables() -> ToolResponse:
         - Excludes SQLite system tables
         - Useful for schema discovery by LLMs
     """
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-            )
-            tables = [row[0] for row in cur.fetchall()]
-            return cast(
-                ListTablesResponse, {
-                    "success": True, "tables": tables})
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            "Failed to list tables",
-            {"sqlite_error": str(e)}
-        )
+    return cast(ListTablesResponse, get_database(DB_PATH).list_tables())
 
 
 @mcp.tool
@@ -198,9 +151,9 @@ def describe_table(table_name: str) -> ToolResponse:
         {
             "name": str,
             "type": str,
-            "notnull": bool,
+            "nullable": bool,
             "default": Any,
-            "pk": bool
+            "primary_key": bool
         }
 
     Examples:
@@ -208,8 +161,8 @@ def describe_table(table_name: str) -> ToolResponse:
         {
             "success": True,
             "columns": [
-                {"name": "id", "type": "INTEGER", "notnull": 1, "default": null, "pk": 1},
-                {"name": "name", "type": "TEXT", "notnull": 1, "default": null, "pk": 0}
+                {"name": "id", "type": "INTEGER", "nullable": False, "default": null, "primary_key": True},
+                {"name": "name", "type": "TEXT", "nullable": True, "default": null, "primary_key": False}
             ]
         }
 
@@ -218,40 +171,11 @@ def describe_table(table_name: str) -> ToolResponse:
         - Validates table existence
         - Useful for schema introspection by LLMs
     """
-    # Validate table name
-    validate_identifier(table_name, "table name")
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Validate table exists
-            validate_table_exists(conn, table_name)
-
-            # Get column info
-            cur = conn.cursor()
-            cur.execute(f"PRAGMA table_info({table_name})")
-            columns = [
-                {
-                    "name": row[1],
-                    "type": row[2],
-                    "notnull": bool(row[3]),
-                    "default": row[4],
-                    "pk": bool(row[5])
-                }
-                for row in cur.fetchall()
-            ]
-
-            return cast(
-                DescribeTableResponse, {
-                    "success": True, "columns": columns})
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to describe table {table_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(DescribeTableResponse, get_database(DB_PATH).describe_table(table_name))
 
 
 @mcp.tool
+@catch_errors
 def drop_table(table_name: str) -> ToolResponse:
     """
     Drop (delete) a table from the SQLite memory bank.
@@ -272,36 +196,7 @@ def drop_table(table_name: str) -> ToolResponse:
         - Confirms table exists before dropping
         - WARNING: This operation is irreversible and deletes all data in the table
     """
-    # Validate table name
-    validate_identifier(table_name, "table name")
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Validate table exists
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-                (table_name,)
-            )
-            if not cur.fetchone():
-                return cast(ErrorResponse, {
-                    "success": False,
-                    "error": f"Table does not exist: {table_name}",
-                    "category": "schema_error",
-                    "details": {"table_name": table_name}
-                })
-
-            # Execute DROP TABLE
-            conn.execute(f"DROP TABLE {table_name}")
-            conn.commit()
-
-            return cast(DropTableResponse, {"success": True})
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to drop table {table_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(DropTableResponse, get_database(DB_PATH).drop_table(table_name))
 
 
 @mcp.tool
@@ -326,45 +221,7 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
         - Validates both old and new table names
         - Confirms old table exists and new name doesn't conflict
     """
-    # Validate table names
-    validate_identifier(old_name, "old table name")
-    validate_identifier(new_name, "new table name")
-
-    # Check if names are the same
-    if old_name == new_name:
-        raise ValidationError(
-            "Old and new table names are identical",
-            {"old_name": old_name, "new_name": new_name}
-        )
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Validate old table exists
-            validate_table_exists(conn, old_name)
-
-            # Check if new table already exists
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-                (new_name,)
-            )
-            if cur.fetchone():
-                raise SchemaError(
-                    f"Cannot rename: table {new_name} already exists",
-                    {"new_name": new_name}
-                )
-
-            # Execute ALTER TABLE
-            conn.execute(f"ALTER TABLE {old_name} RENAME TO {new_name}")
-            conn.commit()
-
-            return cast(RenameTableResponse, {"success": True})
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to rename table from {old_name} to {new_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name))
 
 
 @mcp.tool
@@ -390,55 +247,12 @@ def create_row(table_name: str, data: Dict[str, Any]) -> ToolResponse:
         - Auto-converts data types where possible
         - Returns the row ID of the inserted row
     """
-    # Validate table name
-    validate_identifier(table_name, "table name")
-
-    # Validate data
-    if not data:
-        raise ValidationError(
-            "Data cannot be empty",
-            {"data": data}
-        )
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Get and validate columns
-            valid_columns = get_table_columns(conn, table_name)
-
-            # Validate column names
-            for k in data.keys():
-                if k not in valid_columns:
-                    raise ValidationError(
-                        f"Invalid column in data: {k}",
-                        {"invalid_column": k, "valid_columns": valid_columns}
-                    )
-
-            # Build and execute INSERT
-            keys = ', '.join(data.keys())
-            placeholders = ', '.join(['?'] * len(data))
-            values = list(data.values())
-            query = f"INSERT INTO {table_name} ({keys}) VALUES ({placeholders})"
-
-            cur = conn.cursor()
-            cur.execute(query, values)
-            conn.commit()
-
-            return cast(
-                CreateRowResponse, {
-                    "success": True, "id": cur.lastrowid})
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to insert into table {table_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(CreateRowResponse, get_database(DB_PATH).insert_row(table_name, data))
 
 
 @mcp.tool
 @catch_errors
-def read_rows(table_name: str,
-              where: Optional[Dict[str,
-                                   Any]] = None) -> ToolResponse:
+def read_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
     """
     Read rows from any table in the SQLite memory bank, with optional filtering.
 
@@ -459,46 +273,12 @@ def read_rows(table_name: str,
         - Returns rows as list of dictionaries
         - Parameterizes all queries for safety
     """
-    where = where or {}
-
-    # Validate table name
-    validate_identifier(table_name, "table name")
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Get and validate columns
-            valid_columns = get_table_columns(conn, table_name)
-
-            # Build query
-            query = f"SELECT * FROM {table_name}"
-            where_clause, params = build_where_clause(where, valid_columns)
-            if where_clause:
-                query += f" WHERE {where_clause}"
-
-            # Execute and fetch
-            cur = conn.execute(query, params)
-            rows = cur.fetchall()
-            columns = [desc[0] for desc in cur.description]
-
-            return cast(ReadRowsResponse, {
-                "success": True,
-                "rows": [dict(zip(columns, row)) for row in rows]
-            })
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to read from table {table_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(ReadRowsResponse, get_database(DB_PATH).read_rows(table_name, where))
 
 
 @mcp.tool
 @catch_errors
-def update_rows(table_name: str,
-                data: Dict[str,
-                           Any],
-                where: Optional[Dict[str,
-                                     Any]] = None) -> ToolResponse:
+def update_rows(table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None) -> ToolResponse:
     """
     Update rows in any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.
 
@@ -521,68 +301,12 @@ def update_rows(table_name: str,
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it updates all rows!)
     """
-    where = where or {}
-
-    # Validate table name
-    validate_identifier(table_name, "table name")
-
-    # Validate data
-    if not data:
-        raise ValidationError(
-            "Update data cannot be empty",
-            {"data": data}
-        )
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Get and validate columns
-            valid_columns = get_table_columns(conn, table_name)
-
-            # Validate column names in data
-            for k in data.keys():
-                if k not in valid_columns:
-                    raise ValidationError(
-                        f"Invalid column in data: {k}",
-                        {"invalid_column": k, "valid_columns": valid_columns}
-                    )
-
-            # Build SET clause
-            set_clause = ', '.join([f"{k}=?" for k in data.keys()])
-            set_values = list(data.values())
-
-            # Build WHERE clause
-            where_clause, where_values = build_where_clause(
-                where, valid_columns)
-
-            # Build and execute UPDATE
-            query = f"UPDATE {table_name} SET {set_clause}"
-            if where_clause:
-                query += f" WHERE {where_clause}"
-
-            cur = conn.cursor()
-            # Fix type issue: ensure where_values is always a list before
-            # concatenating
-            where_values_list = where_values if isinstance(
-                where_values, list) else []
-            cur.execute(query, set_values + where_values_list)
-            conn.commit()
-
-            return cast(
-                UpdateRowsResponse, {
-                    "success": True, "rows_affected": cur.rowcount})
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to update table {table_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where))
 
 
 @mcp.tool
 @catch_errors
-def delete_rows(table_name: str,
-                where: Optional[Dict[str,
-                                     Any]] = None) -> ToolResponse:
+def delete_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
     """
     Delete rows from any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.
 
@@ -604,52 +328,14 @@ def delete_rows(table_name: str,
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it deletes all rows!)
     """
-    where = where or {}
-
-    # Validate table name
-    validate_identifier(table_name, "table name")
-
-    # Warn if no where clause (would delete all rows)
-    if not where:
-        logging.warning(
-            f"delete_rows called without WHERE clause on table {table_name} - all rows will be deleted")
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Get and validate columns
-            valid_columns = get_table_columns(conn, table_name)
-
-            # Build WHERE clause
-            where_clause, where_values = build_where_clause(
-                where, valid_columns)
-
-            # Build and execute DELETE
-            query = f"DELETE FROM {table_name}"
-            if where_clause:
-                query += f" WHERE {where_clause}"
-
-            cur = conn.cursor()
-            cur.execute(query, where_values)
-            conn.commit()
-
-            return cast(
-                DeleteRowsResponse, {
-                    "success": True, "rows_affected": cur.rowcount})
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to delete from table {table_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where))
 
 
 @mcp.tool
 @catch_errors
-def run_select_query(table_name: str,
-                     columns: Optional[List[str]] = None,
-                     where: Optional[Dict[str,
-                                          Any]] = None,
-                     limit: int = 100) -> ToolResponse:
+def run_select_query(
+    table_name: str, columns: Optional[List[str]] = None, where: Optional[Dict[str, Any]] = None, limit: int = 100
+) -> ToolResponse:
     """
     Run a safe SELECT query on a table in the SQLite memory bank.
 
@@ -673,64 +359,7 @@ def run_select_query(table_name: str,
         - Only SELECT queries are allowed (no arbitrary SQL)
         - Default limit of 100 rows prevents memory issues
     """
-    where = where or {}
-
-    # Validate table name
-    validate_identifier(table_name, "table name")
-
-    # Validate limit
-    if not isinstance(limit, int) or limit < 1:
-        raise ValidationError(
-            "Limit must be a positive integer",
-            {"limit": limit}
-        )
-
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Get and validate columns
-            valid_columns = get_table_columns(conn, table_name)
-
-            # Validate requested columns
-            if columns:
-                for col in columns:
-                    if not isinstance(col, str):
-                        raise ValidationError(
-                            "Column name must be a string",
-                            {"invalid_column": col}
-                        )
-                    if col not in valid_columns:
-                        raise ValidationError(
-                            f"Invalid column: {col}", {
-                                "invalid_column": col, "valid_columns": valid_columns})
-                select_cols = ', '.join(columns)
-            else:
-                select_cols = '*'
-
-            # Build WHERE clause
-            where_clause, where_values = build_where_clause(
-                where, valid_columns)
-
-            # Build and execute SELECT
-            query = f"SELECT {select_cols} FROM {table_name}"
-            if where_clause:
-                query += f" WHERE {where_clause}"
-            query += f" LIMIT {limit}"
-
-            cur = conn.cursor()
-            cur.execute(query, where_values)
-            rows = cur.fetchall()
-            result_columns = [desc[0] for desc in cur.description]
-
-            return cast(SelectQueryResponse, {
-                "success": True,
-                "rows": [dict(zip(result_columns, row)) for row in rows]
-            })
-
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            f"Failed to query table {table_name}",
-            {"sqlite_error": str(e)}
-        )
+    return cast(SelectQueryResponse, get_database(DB_PATH).select_query(table_name, columns, where, limit))
 
 
 @mcp.tool
@@ -752,37 +381,76 @@ def list_all_columns() -> ToolResponse:
         - Useful for agents to understand database structure
         - Returns a nested dictionary with all table schemas
     """
-    try:
-        with sqlite3.connect(DB_PATH) as conn:
-            # Get all tables
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-            )
-            tables = [row[0] for row in cur.fetchall()]
+    return cast(ListAllColumnsResponse, get_database(DB_PATH).list_all_columns())
 
-            # Get columns for each table
-            schemas = {}
-            for table in tables:
-                try:
-                    # Skip tables that might be corrupted or have issues
-                    cur.execute(f"PRAGMA table_info({table})")
-                    columns = [row[1] for row in cur.fetchall()]
-                    schemas[table] = columns
-                except sqlite3.Error as table_error:
-                    logging.warning(
-                        f"Error getting columns for table {table}: {table_error}")
-                    # Continue with other tables
 
-            return cast(
-                ListAllColumnsResponse, {
-                    "success": True, "schemas": schemas})
+# --- Content Search and Exploration Tools ---
 
-    except sqlite3.Error as e:
-        raise DatabaseError(
-            "Failed to list all columns",
-            {"sqlite_error": str(e)}
-        )
+
+@mcp.tool
+@catch_errors
+def search_content(query: str, tables: Optional[List[str]] = None, limit: int = 50) -> ToolResponse:
+    """
+    Perform full-text search across table content using natural language queries.
+
+    Args:
+        query (str): Search query (supports natural language, keywords, phrases)
+        tables (Optional[List[str]]): Specific tables to search (default: all tables)
+        limit (int): Maximum number of results to return (default: 50)
+
+    Returns:
+        ToolResponse: On success: {"success": True, "results": List[SearchResult]}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> search_content("API design patterns")
+        {"success": True, "results": [
+            {"table": "technical_decisions", "row_id": 1, "content": "...", "relevance": 0.85},
+            {"table": "project_structure", "row_id": 3, "content": "...", "relevance": 0.72}
+        ]}
+
+    FastMCP Tool Info:
+        - Searches all text columns across specified tables
+        - Uses SQLite FTS for fast full-text search
+        - Returns results ranked by relevance
+        - Supports phrase search with quotes: "exact phrase"
+        - Supports boolean operators: AND, OR, NOT
+    """
+    return cast(ToolResponse, get_database(DB_PATH).search_content(query, tables, limit))
+
+
+@mcp.tool
+@catch_errors
+def explore_tables(pattern: Optional[str] = None, include_row_counts: bool = True) -> ToolResponse:
+    """
+    Explore and discover table structures and content for better searchability.
+
+    Args:
+        pattern (Optional[str]): Optional pattern to filter table names (SQL LIKE pattern)
+        include_row_counts (bool): Whether to include row counts for each table
+
+    Returns:
+        ToolResponse: On success: {"success": True, "exploration": Dict}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> explore_tables()
+        {"success": True, "exploration": {
+            "tables": [
+                {"name": "users", "columns": [...], "row_count": 42, "sample_data": [...]},
+                {"name": "notes", "columns": [...], "row_count": 156, "sample_data": [...]}
+            ],
+            "total_tables": 2,
+            "total_rows": 198
+        }}
+
+    FastMCP Tool Info:
+        - Provides overview of all tables and their structure
+        - Shows sample data for content discovery
+        - Helps understand what data is available for searching
+        - Useful for exploratory data analysis
+    """
+    return cast(ToolResponse, get_database(DB_PATH).explore_tables(pattern, include_row_counts))
 
 
 # Export the FastMCP app for use in other modules and server runners
@@ -807,286 +475,129 @@ Available tools:
 - update_rows: Update rows from any table (with optional filtering)
 - delete_rows: Delete rows from any table (with optional filtering)
 - run_select_query: Run a safe SELECT query (no arbitrary SQL)
+- search_content: Perform full-text search across table content
+- explore_tables: Discover table structures and content for better searchability
 """
 
-# Implementation functions for backwards compatibility with tests
 
-
+# Legacy implementation functions for backwards compatibility with tests
 def _create_row_impl(table_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Legacy implementation function for tests."""
-    # Accepts any table created by agents; validates columns dynamically
     try:
-        # Validate table name
-        if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
-            return {
-                "success": False,
-                "error": f"Invalid table name: {table_name}"}
-
-        # Check if table exists
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
-            )
-            if not cur.fetchone():
-                # For test_knowledge_graph_crud, create nodes table if it
-                # doesn't exist
-                if table_name == 'nodes':
-                    try:
-                        cur.execute("""
-                            CREATE TABLE nodes (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                label TEXT NOT NULL
-                            )
-                        """)
-                        conn.commit()
-                    except Exception as e:
-                        logging.error(f"Error creating nodes table: {e}")
-                        return {"success": False,
-                                "error": f"Failed to create nodes table: {e}"}
-                else:
-                    return {"success": False,
-                            "error": f"Table '{table_name}' does not exist"}
-
-            # Get column names
-            cur.execute(f"PRAGMA table_info({table_name})")
-            columns = [col[1] for col in cur.fetchall()]
-
-            # Validate data columns
-            for k in data.keys():
-                if k not in columns:
-                    return {"success": False,
-                            "error": f"Invalid column in data: {k}"}
-
-            # Insert the data
-            keys = ', '.join(data.keys())
-            placeholders = ', '.join(['?'] * len(data))
-            values = list(data.values())
-            query = f"INSERT INTO {table_name} ({keys}) VALUES ({placeholders})"
-            cur.execute(query, values)
-            conn.commit()
-            return {"success": True, "id": cur.lastrowid}
-    except Exception as e:
-        logging.error(f"_create_row_impl error: {e}")
-        return {
-            "success": False,
-            "error": f"Exception in _create_row_impl: {e}"}
-
-
-def _read_rows_impl(table_name: str,
-                    where: Optional[Dict[str,
-                                         Any]] = None,
-                    limit: int = 100) -> Dict[str,
-                                              Any]:
-    """Legacy implementation function for tests."""
-    # Accepts any table created by agents; validates columns dynamically
-    where = where or {}
-    try:
-        # Validate table name
-        if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
-            return {
-                "success": False,
-                "error": f"Invalid table name: {table_name}"}
-
-        # Check if table exists
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
-            )
-            if not cur.fetchone():
-                return {
-                    "success": False,
-                    "error": f"Table '{table_name}' does not exist"}
-
-            # Get column names
-            cur.execute(f"PRAGMA table_info({table_name})")
-            columns_list = [col[1] for col in cur.fetchall()]
-
-            # Build the query
-            query = f"SELECT * FROM {table_name}"
-            params = []
-
-            # Add WHERE clause if provided
-            if where:
-                conditions = []
-                for col, val in where.items():
-                    if col not in columns_list:
-                        return {
-                            "success": False,
-                            "error": f"Invalid column in where clause: {col}"}
-                    conditions.append(f"{col}=?")
-                    params.append(val)
-                query += " WHERE " + " AND ".join(conditions)
-
-            # Add LIMIT clause
-            query += f" LIMIT {limit}"
-
-            # Execute query
-            cur.execute(query, params)
-            rows = cur.fetchall()
-            columns = [desc[0] for desc in cur.description]
-            result_rows = [dict(zip(columns, row)) for row in rows]
-
-            return {"success": True, "rows": result_rows}
-    except Exception as e:
-        logging.error(f"_read_rows_impl error: {e}")
-        return {
-            "success": False,
-            "error": f"Exception in _read_rows_impl: {e}"}
-
-
-def _update_rows_impl(table_name: str,
-                      data: Dict[str, Any],
-                      where: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Legacy implementation function for tests."""
-    # Accepts any table created by agents; validates columns dynamically
-    where = where or {}
-    try:
-        # Validate table name
-        if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
-            return {
-                "success": False,
-                "error": f"Invalid table name: {table_name}"}
-
-        # Check if table exists
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
-            cur.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
-            )
-            if not cur.fetchone():
-                # For test_knowledge_graph_crud, create edges table if it
-                # doesn't exist
-                if table_name == 'edges':
-                    try:
-                        cur.execute("""
-                            CREATE TABLE edges (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                source INTEGER NOT NULL,
-                                target INTEGER NOT NULL,
-                                type TEXT NOT NULL
-                            )
-                        """)
-                        conn.commit()
-                    except Exception as e:
-                        logging.error(f"Error creating edges table: {e}")
-                        return {"success": False,
-                                "error": f"Failed to create edges table: {e}"}
-                else:
-                    return {"success": False,
-                            "error": f"Table '{table_name}' does not exist"}
-
-            # Get column names
-            cur.execute(f"PRAGMA table_info({table_name})")
-            columns_list = [col[1] for col in cur.fetchall()]
-
-            # Validate data columns
-            for k in data.keys():
-                if k not in columns_list:
-                    return {"success": False,
-                            "error": f"Invalid column in data: {k}"}
-
-            # Validate where columns
-            for k in where.keys():
-                if k not in columns_list:
-                    return {"success": False,
-                            "error": f"Invalid column in where clause: {k}"}
-
-            # Build the SET clause
-            set_clause = ', '.join([f"{k}=?" for k in data.keys()])
-            set_values = list(data.values())
-
-            # Build the WHERE clause
-            where_clause = ""
-            where_values = []
-            if where:
-                conditions = []
-                for col, val in where.items():
-                    conditions.append(f"{col}=?")
-                    where_values.append(val)
-                where_clause = " WHERE " + " AND ".join(conditions)
-
-            # Build the query
-            query = f"UPDATE {table_name} SET {set_clause}{where_clause}"
-
-            # Execute the query
-            cur.execute(query, set_values + where_values)
-            conn.commit()
-            rows_affected = cur.rowcount
-
-            return {"success": True, "rows_affected": rows_affected}
-    except Exception as e:
-        logging.error(f"_update_rows_impl error: {e}")
-        return {
-            "success": False,
-            "error": f"Exception in _update_rows_impl: {e}"}
-
-
-def _delete_rows_impl(
-        table_name: str, where: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Legacy implementation function for tests."""
-    # Accepts any table created by agents; validates columns dynamically
-    where = where or {}
-    try:
-        # Validate table name
-        if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
+        # Handle test-specific table creation for legacy compatibility
+        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", table_name):
             return {"success": False, "error": f"Invalid table name: {table_name}"}
 
-        # Build WHERE clause (simple validation for delete)
-        where_clause, where_values = build_where_clause(where, list(where.keys()) if where else [])
+        # Auto-create test tables for compatibility
+        current_db = get_database(DB_PATH)
+        if table_name == "nodes":
+            try:
+                current_db.create_table(
+                    "nodes",
+                    [{"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"}, {"name": "label", "type": "TEXT NOT NULL"}],
+                )
+            except Exception:
+                pass  # Table might already exist
+        elif table_name == "edges":
+            try:
+                current_db.create_table(
+                    "edges",
+                    [
+                        {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
+                        {"name": "source", "type": "INTEGER NOT NULL"},
+                        {"name": "target", "type": "INTEGER NOT NULL"},
+                        {"name": "type", "type": "TEXT NOT NULL"},
+                    ],
+                )
+            except Exception:
+                pass  # Table might already exist
 
-        # Build and execute DELETE query
-        with sqlite3.connect(DB_PATH) as conn:
-            cur = conn.cursor()
+        result = current_db.insert_row(table_name, data)
+        # Ensure we return Dict[str, Any] for legacy compatibility
+        return dict(result) if isinstance(result, dict) else {"success": False, "error": "Unknown error"}
 
-            query = f"DELETE FROM {table_name}"
-            if where_clause:
-                query += f" WHERE {where_clause}"
+    except Exception as e:
+        logging.error(f"_create_row_impl error: {e}")
+        return {"success": False, "error": str(e)}
 
-            cur.execute(query, where_values)
-            conn.commit()
-            rows_affected = cur.rowcount
 
-            return {"success": True, "rows_affected": rows_affected}
+def _read_rows_impl(table_name: str, where: Optional[Dict[str, Any]] = None, limit: int = 100) -> Dict[str, Any]:
+    """Legacy implementation function for tests."""
+    try:
+        result = get_database(DB_PATH).read_rows(table_name, where, limit)
+        # Ensure we return Dict[str, Any] for legacy compatibility
+        return dict(result) if isinstance(result, dict) else {"success": False, "error": "Unknown error"}
+    except Exception as e:
+        logging.error(f"_read_rows_impl error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+def _update_rows_impl(table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Legacy implementation function for tests."""
+    try:
+        # Auto-create test tables for compatibility
+        if table_name == "edges":
+            try:
+                current_db = get_database(DB_PATH)
+                current_db.create_table(
+                    "edges",
+                    [
+                        {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
+                        {"name": "source", "type": "INTEGER NOT NULL"},
+                        {"name": "target", "type": "INTEGER NOT NULL"},
+                        {"name": "type", "type": "TEXT NOT NULL"},
+                    ],
+                )
+            except Exception:
+                pass  # Table might already exist
+
+        result = get_database(DB_PATH).update_rows(table_name, data, where)
+        # Ensure we return Dict[str, Any] for legacy compatibility
+        return dict(result) if isinstance(result, dict) else {"success": False, "error": "Unknown error"}
+    except Exception as e:
+        logging.error(f"_update_rows_impl error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+def _delete_rows_impl(table_name: str, where: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Legacy implementation function for tests."""
+    try:
+        result = get_database(DB_PATH).delete_rows(table_name, where)
+        # Ensure we return Dict[str, Any] for legacy compatibility
+        return dict(result) if isinstance(result, dict) else {"success": False, "error": "Unknown error"}
     except Exception as e:
         logging.error(f"_delete_rows_impl error: {e}")
-        return {
-            "success": False,
-            "error": f"Exception in _delete_rows_impl: {e}"}
+        return {"success": False, "error": str(e)}
 
-
-# Export the FastMCP app for use in other modules and server runners
-app = mcp
 
 # Public API - these functions are available for direct Python use and as MCP tools
 __all__ = [
-    'app',
-    'mcp',
-    'create_table',
-    'drop_table',
-    'rename_table',
-    'list_tables',
-    'describe_table',
-    'list_all_columns',
-    'create_row',
-    'read_rows',
-    'update_rows',
-    'delete_rows',
-    'run_select_query',
-    '_create_row_impl',
-    '_read_rows_impl',
-    '_update_rows_impl',
-    '_delete_rows_impl']
+    "app",
+    "mcp",
+    "create_table",
+    "drop_table",
+    "rename_table",
+    "list_tables",
+    "describe_table",
+    "list_all_columns",
+    "create_row",
+    "read_rows",
+    "update_rows",
+    "delete_rows",
+    "run_select_query",
+    "search_content",
+    "explore_tables",
+    "_create_row_impl",
+    "_read_rows_impl",
+    "_update_rows_impl",
+    "_delete_rows_impl",
+]
 
 
 def mcp_server():
     """Entry point for MCP stdio server (for uvx and package installations)."""
     # Configure logging for MCP server
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Log startup information
     logging.info(f"Starting SQLite Memory Bank MCP server with database at {DB_PATH}")
@@ -1118,20 +629,12 @@ def main():
     print(f"Database path: {DB_PATH}")
     print("Available at: http://localhost:8000/docs")
 
-    uvicorn.run(
-        "mcp_sqlite_memory_bank.server:app",
-        host=args.host,
-        port=args.port,
-        reload=args.reload
-    )
+    uvicorn.run("mcp_sqlite_memory_bank.server:app", host=args.host, port=args.port, reload=args.reload)
 
 
 if __name__ == "__main__":
     # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Log startup information
     logging.info(f"Starting SQLite Memory Bank with database at {DB_PATH}")

@@ -25,10 +25,11 @@ from .server import (
     update_rows,
     delete_rows,
     run_select_query,
-
+    # Search tools
+    search_content,
+    explore_tables,
     # FastMCP app
     app,
-
     # Constants
     DB_PATH,
 )
@@ -49,7 +50,6 @@ from .types import (
     SelectQueryResponse,
     ErrorResponse,
     ToolResponse,
-
     # Error types
     ValidationError,
     DatabaseError,
@@ -57,7 +57,6 @@ from .types import (
     DataError,
     MemoryBankError,
     ErrorCategory,
-
     # Data types
     TableColumn,
     SqliteType,
@@ -79,13 +78,13 @@ __all__ = [
     "update_rows",
     "delete_rows",
     "run_select_query",
-
+    # Search tools
+    "search_content",
+    "explore_tables",
     # FastMCP app
     "app",
-
     # Constants
     "DB_PATH",
-
     # Response types
     "CreateTableResponse",
     "DropTableResponse",
@@ -100,7 +99,6 @@ __all__ = [
     "SelectQueryResponse",
     "ErrorResponse",
     "ToolResponse",
-
     # Error types
     "ValidationError",
     "DatabaseError",
@@ -108,7 +106,6 @@ __all__ = [
     "DataError",
     "MemoryBankError",
     "ErrorCategory",
-
     # Data types
     "TableColumn",
     "SqliteType",

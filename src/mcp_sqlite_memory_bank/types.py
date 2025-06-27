@@ -12,17 +12,19 @@ from enum import Enum, auto
 
 class SqliteType(str, Enum):
     """Valid SQLite column types."""
+
     TEXT = "TEXT"
     INTEGER = "INTEGER"
     REAL = "REAL"
     BLOB = "BLOB"
     NULL = "NULL"
     TIMESTAMP = "TIMESTAMP"  # Common extension
-    BOOLEAN = "BOOLEAN"      # Common extension
+    BOOLEAN = "BOOLEAN"  # Common extension
 
 
 class ErrorCategory(Enum):
     """Categories for SQLite Memory Bank errors."""
+
     VALIDATION = auto()
     DATABASE = auto()
     SCHEMA = auto()
@@ -33,18 +35,14 @@ class ErrorCategory(Enum):
 @dataclass
 class MemoryBankError(Exception):
     """Base class for SQLite Memory Bank errors."""
+
     message: str
     category: ErrorCategory
     details: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert error to a dict format suitable for FastMCP responses."""
-        return {
-            "success": False,
-            "error": self.message,
-            "category": self.category.name,
-            "details": self.details or {}
-        }
+        return {"success": False, "error": self.message, "category": self.category.name, "details": self.details or {}}
 
 
 class ValidationError(MemoryBankError):
@@ -77,6 +75,7 @@ class DataError(MemoryBankError):
 
 class TableColumn(TypedDict):
     """Structure for table column definitions."""
+
     name: str
     type: str
     notnull: bool
@@ -86,11 +85,13 @@ class TableColumn(TypedDict):
 
 class SuccessResponse(TypedDict):
     """Base structure for successful responses."""
+
     success: Literal[True]
 
 
 class ErrorResponse(TypedDict):
     """Structure for error responses."""
+
     success: Literal[False]
     error: str
     category: str
@@ -99,57 +100,83 @@ class ErrorResponse(TypedDict):
 
 class CreateTableResponse(SuccessResponse):
     """Response for create_table tool."""
+
     pass
 
 
 class DropTableResponse(SuccessResponse):
     """Response for drop_table tool."""
+
     pass
 
 
 class RenameTableResponse(SuccessResponse):
     """Response for rename_table tool."""
+
     pass
 
 
 class ListTablesResponse(SuccessResponse):
     """Response for list_tables tool."""
+
     tables: List[str]
 
 
 class DescribeTableResponse(SuccessResponse):
     """Response for describe_table tool."""
-    columns: List[TableColumn]
+
+    columns: List[Dict[str, Any]]
 
 
 class ListAllColumnsResponse(SuccessResponse):
     """Response for list_all_columns tool."""
+
     schemas: Dict[str, List[str]]
 
 
 class CreateRowResponse(SuccessResponse):
     """Response for create_row tool."""
+
     id: int
 
 
 class ReadRowsResponse(SuccessResponse):
     """Response for read_rows tool."""
+
     rows: List[Dict[str, Any]]
 
 
 class UpdateRowsResponse(SuccessResponse):
     """Response for update_rows tool."""
+
     rows_affected: int
 
 
 class DeleteRowsResponse(SuccessResponse):
     """Response for delete_rows tool."""
+
     rows_affected: int
 
 
 class SelectQueryResponse(SuccessResponse):
     """Response for run_select_query tool."""
+
     rows: List[Dict[str, Any]]
+
+
+class SearchContentResponse(SuccessResponse):
+    """Response for search_content tool."""
+
+    results: List[Dict[str, Any]]
+    query: str
+    tables_searched: List[str]
+    total_results: int
+
+
+class ExploreTablesResponse(SuccessResponse):
+    """Response for explore_tables tool."""
+
+    exploration: Dict[str, Any]
 
 
 # Type alias for all possible responses
@@ -165,5 +192,7 @@ ToolResponse = Union[
     UpdateRowsResponse,
     DeleteRowsResponse,
     SelectQueryResponse,
-    ErrorResponse
+    SearchContentResponse,
+    ExploreTablesResponse,
+    ErrorResponse,
 ]
