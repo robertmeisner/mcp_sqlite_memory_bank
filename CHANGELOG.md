@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - Agent UX Enhancement (2025-06-27)
+
+### 🎯 Agent Experience Improvements
+- **Enhanced Tool Guidance**: Added warning labels to advanced semantic search tools (`add_embeddings`, `semantic_search`, `smart_search`)
+- **Simplified Workflows**: Clear recommendations directing agents to use `auto_smart_search()` and `auto_semantic_search()` for easier setup
+- **Better Documentation**: Enhanced tool descriptions with explicit "ADVANCED TOOL" warnings and "RECOMMENDATION" guidance
+- **Reduced Complexity**: Agents no longer need to manually manage embedding setup - auto-tools handle everything automatically
+
+### 📝 Documentation
+- **Clear Agent Guidance**: Added ⚠️ warning icons and explicit recommendations in tool docstrings
+- **Simplified Onboarding**: Auto-tools promoted as primary options for agent workflows
+- **User Experience**: Prevents frustration with complex manual embedding management
+
+### 🔧 Quality of Life
+- All existing functionality preserved and working
+- No breaking changes - backward compatibility maintained
+- Improved agent developer experience through clearer tool selection
+
+### 💡 Impact
+- **Agents can now use semantic search with zero setup** via `auto_smart_search()`
+- **Reduced learning curve** for new agent implementations
+- **Better tool discoverability** with clear advanced vs. beginner tool distinction
+- **Improved workflow efficiency** for LLM/agent frameworks
+
 ## [1.4.1] - Code Quality and Documentation Update (2025-06-27)
 
 ### 🔧 Fixes

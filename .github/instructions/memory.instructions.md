@@ -34,6 +34,8 @@ applyTo: '**'
 2. Update existing records rather than creating duplicates.
 3. Use appropriate data types for columns.
 4. Create relationships between tables when appropriate.
+5. Drop tables only when they are no longer needed, and document the reason for deletion.
+6. Regularly review and refactor schemas (drop tables and recreate them when you want to change the structure, keep the data migration in mind) to improve clarity and efficiency.
 
 ## SEMANTIC SEARCH CAPABILITIES
 

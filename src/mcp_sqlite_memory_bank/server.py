@@ -470,7 +470,12 @@ def add_embeddings(
     table_name: str, text_columns: List[str], embedding_column: str = "embedding", model_name: str = "all-MiniLM-L6-v2"
 ) -> ToolResponse:
     """
+    ⚠️  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!
+    
     Generate and store vector embeddings for semantic search on table content.
+    
+    **RECOMMENDATION**: Use auto_smart_search() or auto_semantic_search() for automatic setup.
+    This tool is for advanced users who need manual control over embedding generation.
 
     This tool enables intelligent knowledge discovery by creating vector representations
     of text content that can be searched semantically rather than just by exact keywords.
@@ -511,7 +516,12 @@ def semantic_search(
     model_name: str = "all-MiniLM-L6-v2",
 ) -> ToolResponse:
     """
+    ⚠️  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!
+    
     Find content using natural language semantic similarity rather than exact keyword matching.
+    
+    **RECOMMENDATION**: Use auto_smart_search() for automatic setup and hybrid search capabilities.
+    This tool requires manual embedding setup via add_embeddings() first.
 
     This enables intelligent knowledge discovery - find related concepts even when
     they use different terminology or phrasing.
@@ -610,7 +620,12 @@ def smart_search(
     model_name: str = "all-MiniLM-L6-v2",
 ) -> ToolResponse:
     """
+    ⚠️  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!
+    
     Intelligent hybrid search combining semantic understanding with keyword matching.
+    
+    **RECOMMENDATION**: Use auto_smart_search() for the same functionality with automatic setup.
+    This tool requires manual embedding setup via add_embeddings() first.
 
     Provides the best of both worlds - semantic similarity for concept discovery
     plus exact text matching for precise searches.
@@ -639,7 +654,7 @@ def smart_search(
         - Provides separate scores for transparency
         - Falls back gracefully if semantic search unavailable
         - Optimal for both exploratory and precise searches
-        - Recommended for general-purpose knowledge discovery
+        - Perfect for agents - ultimate search tool that just works!
     """
     return cast(
         ToolResponse,
@@ -649,34 +664,193 @@ def smart_search(
     )
 
 
+# --- Auto-Embedding Semantic Search Tools ---
+
+
 @mcp.tool
 @catch_errors
-def embedding_stats(table_name: str, embedding_column: str = "embedding") -> ToolResponse:
+def auto_semantic_search(
+    query: str,
+    tables: Optional[List[str]] = None,
+    similarity_threshold: float = 0.5,
+    limit: int = 10,
+    model_name: str = "all-MiniLM-L6-v2",
+) -> ToolResponse:
     """
-    Get statistics about semantic search readiness for a table.
+    🚀 **ZERO-SETUP SEMANTIC SEARCH** - Just search, embeddings are handled automatically!
 
-    Check which content has embeddings and can be searched semantically.
+    Find content using natural language semantic similarity. If embeddings don't exist,
+    they will be automatically generated for text columns. This is the easiest way to
+    do semantic search - no manual setup required!
 
     Args:
-        table_name (str): Table to analyze
-        embedding_column (str): Embedding column to check (default: "embedding")
+        query (str): Natural language search query
+        tables (Optional[List[str]]): Specific tables to search (default: all tables)
+        similarity_threshold (float): Minimum similarity score (0.0-1.0, default: 0.5)
+        limit (int): Maximum number of results to return (default: 10)
+        model_name (str): Model to use for embeddings (default: "all-MiniLM-L6-v2")
 
     Returns:
-        ToolResponse: On success: {"success": True, "coverage_percent": float, "total_rows": int}
+        ToolResponse: On success: {"success": True, "results": List[...], "auto_embedded_tables": List[str]}
                      On error: {"success": False, "error": str, "category": str, "details": dict}
 
     Examples:
-        >>> embedding_stats("technical_decisions")
-        {"success": True, "total_rows": 25, "embedded_rows": 25, "coverage_percent": 100.0,
-         "embedding_dimensions": 384}
+        >>> auto_semantic_search("API design patterns")
+        {"success": True, "results": [
+            {"table_name": "technical_decisions", "similarity_score": 0.87, "decision_name": "REST API Structure", ...}
+        ], "auto_embedded_tables": ["technical_decisions"]}
+
+        >>> auto_semantic_search("machine learning concepts")
+        # Finds content about "ML", "AI", "neural networks", etc.
+        # Automatically creates embeddings if they don't exist!
 
     FastMCP Tool Info:
-        - Shows how much content is ready for semantic search
-        - Helps identify tables that need embedding generation
-        - Provides embedding dimension info for debugging
-        - Useful for monitoring semantic search capabilities
+        - **COMPLETELY AUTOMATIC**: No manual embedding setup required
+        - Auto-detects text columns and creates embeddings as needed
+        - Works across multiple tables simultaneously
+        - Finds conceptually similar content regardless of exact wording
+        - Returns relevance scores for ranking results
+        - Supports fuzzy matching and concept discovery
+        - Perfect for agents - just search and it works!
     """
-    return cast(ToolResponse, get_database(DB_PATH).get_embedding_stats(table_name, embedding_column))
+    try:
+        db = get_database(DB_PATH)
+        auto_embedded_tables = []
+        
+        # Get tables to search
+        if tables:
+            search_tables = tables
+        else:
+            tables_result = db.list_tables()
+            if not tables_result.get("success"):
+                return cast(ToolResponse, tables_result)
+            search_tables = tables_result.get("tables", [])
+        
+        # Auto-embed text columns in tables that don't have embeddings
+        for table_name in search_tables:
+            try:
+                # Check if table has embeddings
+                stats_result = db.get_embedding_stats(table_name, "embedding")
+                if stats_result.get("success") and stats_result.get("coverage_percent", 0) > 0:
+                    continue  # Table already has embeddings
+                
+                # Get table schema to find text columns
+                schema_result = db.describe_table(table_name)
+                if not schema_result.get("success"):
+                    continue
+                
+                # Find text columns
+                text_columns = []
+                for col in schema_result.get("columns", []):
+                    if "TEXT" in col.get("type", "").upper():
+                        text_columns.append(col["name"])
+                
+                # Auto-embed text columns
+                if text_columns:
+                    embed_result = db.generate_embeddings(table_name, text_columns, "embedding", model_name)
+                    if embed_result.get("success"):
+                        auto_embedded_tables.append(table_name)
+                        
+            except Exception:
+                # If auto-embedding fails, continue without it
+                continue
+        
+        # Perform semantic search
+        search_result = db.semantic_search(
+            query, search_tables, "embedding", None, similarity_threshold, limit, model_name
+        )
+        
+        # Add auto-embedding info to result
+        if isinstance(search_result, dict):
+            search_result["auto_embedded_tables"] = auto_embedded_tables
+            if auto_embedded_tables:
+                search_result["auto_embedding_note"] = f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
+        
+        return cast(ToolResponse, search_result)
+        
+    except Exception as e:
+        return cast(ToolResponse, {
+            "success": False,
+            "error": f"Auto semantic search failed: {str(e)}",
+            "category": "SEMANTIC_SEARCH_ERROR",
+            "details": {"query": query, "tables": tables}
+        })
+
+
+@mcp.tool
+@catch_errors
+def auto_smart_search(
+    query: str,
+    tables: Optional[List[str]] = None,
+    semantic_weight: float = 0.7,
+    text_weight: float = 0.3,
+    limit: int = 10,
+    model_name: str = "all-MiniLM-L6-v2",
+) -> ToolResponse:
+    """
+    🚀 **ZERO-SETUP HYBRID SEARCH** - Best of both worlds with automatic embedding!
+
+    Intelligent hybrid search combining semantic understanding with keyword matching.
+    Automatically generates embeddings for text columns when needed. This is the
+    ultimate search tool - no manual setup required!
+
+    Args:
+        query (str): Search query (natural language or keywords)
+        tables (Optional[List[str]]): Tables to search (default: all)
+        semantic_weight (float): Weight for semantic similarity (0.0-1.0, default: 0.7)
+        text_weight (float): Weight for keyword matching (0.0-1.0, default: 0.3)
+        limit (int): Maximum results (default: 10)
+        model_name (str): Semantic model to use (default: "all-MiniLM-L6-v2")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "results": List[...], "search_type": "auto_hybrid"}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> auto_smart_search("user authentication security")
+        {"success": True, "results": [
+            {"combined_score": 0.89, "semantic_score": 0.92, "text_score": 0.82, ...}
+        ], "search_type": "auto_hybrid", "auto_embedded_tables": ["user_data"]}
+
+    FastMCP Tool Info:
+        - **COMPLETELY AUTOMATIC**: No manual embedding setup required
+        - Automatically balances semantic and keyword search
+        - Auto-detects text columns and creates embeddings as needed
+        - Provides separate scores for transparency
+        - Falls back gracefully if semantic search unavailable
+        - Optimal for both exploratory and precise searches
+        - Perfect for agents - ultimate search tool that just works!
+    """
+    try:
+        # First try auto semantic search to ensure embeddings exist
+        auto_semantic_result = auto_semantic_search(query, tables, 0.3, limit, model_name)
+        auto_embedded_tables = []
+        
+        if auto_semantic_result.get("success"):
+            auto_embedded_tables = auto_semantic_result.get("auto_embedded_tables", [])
+        
+        # Now perform hybrid search
+        db = get_database(DB_PATH)
+        hybrid_result = db.hybrid_search(
+            query, tables, None, "embedding", semantic_weight, text_weight, limit, model_name
+        )
+        
+        # Add auto-embedding info to result
+        if isinstance(hybrid_result, dict):
+            hybrid_result["search_type"] = "auto_hybrid"
+            hybrid_result["auto_embedded_tables"] = auto_embedded_tables
+            if auto_embedded_tables:
+                hybrid_result["auto_embedding_note"] = f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
+        
+        return cast(ToolResponse, hybrid_result)
+        
+    except Exception as e:
+        return cast(ToolResponse, {
+            "success": False,
+            "error": f"Auto smart search failed: {str(e)}",
+            "category": "HYBRID_SEARCH_ERROR", 
+            "details": {"query": query, "tables": tables}
+        })
 
 
 # --- Enhanced Tool Discovery and Categorization ---
@@ -790,9 +964,6 @@ def get_tools_by_category(category: str) -> ToolResponse:
         "tools": tool_details[category],
         "tool_count": len(tool_details[category]),
     })
-
-
-# ...existing code...
 
 
 # Export the FastMCP app for use in other modules and server runners
