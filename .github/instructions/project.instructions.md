@@ -5,28 +5,7 @@ applyTo: '**'
 # SQLite Memory Bank Project Instructions
 
 ## PROJECT OVERVIEW
-This project provides a dynamic, agent-friendly SQLite memory bank implemented as a FastMCP serv6. When6. When I say "DEPLOY!", follow the proper Git workflow:
-    1. **Ensure on main branch**: `git checkout main && git pull origin main`
-    2. **Review CHANGELOG.md**: Verify all changes documented
-    3. **Quality Checks**: Run `flake8`, `mypy`, Pylance - fix all errors
-    4. **Test Suite**: Run full test suite - all tests must pass
-    5. **Version Bump**: Update version in `pyproject.toml`, `__init__.py` if needed
-    6. **Documentation**: Update `README.md`, `docs/`, instruction files
-    7. **Clean Working Directory**: `git status` should show clean state
-    8. **Create Release Branch**: `git checkout -b release/v1.x.x`
-    9. **Commit Release**: `git commit -m "chore: prepare release v1.x.x"`
-    10. **Push Release Branch**: `git push origin release/v1.x.x`
-    11. **Create Release PR**: Merge release branch to main via PR
-    12. **Tag Version**: `git tag v1.x.x && git push --tags`
-    13. **Deploy to PyPI**: `twine upload dist/*`
-    14. **GitHub Release**: `gh release create v1.x.x --latest`LOY!", perform these steps in order:
-    1. Review CHANGELOG.md
-    2. Bump the version if needed
-    3. Update the documentation
-    4. Commit all changes, Tag with the version number
-    5. Push to GitHub
-    6. Publish the package to PyPI
-    7. Create a new GitHub release using gh cli (keep release notes concise to avoid editor prompts)codebase is designed for LLM and agent frameworks with explicit, discoverable APIs.
+This project provides a dynamic, agent-friendly SQLite memory bank implemented as a FastMCP server. The codebase is designed for LLM and agent frameworks with explicit, discoverable APIs.
 
 ## PROJECT-SPECIFIC ARCHITECTURE
 
@@ -207,18 +186,34 @@ def tool_function(params):
 2. Verify no new type errors
 3. Update memory bank with new context
 4. Validate error handling works correctly
-5. Always before build and Fix linting issues with `flake8` and type issues with mypy and pylance errors
-6. When I say “DEPLOY!”, perform these steps in order:
-    1. Review `CHANGELOG.md` for recent updates and ensure all changes are documented.
-    2. Run `flake8`, `mypy`, and Pylance to fix all linting and type errors.
-    3. Run the full test suite to ensure all tests pass.
-    4. Bump the version in all relevant files (e.g., `pyproject.toml`, `__init__.py`) if needed.
-    5. Update documentation (`README.md`, `docs/`, and instruction files) to reflect the latest changes.
-    6. Run `git status` to verify a clean working directory.
-    7. Commit all changes and tag the commit with the new version number (e.g., `v1.2.3`).
-    8. Push commits and tags to GitHub (`git push && git push --tags`).
-    9. Publish the package to PyPI (e.g., `twine upload dist/*`).
-    10. Create a new GitHub release using the `gh` CLI, keeping release notes concise to avoid triggering the interactive editor.
+5. Fix linting issues with `flake8` and type issues with mypy and pylance errors
+6. When I say "DEPLOY!", follow the professional Git workflow deployment process outlined in the DEPLOYMENT WORKFLOW section below.
+
+## DEPLOYMENT WORKFLOW
+
+When I say **"DEPLOY!"**, follow these steps in order:
+
+### Pre-Deployment Checklist
+1. **Review CHANGELOG.md**: Verify all changes are documented
+2. **Quality Checks**: Run `flake8`, `mypy`, Pylance - fix all errors
+3. **Test Suite**: Run full test suite - all tests must pass
+4. **Version Bump**: Update version in `pyproject.toml`, `__init__.py` if needed
+5. **Documentation**: Update `README.md`, `docs/`, instruction files
+6. **Clean Working Directory**: `git status` should show clean state
+
+### Release Process (with Professional Git Workflow)
+1. **Ensure on main branch**: `git checkout main && git pull origin main`
+2. **Create Release Branch**: `git checkout -b release/v1.x.x`
+3. **Commit Release**: `git commit -m "chore: prepare release v1.x.x"`
+4. **Push Release Branch**: `git push origin release/v1.x.x`
+5. **Create Release PR**: Merge release branch to main via PR
+6. **Tag Version**: `git tag v1.x.x && git push --tags`
+7. **Deploy to PyPI**: `twine upload dist/*`
+8. **GitHub Release**: `gh release create v1.x.x --latest`
+
+### Release Notes Best Practices
+- Keep `--notes` parameter concise to avoid triggering interactive editor
+- Complex release notes should be added via GitHub web interface if needed
 
 ## PROJECT-SPECIFIC COMMANDS
 
@@ -238,15 +233,6 @@ python examples/client_example.py           # Client usage demo
 ```bash
 # Pylance/mypy will run automatically in VS Code
 # Fix all type errors before committing
-```
-
-### GitHub Release Creation
-```bash
-# Use simple, concise release notes to avoid CLI hanging
-gh release create v1.5.0 --title "Version Title" --notes "Brief description with link to full details" --latest
-
-# 🎯 Key Lesson Learned: Keep --notes parameter concise to avoid triggering interactive editor
-# Complex release notes should be added via GitHub web interface if needed
 ```
 
 ## GIT WORKFLOW & BRANCHING STRATEGY
@@ -368,4 +354,3 @@ git push origin --delete feature/your-feature-name  # Delete remote branch
 - **Local Testing**: Feature branches allow experimental work
 - **Clean History**: Main branch has clean, logical commit history
 - **Future Collaboration**: Ready for team development
-```

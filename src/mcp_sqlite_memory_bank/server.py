@@ -409,6 +409,13 @@ from .tools.search import (
     embedding_stats as embedding_stats_impl,
 )
 
+# Import the implementation functions from discovery module  
+from .tools.discovery import (
+    intelligent_discovery as intelligent_discovery_impl,
+    discovery_templates as discovery_templates_impl,
+    discover_relationships as discover_relationships_impl,
+)
+
 # --- MCP Tool Definitions (Required in main server.py for FastMCP) ---
 
 @mcp.tool
@@ -799,6 +806,147 @@ def find_related(
     return _find_related_impl(table_name, row_id, similarity_threshold, limit, model_name)
 
 
+# --- Advanced Discovery Tools for SQLite Memory Bank ---
+
+@mcp.tool
+@catch_errors
+def intelligent_discovery(
+    discovery_goal: str = "understand_content",
+    focus_area: Optional[str] = None,
+    depth: str = "moderate",
+    agent_id: Optional[str] = None,
+) -> ToolResponse:
+    """
+    🧠 **INTELLIGENT DISCOVERY** - AI-guided exploration of your memory bank!
+
+    Orchestrates multiple discovery tools based on your exploration goals.
+    Provides step-by-step guidance and actionable insights tailored to your needs.
+
+    Args:
+        discovery_goal (str): What you want to achieve
+            - "understand_content": Learn what data is available and how it's organized
+            - "find_patterns": Discover themes, relationships, and content patterns  
+            - "explore_structure": Understand database schema and organization
+            - "assess_quality": Evaluate content quality and completeness
+            - "prepare_search": Get ready for effective content searching
+        focus_area (Optional[str]): Specific table or topic to focus on (default: all)
+        depth (str): How thorough the discovery should be
+            - "quick": Fast overview with key insights
+            - "moderate": Balanced analysis with actionable recommendations  
+            - "comprehensive": Deep dive with detailed analysis
+        agent_id (Optional[str]): Agent identifier for learning discovery patterns
+
+    Returns:
+        ToolResponse: On success: {"success": True, "discovery": Dict, "next_steps": List}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> intelligent_discovery("understand_content")
+        {"success": True, "discovery": {
+            "overview": {"total_tables": 5, "total_rows": 234},
+            "content_summary": {...},
+            "recommendations": [...]
+        }, "next_steps": ["Use auto_smart_search() for specific queries"]}
+
+    FastMCP Tool Info:
+        - **COMPLETELY AUTOMATED**: No manual tool chaining required
+        - **GOAL-ORIENTED**: Tailored discovery based on your specific objectives
+        - **ACTIONABLE INSIGHTS**: Always includes concrete next steps
+        - **LEARNING**: Improves recommendations based on usage patterns
+        - **PERFECT FOR AGENTS**: Single tool that orchestrates complex discovery workflows
+    """
+    return intelligent_discovery_impl(discovery_goal, focus_area, depth, agent_id)
+
+
+@mcp.tool
+@catch_errors
+def discovery_templates(
+    template_type: str = "first_time_exploration",
+    customize_for: Optional[str] = None
+) -> ToolResponse:
+    """
+    📋 **DISCOVERY TEMPLATES** - Pre-built exploration workflows for common scenarios!
+
+    Provides step-by-step discovery templates optimized for specific agent use cases.
+    Each template includes the exact sequence of tools to call and what to look for.
+
+    Args:
+        template_type (str): Type of discovery template to provide
+            - "first_time_exploration": Complete workflow for new agents
+            - "content_audit": Systematic content quality review
+            - "search_optimization": Prepare memory bank for optimal searching
+            - "relationship_mapping": Discover connections between data
+            - "problem_solving": Find information to solve specific problems
+            - "knowledge_extraction": Extract insights from stored knowledge
+        customize_for (Optional[str]): Customize template for specific domain/topic
+
+    Returns:
+        ToolResponse: {"success": True, "template": Dict, "workflow": List}
+
+    Examples:
+        >>> discovery_templates("first_time_exploration")
+        {"success": True, "template": {
+            "name": "First Time Exploration",
+            "description": "Complete discovery workflow for new agents",
+            "workflow": [
+                {"step": 1, "tool": "intelligent_discovery", "params": {...}},
+                {"step": 2, "tool": "explore_tables", "params": {...}}
+            ]
+        }}
+
+    FastMCP Tool Info:
+        - **PROVEN WORKFLOWS**: Battle-tested discovery sequences  
+        - **STEP-BY-STEP GUIDANCE**: Exact tools and parameters to use
+        - **CUSTOMIZABLE**: Adapt templates to your specific needs
+        - **LEARNING-OPTIMIZED**: Based on successful discovery patterns
+    """
+    return discovery_templates_impl(template_type, customize_for)
+
+
+@mcp.tool
+@catch_errors
+def discover_relationships(
+    table_name: Optional[str] = None,
+    relationship_types: List[str] = ["foreign_keys", "semantic_similarity", "temporal_patterns"],
+    similarity_threshold: float = 0.6
+) -> ToolResponse:
+    """
+    🔗 **RELATIONSHIP DISCOVERY** - Find hidden connections in your data!
+
+    Automatically discovers relationships between tables and content areas using
+    both structural analysis and semantic similarity to reveal data connections.
+
+    Args:
+        table_name (Optional[str]): Focus on relationships for specific table (default: all)
+        relationship_types (List[str]): Types of relationships to discover
+            - "foreign_keys": Structural relationships via foreign keys
+            - "semantic_similarity": Content-based relationships via semantic analysis
+            - "temporal_patterns": Time-based relationships and patterns
+            - "naming_patterns": Relationships based on naming conventions
+        similarity_threshold (float): Minimum similarity for semantic relationships (0.0-1.0)
+
+    Returns:
+        ToolResponse: {"success": True, "relationships": Dict, "insights": List}
+
+    Examples:
+        >>> discover_relationships("users")
+        {"success": True, "relationships": {
+            "users": {
+                "foreign_key_refs": ["posts.user_id", "comments.user_id"],
+                "semantic_similar": [{"table": "profiles", "similarity": 0.8}],
+                "temporal_related": ["user_sessions"]
+            }
+        }}
+
+    FastMCP Tool Info:
+        - **AUTOMATIC DETECTION**: Finds relationships you might not notice manually
+        - **MULTIPLE METHODS**: Combines structural, semantic, and temporal analysis
+        - **ACTIONABLE INSIGHTS**: Suggests how to leverage discovered relationships
+        - **PERFECT FOR EXPLORATION**: Reveals hidden data organization patterns
+    """
+    return discover_relationships_impl(table_name, relationship_types, similarity_threshold)
+
+
 # Export the FastMCP app for use in other modules and server runners
 app = mcp
 
@@ -851,6 +999,9 @@ __all__ = [
     "auto_semantic_search",
     "auto_smart_search",
     "embedding_stats",
+    "intelligent_discovery",
+    "discovery_templates",
+    "discover_relationships",
 ]
 
 
@@ -929,3 +1080,8 @@ _auto_smart_search_impl = search.auto_smart_search
 # Analytics operation aliases
 _analyze_memory_patterns_impl = analytics.analyze_memory_patterns
 _get_content_health_score_impl = analytics.get_content_health_score
+
+# Discovery operation aliases
+_intelligent_discovery_impl = intelligent_discovery_impl
+_discovery_templates_impl = discovery_templates_impl
+_discover_relationships_impl = discover_relationships_impl

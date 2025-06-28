@@ -4,6 +4,7 @@ Tools module for SQLite Memory Bank MCP server.
 This module organizes the various MCP tools into logical categories:
 - analytics: Content analysis and health assessment tools
 - search: Intelligent search and discovery tools  
+- discovery: Advanced exploration and relationship discovery tools
 - basic: Core CRUD operations and table management
 """
 
@@ -22,6 +23,11 @@ from .search import (
     embedding_stats,
     auto_semantic_search,
     auto_smart_search,
+)
+from .discovery import (
+    intelligent_discovery,
+    discovery_templates,
+    discover_relationships,
 )
 from .basic import (
     create_table,
@@ -52,6 +58,11 @@ __all__ = [
     'embedding_stats',
     'auto_semantic_search',
     'auto_smart_search',
+    
+    # Discovery tools
+    'intelligent_discovery',
+    'discovery_templates',
+    'discover_relationships',
     
     # Basic tools
     'create_table',
