@@ -42,7 +42,12 @@ class MemoryBankError(Exception):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert error to a dict format suitable for FastMCP responses."""
-        return {"success": False, "error": self.message, "category": self.category.name, "details": self.details or {}}
+        return {
+            "success": False,
+            "error": self.message,
+            "category": self.category.name,
+            "details": self.details or {},
+        }
 
 
 class ValidationError(MemoryBankError):

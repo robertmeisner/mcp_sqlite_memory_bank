@@ -8,7 +8,7 @@ Cursor, and other LLM-powered tools to interact with structured data in a
 safe, explicit, and extensible way.
 
 Author: Robert Meisner
-Version: 0.1.0
+Version: 1.6.0
 License: MIT
 """
 
@@ -93,7 +93,7 @@ __all__ = [
     "explore_tables",
     "add_embeddings",
     "semantic_search",
-    "find_related", 
+    "find_related",
     "smart_search",
     "embedding_stats",
     "auto_semantic_search",

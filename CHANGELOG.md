@@ -12,6 +12,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - Batch Operations & Memory Management (2025-06-28)
+
+### 🚀 Major Features
+- **Batch Operations Suite**: Complete CRUD operations for efficient memory management
+  - `batch_create_memories`: Create multiple records in a single operation with smart upsert logic
+  - `batch_delete_memories`: Delete multiple records with flexible matching conditions (OR/AND logic)
+  - `upsert_memory`: Smart update-or-create functionality to prevent duplicates
+- **Enhanced Memory Management**: Intelligent duplicate prevention and efficient bulk processing
+- **Flexible Matching Logic**: Support for complex deletion conditions with match_any/match_all modes
+
+### 🔧 Critical Fixes
+- **Embedding Pollution**: Fixed semantic search functions to exclude embedding vectors from LLM responses
+- **Memory Efficiency**: Eliminated unnecessary embedding data in search results for cleaner LLM interaction
+- **Search Result Cleanup**: Enhanced all semantic search tools to return clean, embedding-free results
+
+### 🛠️ Technical Improvements
+- **Smart Upsert Logic**: Prevents duplicate records while maintaining data integrity
+- **Batch Processing**: Efficient handling of multiple records with detailed success/failure reporting
+- **Partial Success Handling**: Continues processing even if some records fail
+- **Enhanced API Documentation**: Comprehensive documentation for all batch operations
+
+### 📋 Documentation & Discoverability
+- **README Enhancement**: Added comprehensive batch operations section with usage examples
+- **Tool Count Update**: Updated MCP tools count from 20 to 23 tools
+- **Batch Operations Examples**: Detailed code examples for all new batch functionality
+- **Enhanced Discoverability**: Improved documentation structure for better LLM and developer experience
+
+---
+
 ## [1.5.1] - MCP Server Startup Fix (2025-06-28)
 
 ### 🔧 Critical Fixes
