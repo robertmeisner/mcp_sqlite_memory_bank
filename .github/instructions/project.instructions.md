@@ -259,8 +259,9 @@ python examples/client_example.py           # Client usage demo
 5. **ALWAYS Create Pull Request**: Via GitHub web interface or `gh` CLI
 6. **Code Review**: Review changes, run CI/CD checks
 7. **Merge to Main**: Only after approval and all checks pass
-8. **Then Deploy**: Only after successful merge to main
-9. **Cleanup**: Delete feature branch after merge
+8. **Cleanup**: Delete feature branch after merge
+
+**Deployment happens only after successful merge to main** (see Deployment Workflow section below)
 
 #### **Branch Naming Conventions:**
 - **Features**: `feature/semantic-search-enhancement`
@@ -336,7 +337,7 @@ git push origin --delete feature/your-feature-name  # Delete remote branch
 - [ ] **Code Quality**: No linting or type errors
 - [ ] **Version Bump**: Version updated in pyproject.toml
 - [ ] **Changelog**: CHANGELOG.md updated with changes
-- [ ] **Memory Documentation**: Technical decisions recorded
+- [ ] **Technical Decisions Documentation**: Technical decisions recorded in memory bank
 
 #### **For Production Releases:**
 1. **Feature Development**: Work in feature branches (**MANDATORY**)
