@@ -76,7 +76,7 @@ class SQLiteMemoryDatabase:
             logging.warning(f"Failed to refresh metadata: {e}")
 
     @contextmanager
-    def get_connection(self):
+    def get_connection(self) -> Any:
         """Get a database connection with automatic cleanup."""
         conn = self.engine.connect()
         try:

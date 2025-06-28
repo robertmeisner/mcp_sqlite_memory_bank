@@ -21,7 +21,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
-def main():
+def main() -> None:
     """Main entry point for the MCP server."""
     try:
         # Import here to avoid circular import issues
