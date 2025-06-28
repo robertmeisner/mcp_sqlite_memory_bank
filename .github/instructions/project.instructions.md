@@ -191,7 +191,7 @@ def tool_function(params):
     1. Review CHANGELOG.md
     2. Bump the version if needed
     3. Update the documentation
-    4. Commit all changes
+    4. Commit all changes, TAag with the version number
     5. Push to GitHub
     6. Publish the package to PyPI
     7. Create a new GitHub release

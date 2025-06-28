@@ -9,6 +9,9 @@ import re
 import os
 import sqlite3
 import logging
+import sys
+import traceback
+from datetime import datetime
 from functools import wraps
 from typing import Any, Callable, Dict, List, TypeVar, cast, Union, Tuple
 from .types import ValidationError, DatabaseError, SchemaError, MemoryBankError, ToolResponse
@@ -174,3 +177,189 @@ def build_where_clause(where: Dict[str, Any], valid_columns: List[str]) -> Union
     except Exception as e:
         logging.error(f"Error in build_where_clause: {e}")
         return {"success": False, "error": f"Error building WHERE clause: {e}"}
+
+
+def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
+    """
+    Suggest recovery actions based on the error type and context.
+
+    Args:
+        error: The exception that occurred
+        function_name: Name of the function where error occurred
+
+    Returns:
+        Dictionary with recovery suggestions
+    """
+    suggestions = {
+        "auto_recovery_available": False,
+        "manual_steps": [],
+        "documentation_links": [],
+        "similar_errors": []
+    }
+
+    error_str = str(error).lower()
+    error_type = type(error).__name__
+
+    # Dependency-related errors
+    if "sentence-transformers" in error_str or "transformers" in error_str:
+        suggestions.update({
+            "auto_recovery_available": True,
+            "install_command": "pip install sentence-transformers",
+            "manual_steps": [
+                "Install sentence-transformers: pip install sentence-transformers",
+                "Restart the MCP server",
+                "Try the semantic search operation again"
+            ],
+            "explanation": "Semantic search requires the sentence-transformers library",
+            "fallback_available": "Keyword search is available as fallback"
+        })
+
+    # Database errors
+    elif "database" in error_str or "sqlite" in error_str:
+        suggestions.update({
+            "manual_steps": [
+                "Check if database file exists and is writable",
+                "Verify disk space is available",
+                "Check if another process is using the database",
+                "Try creating a new database file"
+            ],
+            "auto_recovery_available": False,
+            "diagnostics": {
+                "check_db_path": "Verify DB_PATH environment variable",
+                "check_permissions": "Ensure write permissions to database directory"
+            }
+        })
+
+    # Table/schema errors
+    elif "table" in error_str and ("not exist" in error_str or "missing" in error_str):
+        suggestions.update({
+            "auto_recovery_available": True,
+            "manual_steps": [
+                "List available tables with list_tables()",
+                "Check table name spelling",
+                "Create the table if it doesn't exist",
+                "Refresh your table list"
+            ],
+            "next_actions": ["call list_tables() to see available tables"]
+        })
+
+    # Column errors
+    elif "column" in error_str and ("not exist" in error_str or "invalid" in error_str):
+        suggestions.update({
+            "auto_recovery_available": True,
+            "manual_steps": [
+                "Use describe_table() to see available columns",
+                "Check column name spelling and case",
+                "Verify the column exists in the table schema"
+            ],
+            "next_actions": ["call describe_table() to see column schema"]
+        })
+
+    # Import/module errors
+    elif "import" in error_str or "module" in error_str:
+        suggestions.update({
+            "manual_steps": [
+                "Check if required packages are installed",
+                "Verify Python environment is correct",
+                "Try reinstalling the package",
+                "Check for version compatibility issues"
+            ],
+            "diagnostics": {
+                "python_version": sys.version,
+                "check_packages": "pip list | grep -E '(torch|transformers|sentence)'"
+            }
+        })
+
+    # Function/method errors (like our recent 'FunctionTool' issue)
+    elif "not callable" in error_str or "has no attribute" in error_str:
+        suggestions.update({
+            "manual_steps": [
+                "Check if you're using the correct function/method name",
+                "Verify the object type is what you expect",
+                "Check for import issues or namespace conflicts",
+                "Try restarting the MCP server"
+            ],
+            "diagnostics": {
+                "object_type": "Check the actual type of the object being called",
+                "namespace_check": "Verify imports and module loading"
+            },
+            "likely_causes": [
+                "Using PyPI version instead of local development code",
+                "Import conflicts between different module versions",
+                "Object not properly initialized"
+            ]
+        })
+
+    # Add context-specific suggestions
+    if function_name.startswith("semantic") or function_name.startswith("embedding"):
+        suggestions["context_help"] = {
+            "semantic_search_help": "Semantic search requires sentence-transformers and embeddings to be generated",
+            "embedding_help": "Use add_embeddings() and generate_embeddings() before semantic search",
+            "fallback_option": "Consider using search_content() for keyword-based search"
+        }
+
+    return suggestions
+
+
+def enhanced_catch_errors(include_traceback: bool = False, auto_recovery: bool = True):
+    """
+    Enhanced error decorator with debugging context and auto-recovery suggestions.
+
+    Args:
+        include_traceback: Whether to include full traceback in error details
+        auto_recovery: Whether to include auto-recovery suggestions
+    """
+    def decorator(f: T) -> T:
+        @wraps(f)
+        def wrapper(*args: Any, **kwargs: Any) -> ToolResponse:
+            try:
+                return f(*args, **kwargs)
+            except Exception as e:
+                # Enhanced error context
+                error_context = {
+                    "function": f.__name__,
+                    "timestamp": datetime.now().isoformat(),
+                    "args_preview": str(args)[:200],  # Truncate for safety
+                    "kwargs_preview": {k: str(v)[:100] for k, v in kwargs.items()},
+                    "python_version": sys.version,
+                    "error_type": type(e).__name__
+                }
+
+                # Add traceback if requested
+                if include_traceback:
+                    error_context["traceback"] = traceback.format_exc()
+
+                # Auto-recovery suggestions
+                recovery_suggestions = {}
+                if auto_recovery:
+                    recovery_suggestions = suggest_recovery(e, f.__name__)
+
+                # Determine error category
+                if isinstance(e, MemoryBankError):
+                    category = e.category.name if hasattr(e, 'category') else "MEMORY_BANK"
+                    return cast(ToolResponse, {
+                        "success": False,
+                        "error": str(e),
+                        "category": category,
+                        "details": error_context,
+                        "recovery": recovery_suggestions
+                    })
+                elif isinstance(e, sqlite3.Error):
+                    return cast(ToolResponse, {
+                        "success": False,
+                        "error": f"Database error: {str(e)}",
+                        "category": "DATABASE",
+                        "details": error_context,
+                        "recovery": recovery_suggestions
+                    })
+                else:
+                    return cast(ToolResponse, {
+                        "success": False,
+                        "error": f"Unexpected error: {str(e)}",
+                        "category": "SYSTEM",
+                        "details": error_context,
+                        "recovery": recovery_suggestions
+                    })
+
+        return cast(T, wrapper)
+    return decorator

@@ -9,6 +9,7 @@
     If you encounter an error or unexpected behavior, stop and analyze the issue before proceeding.
     Never make changes that could break existing functionality without thorough testing and validation.
     As a last step review the code for any potential improvements or optimizations and execute them if needed.
+	If you cant find solution or you are blocked switch to another topic for a while.
 
 ## MISSING KNOWLEDGE
 	If you encounter a topic or technology you are not familiar with, do not attempt to guess or make assumptions.
@@ -23,6 +24,9 @@
 	Use SQLite_Memory Bank to store and retrieve context, your memories (important facts about our cooperation) and documentation for libraries, packages, and other resources.
 	Describe SQLite_Memory Bank database to better understand its structure and contents.
 	Explore the available tables and their schemas. Look for important information that can help you in your tasks.
+	Always try to reusse existing libraries2. 
+	If you dont know what to do just improve documentation and backlog.
+	
 ## LARGE FILE & COMPLEX CHANGE PROTOCOL
 
 ### MANDATORY PLANNING PHASE

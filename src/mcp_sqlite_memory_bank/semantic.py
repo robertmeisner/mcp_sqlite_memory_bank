@@ -387,10 +387,20 @@ def get_semantic_engine(model_name: str = "all-MiniLM-L6-v2") -> SemanticSearchE
     """Get or create the global semantic search engine."""
     global _semantic_engine
 
-    if _semantic_engine is None or _semantic_engine.model_name != model_name:
-        _semantic_engine = SemanticSearchEngine(model_name)
-
-    return _semantic_engine
+    try:
+        if _semantic_engine is None or _semantic_engine.model_name != model_name:
+            if not SENTENCE_TRANSFORMERS_AVAILABLE:
+                raise ValueError("Sentence transformers not available for semantic search")
+            _semantic_engine = SemanticSearchEngine(model_name)
+        
+        # Verify the engine is properly initialized
+        if not hasattr(_semantic_engine, 'hybrid_search'):
+            raise ValueError("Semantic engine missing hybrid_search method")
+            
+        return _semantic_engine
+        
+    except Exception as e:
+        raise DatabaseError(f"Failed to initialize semantic engine: {e}")
 
 
 def is_semantic_search_available() -> bool:

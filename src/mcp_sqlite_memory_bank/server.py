@@ -50,6 +50,7 @@ from typing import Dict, Optional, List, cast, Any
 from fastmcp import FastMCP
 
 from .database import get_database
+from .semantic import is_semantic_search_available
 from .types import (
     ToolResponse,
     CreateTableResponse,
@@ -68,6 +69,9 @@ from .utils import catch_errors
 from .resources import setup_mcp_resources
 from .prompts import setup_mcp_prompts
 
+# Import modular tool implementations (for aliases only)
+from .tools import basic, search, analytics
+
 # Initialize FastMCP app with explicit name
 mcp: FastMCP = FastMCP("SQLite Memory Bank for Copilot/AI Agents")
 
@@ -85,6 +89,9 @@ setup_mcp_resources(mcp, DB_PATH)
 
 # Set up MCP Prompts for enhanced workflow support
 setup_mcp_prompts(mcp, DB_PATH)
+
+# All tools are registered via @mcp.tool decorators below
+# No explicit registration needed - decorators handle this automatically
 
 
 # --- Schema Management Tools for SQLite Memory Bank ---
@@ -392,12 +399,25 @@ def list_all_columns() -> ToolResponse:
     return cast(ListAllColumnsResponse, get_database(DB_PATH).list_all_columns())
 
 
-# --- Content Search and Exploration Tools ---
+# Import the implementation functions from tools modules
+from .tools.search import (
+    search_content as search_content_impl,
+    explore_tables as explore_tables_impl, 
+    add_embeddings as add_embeddings_impl,
+    auto_semantic_search as auto_semantic_search_impl,
+    auto_smart_search as auto_smart_search_impl,
+    embedding_stats as embedding_stats_impl,
+)
 
+# --- MCP Tool Definitions (Required in main server.py for FastMCP) ---
 
 @mcp.tool
 @catch_errors
-def search_content(query: str, tables: Optional[List[str]] = None, limit: int = 50) -> ToolResponse:
+def search_content(
+    query: str,
+    tables: Optional[List[str]] = None,
+    limit: int = 50,
+) -> ToolResponse:
     """
     Perform full-text search across table content using natural language queries.
 
@@ -424,12 +444,15 @@ def search_content(query: str, tables: Optional[List[str]] = None, limit: int = 
         - Supports phrase search with quotes: "exact phrase"
         - Supports boolean operators: AND, OR, NOT
     """
-    return cast(ToolResponse, get_database(DB_PATH).search_content(query, tables, limit))
+    return search_content_impl(query, tables, limit)
 
 
 @mcp.tool
-@catch_errors
-def explore_tables(pattern: Optional[str] = None, include_row_counts: bool = True) -> ToolResponse:
+@catch_errors  
+def explore_tables(
+    pattern: Optional[str] = None,
+    include_row_counts: bool = True,
+) -> ToolResponse:
     """
     Explore and discover table structures and content for better searchability.
 
@@ -458,22 +481,22 @@ def explore_tables(pattern: Optional[str] = None, include_row_counts: bool = Tru
         - Helps understand what data is available for searching
         - Useful for exploratory data analysis
     """
-    return cast(ToolResponse, get_database(DB_PATH).explore_tables(pattern, include_row_counts))
-
-
-# --- Semantic Search and AI-Enhanced Discovery Tools ---
+    return explore_tables_impl(pattern, include_row_counts)
 
 
 @mcp.tool
 @catch_errors
 def add_embeddings(
-    table_name: str, text_columns: List[str], embedding_column: str = "embedding", model_name: str = "all-MiniLM-L6-v2"
+    table_name: str,
+    text_columns: List[str],
+    embedding_column: str = "embedding",
+    model_name: str = "all-MiniLM-L6-v2",
 ) -> ToolResponse:
     """
     ⚠️  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!
-    
+
     Generate and store vector embeddings for semantic search on table content.
-    
+
     **RECOMMENDATION**: Use auto_smart_search() or auto_semantic_search() for automatic setup.
     This tool is for advanced users who need manual control over embedding generation.
 
@@ -501,170 +524,7 @@ def add_embeddings(
         - Uses efficient batch processing for large datasets
         - Supports various sentence-transformer models for different use cases
     """
-    return cast(
-        ToolResponse, get_database(DB_PATH).generate_embeddings(table_name, text_columns, embedding_column, model_name)
-    )
-
-
-@mcp.tool
-@catch_errors
-def semantic_search(
-    query: str,
-    tables: Optional[List[str]] = None,
-    similarity_threshold: float = 0.5,
-    limit: int = 10,
-    model_name: str = "all-MiniLM-L6-v2",
-) -> ToolResponse:
-    """
-    ⚠️  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!
-    
-    Find content using natural language semantic similarity rather than exact keyword matching.
-    
-    **RECOMMENDATION**: Use auto_smart_search() for automatic setup and hybrid search capabilities.
-    This tool requires manual embedding setup via add_embeddings() first.
-
-    This enables intelligent knowledge discovery - find related concepts even when
-    they use different terminology or phrasing.
-
-    Args:
-        query (str): Natural language search query
-        tables (Optional[List[str]]): Specific tables to search (default: all tables with embeddings)
-        similarity_threshold (float): Minimum similarity score (0.0-1.0, default: 0.5)
-        limit (int): Maximum number of results to return (default: 10)
-        model_name (str): Model to use for query embedding (default: "all-MiniLM-L6-v2")
-
-    Returns:
-        ToolResponse: On success: {"success": True, "results": List[...], "total_results": int}
-                     On error: {"success": False, "error": str, "category": str, "details": dict}
-
-    Examples:
-        >>> semantic_search("API design patterns")
-        {"success": True, "results": [
-            {"table_name": "technical_decisions", "similarity_score": 0.87, "decision_name": "REST API Structure", ...},
-            {"table_name": "project_structure", "similarity_score": 0.72, "component": "API Gateway", ...}
-        ]}
-
-        >>> semantic_search("machine learning", tables=["technical_decisions"], similarity_threshold=0.7)
-        # Finds content about "ML", "AI", "neural networks", etc.
-
-    FastMCP Tool Info:
-        - Works across multiple tables simultaneously
-        - Finds conceptually similar content regardless of exact wording
-        - Returns relevance scores for ranking results
-        - Supports fuzzy matching and concept discovery
-        - Much more powerful than keyword-based search for knowledge discovery
-    """
-    return cast(
-        ToolResponse,
-        get_database(DB_PATH).semantic_search(
-            query, tables, "embedding", None, similarity_threshold, limit, model_name
-        ),
-    )
-
-
-@mcp.tool
-@catch_errors
-def find_related(
-    table_name: str,
-    row_id: int,
-    similarity_threshold: float = 0.5,
-    limit: int = 5,
-    model_name: str = "all-MiniLM-L6-v2",
-) -> ToolResponse:
-    """
-    Find content related to a specific row by semantic similarity.
-
-    Discover connections and related information that might not be obvious
-    from direct references or tags.
-
-    Args:
-        table_name (str): Table containing the reference row
-        row_id (int): ID of the row to find related content for
-        similarity_threshold (float): Minimum similarity score (default: 0.5)
-        limit (int): Maximum number of related items to return (default: 5)
-        model_name (str): Model for similarity comparison (default: "all-MiniLM-L6-v2")
-
-    Returns:
-        ToolResponse: On success: {"success": True, "results": List[...], "target_row": Dict}
-                     On error: {"success": False, "error": str, "category": str, "details": dict}
-
-    Examples:
-        >>> find_related("technical_decisions", 5)
-        {"success": True, "results": [
-            {"id": 12, "similarity_score": 0.84, "decision_name": "Related Architecture Choice", ...},
-            {"id": 3, "similarity_score": 0.71, "decision_name": "Similar Technology Decision", ...}
-        ], "target_row": {"id": 5, "decision_name": "API Framework Selection", ...}}
-
-    FastMCP Tool Info:
-        - Helps discover hidden relationships between data
-        - Useful for finding similar decisions, related problems, or connected concepts
-        - Can reveal patterns and themes across your knowledge base
-        - Enables serendipitous discovery of relevant information
-    """
-    return cast(
-        ToolResponse,
-        get_database(DB_PATH).find_related_content(
-            table_name, row_id, "embedding", similarity_threshold, limit, model_name
-        ),
-    )
-
-
-@mcp.tool
-@catch_errors
-def smart_search(
-    query: str,
-    tables: Optional[List[str]] = None,
-    semantic_weight: float = 0.7,
-    text_weight: float = 0.3,
-    limit: int = 10,
-    model_name: str = "all-MiniLM-L6-v2",
-) -> ToolResponse:
-    """
-    ⚠️  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!
-    
-    Intelligent hybrid search combining semantic understanding with keyword matching.
-    
-    **RECOMMENDATION**: Use auto_smart_search() for the same functionality with automatic setup.
-    This tool requires manual embedding setup via add_embeddings() first.
-
-    Provides the best of both worlds - semantic similarity for concept discovery
-    plus exact text matching for precise searches.
-
-    Args:
-        query (str): Search query (natural language or keywords)
-        tables (Optional[List[str]]): Tables to search (default: all)
-        semantic_weight (float): Weight for semantic similarity (0.0-1.0, default: 0.7)
-        text_weight (float): Weight for keyword matching (0.0-1.0, default: 0.3)
-        limit (int): Maximum results (default: 10)
-        model_name (str): Semantic model to use (default: "all-MiniLM-L6-v2")
-
-    Returns:
-        ToolResponse: On success: {"success": True, "results": List[...], "search_type": "hybrid"}
-                     On error: {"success": False, "error": str, "category": str, "details": dict}
-
-    Examples:
-        >>> smart_search("user authentication security")
-        {"success": True, "results": [
-            {"combined_score": 0.89, "semantic_score": 0.92, "text_score": 0.82, ...},
-            {"combined_score": 0.76, "semantic_score": 0.71, "text_score": 0.85, ...}
-        ], "search_type": "hybrid"}
-
-    FastMCP Tool Info:
-        - Automatically balances semantic and keyword search
-        - Provides separate scores for transparency
-        - Falls back gracefully if semantic search unavailable
-        - Optimal for both exploratory and precise searches
-        - Perfect for agents - ultimate search tool that just works!
-    """
-    return cast(
-        ToolResponse,
-        get_database(DB_PATH).hybrid_search(
-            query, tables, None, "embedding", semantic_weight, text_weight, limit, model_name
-        ),
-    )
-
-
-# --- Auto-Embedding Semantic Search Tools ---
+    return add_embeddings_impl(table_name, text_columns, embedding_column, model_name)
 
 
 @mcp.tool
@@ -713,76 +573,7 @@ def auto_semantic_search(
         - Supports fuzzy matching and concept discovery
         - Perfect for agents - just search and it works!
     """
-    try:
-        db = get_database(DB_PATH)
-        auto_embedded_tables: List[str] = []
-        
-        # Get tables to search
-        search_tables: List[str]
-        if tables:
-            search_tables = tables
-        else:
-            tables_result = db.list_tables()
-            if not tables_result.get("success"):
-                return cast(ToolResponse, tables_result)
-            all_tables = tables_result.get("tables", [])
-            if isinstance(all_tables, list):
-                search_tables = all_tables
-            else:
-                search_tables = []
-        
-        # Auto-embed text columns in tables that don't have embeddings
-        for table_name in search_tables:
-            try:
-                # Check if table has embeddings
-                stats_result = db.get_embedding_stats(table_name, "embedding")
-                coverage_percent = stats_result.get("coverage_percent", 0)
-                if stats_result.get("success") and isinstance(coverage_percent, (int, float)) and coverage_percent > 0:
-                    continue  # Table already has embeddings
-                
-                # Get table schema to find text columns
-                schema_result = db.describe_table(table_name)
-                if not schema_result.get("success"):
-                    continue
-                
-                # Find text columns
-                text_columns = []
-                columns = schema_result.get("columns", [])
-                if isinstance(columns, list):
-                    for col in columns:
-                        if isinstance(col, dict) and "TEXT" in col.get("type", "").upper():
-                            text_columns.append(col["name"])
-                
-                # Auto-embed text columns
-                if text_columns:
-                    embed_result = db.generate_embeddings(table_name, text_columns, "embedding", model_name)
-                    if embed_result.get("success"):
-                        auto_embedded_tables.append(table_name)
-                        
-            except Exception:
-                # If auto-embedding fails, continue without it
-                continue
-        
-        # Perform semantic search
-        search_result = db.semantic_search(
-            query, search_tables, "embedding", None, similarity_threshold, limit, model_name
-        )
-        
-        # Add auto-embedding info to result
-        if isinstance(search_result, dict):
-            search_result["auto_embedded_tables"] = auto_embedded_tables
-            if auto_embedded_tables:
-                search_result["auto_embedding_note"] = f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
-        
-        return cast(ToolResponse, search_result)
-        
-    except Exception as e:
-        return cast(ToolResponse, {
-            "success": False,
-            "error": f"Auto semantic search failed: {str(e)}",
-            "category": "SEMANTIC_SEARCH_ERROR",
-            "details": {"query": query, "tables": tables}
-        })
+    return auto_semantic_search_impl(query, tables, similarity_threshold, limit, model_name)
 
 
 @mcp.tool
@@ -829,86 +620,15 @@ def auto_smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    try:
-        db = get_database(DB_PATH)
-        auto_embedded_tables: List[str] = []
-        
-        # Get tables to search
-        search_tables: List[str]
-        if tables:
-            search_tables = tables
-        else:
-            tables_result = db.list_tables()
-            if not tables_result.get("success"):
-                return cast(ToolResponse, tables_result)
-            all_tables = tables_result.get("tables", [])
-            if isinstance(all_tables, list):
-                search_tables = all_tables
-            else:
-                search_tables = []
-        
-        # Auto-embed text columns in tables that don't have embeddings
-        for table_name in search_tables:
-            try:
-                # Check if table has embeddings
-                stats_result = db.get_embedding_stats(table_name, "embedding")
-                coverage_percent = stats_result.get("coverage_percent", 0)
-                if stats_result.get("success") and isinstance(coverage_percent, (int, float)) and coverage_percent > 0:
-                    continue  # Table already has embeddings
-                
-                # Get table schema to find text columns
-                schema_result = db.describe_table(table_name)
-                if not schema_result.get("success"):
-                    continue
-                
-                # Find text columns
-                text_columns = []
-                columns = schema_result.get("columns", [])
-                if isinstance(columns, list):
-                    for col in columns:
-                        if isinstance(col, dict) and "TEXT" in col.get("type", "").upper():
-                            text_columns.append(col["name"])
-                
-                # Auto-embed text columns
-                if text_columns:
-                    embed_result = db.generate_embeddings(table_name, text_columns, "embedding", model_name)
-                    if embed_result.get("success"):
-                        auto_embedded_tables.append(table_name)
-                        
-            except Exception:
-                # If auto-embedding fails, continue without it
-                continue
-        
-        # Now perform hybrid search
-        db = get_database(DB_PATH)
-        hybrid_result = db.hybrid_search(
-            query, tables, None, "embedding", semantic_weight, text_weight, limit, model_name
-        )
-        
-        # Add auto-embedding info to result
-        if isinstance(hybrid_result, dict) and hybrid_result.get("success"):
-            # Convert to mutable dict to add extra fields
-            final_result = dict(hybrid_result)
-            final_result["search_type"] = "auto_hybrid"
-            final_result["auto_embedded_tables"] = auto_embedded_tables
-            if auto_embedded_tables:
-                final_result["auto_embedding_note"] = f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
-            return cast(ToolResponse, final_result)
-        else:
-            return cast(ToolResponse, hybrid_result)
-        
-    except Exception as e:
-        return cast(ToolResponse, {
-            "success": False,
-            "error": f"Auto smart search failed: {str(e)}",
-            "category": "HYBRID_SEARCH_ERROR", 
-            "details": {"query": query, "tables": tables}
-        })
+    return auto_smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
 
 
 @mcp.tool
-@catch_errors 
-def embedding_stats(table_name: str, embedding_column: str = "embedding") -> ToolResponse:
+@catch_errors
+def embedding_stats(
+    table_name: str,
+    embedding_column: str = "embedding",
+) -> ToolResponse:
     """
     Get statistics about semantic search readiness for a table.
 
@@ -933,120 +653,150 @@ def embedding_stats(table_name: str, embedding_column: str = "embedding") -> Too
         - Provides embedding dimension info for debugging
         - Useful for monitoring semantic search capabilities
     """
-    return cast(ToolResponse, get_database(DB_PATH).get_embedding_stats(table_name, embedding_column))
-
-
-# --- Enhanced Tool Discovery and Categorization ---
+    return embedding_stats_impl(table_name, embedding_column)
 
 
 @mcp.tool
 @catch_errors
-def list_tool_categories() -> ToolResponse:
+def semantic_search(
+    query: str,
+    tables: Optional[List[str]] = None,
+    similarity_threshold: float = 0.5,
+    limit: int = 10,
+    model_name: str = "all-MiniLM-L6-v2",
+) -> ToolResponse:
     """
-    List all available tool categories for better organization and discovery.
-    
-    Returns organized view of available functionality for LLMs and agents.
-    
-    Returns:
-        ToolResponse: {"success": True, "categories": {category: [tool_names]}}
-    """
-    categories = {
-        "schema_management": [
-            "create_table", "list_tables", "describe_table", 
-            "drop_table", "rename_table", "list_all_columns"
-        ],
-        "data_operations": [
-            "create_row", "read_rows", "update_rows", 
-            "delete_rows", "run_select_query"
-        ],
-        "search_discovery": [
-            "search_content", "explore_tables"
-        ],
-        "semantic_search": [
-            "add_embeddings", "semantic_search", "find_related", 
-            "smart_search", "embedding_stats"
-        ],
-        "workflow_shortcuts": [
-            "quick_note", "remember_decision", "store_context"
-        ],
-        "analytics_insights": [
-            "memory_usage_stats", "content_analytics"
-        ]
-    }
-    
-    return cast(ToolResponse, {
-        "success": True,
-        "categories": categories,
-        "total_tools": sum(len(tools) for tools in categories.values()),
-        "description": "Organized view of all available memory bank capabilities"
-    })
+    ⚠️  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!
 
+    Find content using natural language semantic similarity rather than exact keyword matching.
 
-@mcp.tool  
-@catch_errors
-def get_tools_by_category(category: str) -> ToolResponse:
-    """
-    Get detailed information about tools in a specific category.
-    
+    **RECOMMENDATION**: Use auto_smart_search() for the same functionality with automatic setup.
+    This tool requires manual embedding setup via add_embeddings() first.
+
+    This enables intelligent knowledge discovery - find related concepts even when
+    they use different terminology or phrasing.
+
     Args:
-        category (str): Category name (schema_management, data_operations, 
-                       search_discovery, semantic_search, workflow_shortcuts, analytics_insights)
-    
+        query (str): Natural language search query
+        tables (Optional[List[str]]): Specific tables to search (default: all tables with embeddings)
+        similarity_threshold (float): Minimum similarity score (0.0-1.0, default: 0.5)
+        limit (int): Maximum number of results to return (default: 10)
+        model_name (str): Model to use for query embedding (default: "all-MiniLM-L6-v2")
+
     Returns:
-        ToolResponse: {"success": True, "tools": [{"name": str, "description": str, "usage": str}]}
+        ToolResponse: On success: {"success": True, "results": List[...], "total_results": int}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> semantic_search("API design patterns")
+        {"success": True, "results": [
+            {"table_name": "technical_decisions", "similarity_score": 0.87, "decision_name": "REST API Structure", ...},
+            {"table_name": "project_structure", "similarity_score": 0.72, "component": "API Gateway", ...}
+        ]}
+
+        >>> semantic_search("machine learning", tables=["technical_decisions"], similarity_threshold=0.7)
+        # Finds content about "ML", "AI", "neural networks", etc.
+
+    FastMCP Tool Info:
+        - Works across multiple tables simultaneously
+        - Finds conceptually similar content regardless of exact wording
+        - Returns relevance scores for ranking results
+        - Supports fuzzy matching and concept discovery
+        - Much more powerful than keyword-based search for knowledge discovery
     """
-    tool_details = {
-        "schema_management": [
-            {"name": "create_table", "description": "Create new tables with custom schemas", "usage": "create_table('table_name', [{'name': 'col', 'type': 'TEXT'}])"},
-            {"name": "list_tables", "description": "List all available tables", "usage": "list_tables()"},
-            {"name": "describe_table", "description": "Get detailed schema for a table", "usage": "describe_table('table_name')"},
-            {"name": "drop_table", "description": "Delete a table permanently", "usage": "drop_table('table_name')"},
-            {"name": "rename_table", "description": "Rename an existing table", "usage": "rename_table('old_name', 'new_name')"},
-            {"name": "list_all_columns", "description": "Get all columns across all tables", "usage": "list_all_columns()"},
-        ],
-        "data_operations": [
-            {"name": "create_row", "description": "Insert new data into any table", "usage": "create_row('table', {'col': 'value'})"},
-            {"name": "read_rows", "description": "Query data with optional filtering", "usage": "read_rows('table', {'filter_col': 'value'})"},
-            {"name": "update_rows", "description": "Modify existing data", "usage": "update_rows('table', {'new_data': 'value'}, {'where_col': 'value'})"},
-            {"name": "delete_rows", "description": "Remove data from tables", "usage": "delete_rows('table', {'filter_col': 'value'})"},
-            {"name": "run_select_query", "description": "Execute safe SELECT queries", "usage": "run_select_query('table', ['col1', 'col2'], {'filter': 'value'})"},
-        ],
-        "search_discovery": [
-            {"name": "search_content", "description": "Full-text search across all content", "usage": "search_content('search query', ['table1', 'table2'])"},
-            {"name": "explore_tables", "description": "Discover table structures and sample data", "usage": "explore_tables('pattern*')"},
-        ],
-        "semantic_search": [
-            {"name": "add_embeddings", "description": "Enable semantic search on tables", "usage": "add_embeddings('table', ['text_col1', 'text_col2'])"},
-            {"name": "semantic_search", "description": "Natural language content discovery", "usage": "semantic_search('find ML algorithms')"},
-            {"name": "find_related", "description": "Discover similar content", "usage": "find_related('table', row_id, 0.5)"},
-            {"name": "smart_search", "description": "Hybrid keyword + semantic search", "usage": "smart_search('search query')"},
-            {"name": "embedding_stats", "description": "Check semantic search readiness", "usage": "embedding_stats('table')"},
-        ],
-        "workflow_shortcuts": [
-            {"name": "quick_note", "description": "Rapidly store notes and observations", "usage": "quick_note('content', 'category')"},
-            {"name": "remember_decision", "description": "Store technical decisions with context", "usage": "remember_decision('decision', 'approach', 'rationale')"},
-            {"name": "store_context", "description": "Save session context and progress", "usage": "store_context('topic', 'current_state', 'next_steps')"},
-        ],
-        "analytics_insights": [
-            {"name": "memory_usage_stats", "description": "Analyze memory bank usage patterns", "usage": "memory_usage_stats()"},
-            {"name": "content_analytics", "description": "Get insights on stored content", "usage": "content_analytics('table_name')"},
-        ],
-    }
-    
-    if category not in tool_details:
-        return cast(ToolResponse, {
-            "success": False,
-            "error": f"Unknown category '{category}'. Available: {list(tool_details.keys())}",
-            "category": "VALIDATION",
-            "details": {"available_categories": list(tool_details.keys())},
-        })
-    
-    return cast(ToolResponse, {
-        "success": True,
-        "category": category,
-        "tools": tool_details[category],
-        "tool_count": len(tool_details[category]),
-    })
+    return _semantic_search_impl(query, tables, similarity_threshold, limit, model_name)
+
+
+@mcp.tool
+@catch_errors
+def smart_search(
+    query: str,
+    tables: Optional[List[str]] = None,
+    semantic_weight: float = 0.7,
+    text_weight: float = 0.3,
+    limit: int = 10,
+    model_name: str = "all-MiniLM-L6-v2",
+) -> ToolResponse:
+    """
+    ⚠️  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!
+
+    Intelligent hybrid search combining semantic understanding with keyword matching.
+
+    **RECOMMENDATION**: Use auto_smart_search() for the same functionality with automatic setup.
+    This tool requires manual embedding setup via add_embeddings() first.
+
+    Provides the best of both worlds - semantic similarity for concept discovery
+    plus exact text matching for precise searches.
+
+    Args:
+        query (str): Search query (natural language or keywords)
+        tables (Optional[List[str]]): Tables to search (default: all)
+        semantic_weight (float): Weight for semantic similarity (0.0-1.0, default: 0.7)
+        text_weight (float): Weight for keyword matching (0.0-1.0, default: 0.3)
+        limit (int): Maximum results (default: 10)
+        model_name (str): Semantic model to use (default: "all-MiniLM-L6-v2")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "results": List[...], "search_type": "hybrid"}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> smart_search("user authentication security")
+        {"success": True, "results": [
+            {"combined_score": 0.89, "semantic_score": 0.92, "text_score": 0.82, ...},
+            {"combined_score": 0.76, "semantic_score": 0.71, "text_score": 0.85, ...}
+        ], "search_type": "hybrid"}
+
+    FastMCP Tool Info:
+        - Automatically balances semantic and keyword search
+        - Provides separate scores for transparency
+        - Falls back gracefully if semantic search unavailable
+        - Optimal for both exploratory and precise searches
+        - Perfect for agents - ultimate search tool that just works!
+    """
+    return _smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
+
+
+@mcp.tool
+@catch_errors
+def find_related(
+    table_name: str,
+    row_id: int,
+    similarity_threshold: float = 0.5,
+    limit: int = 5,
+    model_name: str = "all-MiniLM-L6-v2",
+) -> ToolResponse:
+    """
+    Find content related to a specific row by semantic similarity.
+
+    Discover connections and related information that might not be obvious
+    from direct references or tags.
+
+    Args:
+        table_name (str): Table containing the reference row
+        row_id (int): ID of the row to find related content for
+        similarity_threshold (float): Minimum similarity score (default: 0.5)
+        limit (int): Maximum number of related items to return (default: 5)
+        model_name (str): Model for similarity comparison (default: "all-MiniLM-L6-v2")
+
+    Returns:
+        ToolResponse: On success: {"success": True, "results": List[...], "target_row": Dict}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> find_related("technical_decisions", 5)
+        {"success": True, "results": [
+            {"id": 12, "similarity_score": 0.84, "decision_name": "Related Architecture Choice", ...},
+            {"id": 3, "similarity_score": 0.71, "decision_name": "Similar Technology Decision", ...}
+        ], "target_row": {"id": 5, "decision_name": "API Framework Selection", ...}}
+
+    FastMCP Tool Info:
+        - Helps discover hidden relationships between data
+        - Useful for finding similar decisions, related problems, or connected concepts
+        - Can reveal patterns and themes across your knowledge base
+        - Enables serendipitous discovery of relevant information
+    """
+    return _find_related_impl(table_name, row_id, similarity_threshold, limit, model_name)
 
 
 # Export the FastMCP app for use in other modules and server runners
@@ -1073,100 +823,11 @@ Available tools:
 - run_select_query: Run a safe SELECT query (no arbitrary SQL)
 - search_content: Perform full-text search across table content
 - explore_tables: Discover table structures and content for better searchability
+- auto_semantic_search: Zero-setup semantic search with automatic embeddings
+- auto_smart_search: Zero-setup hybrid search combining semantic and keyword search
+- add_embeddings: Manual embedding generation for advanced users
+- embedding_stats: Check semantic search readiness
 """
-
-
-# Legacy implementation functions for backwards compatibility with tests
-def _create_row_impl(table_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
-    """Legacy implementation function for tests."""
-    try:
-        # Handle test-specific table creation for legacy compatibility
-        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", table_name):
-            return {"success": False, "error": f"Invalid table name: {table_name}"}
-
-        # Auto-create test tables for compatibility
-        current_db = get_database(DB_PATH)
-        if table_name == "nodes":
-            try:
-                current_db.create_table(
-                    "nodes",
-                    [
-                        {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "label", "type": "TEXT NOT NULL"},
-                    ],
-                )
-            except Exception:
-                pass  # Table might already exist
-        elif table_name == "edges":
-            try:
-                current_db.create_table(
-                    "edges",
-                    [
-                        {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "source", "type": "INTEGER NOT NULL"},
-                        {"name": "target", "type": "INTEGER NOT NULL"},
-                        {"name": "type", "type": "TEXT NOT NULL"},
-                    ],
-                )
-            except Exception:
-                pass  # Table might already exist
-
-        result = current_db.insert_row(table_name, data)
-        # Ensure we return Dict[str, Any] for legacy compatibility
-        return dict(result) if isinstance(result, dict) else {"success": False, "error": "Unknown error"}
-
-    except Exception as e:
-        logging.error(f"_create_row_impl error: {e}")
-        return {"success": False, "error": str(e)}
-
-
-def _read_rows_impl(table_name: str, where: Optional[Dict[str, Any]] = None, limit: int = 100) -> Dict[str, Any]:
-    """Legacy implementation function for tests."""
-    try:
-        result = get_database(DB_PATH).read_rows(table_name, where, limit)
-        # Ensure we return Dict[str, Any] for legacy compatibility
-        return dict(result) if isinstance(result, dict) else {"success": False, "error": "Unknown error"}
-    except Exception as e:
-        logging.error(f"_read_rows_impl error: {e}")
-        return {"success": False, "error": str(e)}
-
-
-def _update_rows_impl(table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Legacy implementation function for tests."""
-    try:
-        # Auto-create test tables for compatibility
-        if table_name == "edges":
-            try:
-                current_db = get_database(DB_PATH)
-                current_db.create_table(
-                    "edges",
-                    [
-                        {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "source", "type": "INTEGER NOT NULL"},
-                        {"name": "target", "type": "INTEGER NOT NULL"},
-                        {"name": "type", "type": "TEXT NOT NULL"},
-                    ],
-                )
-            except Exception:
-                pass  # Table might already exist
-
-        result = get_database(DB_PATH).update_rows(table_name, data, where)
-        # Ensure we return Dict[str, Any] for legacy compatibility
-        return dict(result) if isinstance(result, dict) else {"success": False, "error": "Unknown error"}
-    except Exception as e:
-        logging.error(f"_update_rows_impl error: {e}")
-        return {"success": False, "error": str(e)}
-
-
-def _delete_rows_impl(table_name: str, where: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Legacy implementation function for tests."""
-    try:
-        result = get_database(DB_PATH).delete_rows(table_name, where)
-        # Ensure we return Dict[str, Any] for legacy compatibility
-        return dict(result) if isinstance(result, dict) else {"success": False, "error": "Unknown error"}
-    except Exception as e:
-        logging.error(f"_delete_rows_impl error: {e}")
-        return {"success": False, "error": str(e)}
 
 
 # Public API - these functions are available for direct Python use and as MCP tools
@@ -1174,7 +835,7 @@ __all__ = [
     "app",
     "mcp",
     "create_table",
-    "drop_table",
+    "drop_table", 
     "rename_table",
     "list_tables",
     "describe_table",
@@ -1186,10 +847,10 @@ __all__ = [
     "run_select_query",
     "search_content",
     "explore_tables",
-    "_create_row_impl",
-    "_read_rows_impl",
-    "_update_rows_impl",
-    "_delete_rows_impl",
+    "add_embeddings",
+    "auto_semantic_search",
+    "auto_smart_search",
+    "embedding_stats",
 ]
 
 
@@ -1240,3 +901,31 @@ if __name__ == "__main__":
 
     # Run the FastMCP app in stdio mode for MCP clients
     app.run()
+
+
+# Compatibility aliases for tests that expect _impl functions
+# Import modules already imported above for tool implementations
+
+# Basic CRUD operation aliases
+_create_row_impl = basic.create_row
+_read_rows_impl = basic.read_rows
+_update_rows_impl = basic.update_rows
+_delete_rows_impl = basic.delete_rows
+_list_tables_impl = basic.list_tables
+_describe_table_impl = basic.describe_table
+_drop_table_impl = basic.drop_table
+_create_table_impl = basic.create_table
+
+# Search operation aliases
+_search_content_impl = search.search_content
+_explore_tables_impl = search.explore_tables
+_add_embeddings_impl = search.add_embeddings
+_semantic_search_impl = search.semantic_search
+_smart_search_impl = search.smart_search
+_find_related_impl = search.find_related
+_auto_semantic_search_impl = search.auto_semantic_search
+_auto_smart_search_impl = search.auto_smart_search
+
+# Analytics operation aliases
+_analyze_memory_patterns_impl = analytics.analyze_memory_patterns
+_get_content_health_score_impl = analytics.get_content_health_score

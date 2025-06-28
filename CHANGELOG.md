@@ -5,6 +5,95 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - Major Agent Experience Improvements (2025-06-28)
+
+### 🚀 Major New Features
+- **Intelligent Search Tool**: New `intelligent_search()` function that automatically detects optimal search strategy
+  - Auto-analyzes query complexity to choose between semantic, keyword, or hybrid search
+  - Automatically sets up embeddings when beneficial and requested
+  - Provides intelligent fallback with detailed strategy explanations
+  - Replaces complex multi-step workflows with single, powerful tool
+
+- **Enhanced Search Algorithm**: Completely redesigned search relevance scoring
+  - Multi-factor relevance calculation (exact phrase, term frequency, position, column importance)
+  - Context-aware snippet generation with ellipsis handling
+  - Match quality assessment (high/medium/low) and match count tracking
+  - Column importance weighting (title/name columns get priority bonus)
+
+- **Advanced Analytics & Insights**: New content analysis and health assessment tools
+  - `analyze_memory_patterns()`: Comprehensive content distribution and organization analysis
+  - `get_content_health_score()`: Overall health scoring (0-10) with actionable recommendations
+  - Text density analysis, semantic readiness assessment, schema quality evaluation
+  - Automated improvement suggestions with priority ranking
+
+- **Enhanced Error Handling**: Revolutionary error recovery system
+  - `suggest_recovery()`: AI-powered error analysis with auto-recovery suggestions
+  - Context-aware diagnostics for dependency, database, schema, and method errors
+  - Detailed recovery steps with installation commands and next actions
+  - Enhanced error decorator with traceback, environment context, and recovery guidance
+
+### 🔄 Real-time MCP Resources
+- **Live Activity Feed**: `memory://live/recent-activity` - Real-time changes and additions
+- **Content Suggestions**: `memory://live/content-suggestions` - AI-powered organization recommendations
+- **Analytics Insights**: `memory://live/analytics/insights` - Real-time usage patterns and health metrics
+- **Dynamic Updates**: All resources update automatically with current data
+
+### 💡 Agent Experience Improvements
+- **Zero-Setup Semantic Search**: Automatic embedding generation and setup
+- **Intelligent Strategy Detection**: Query analysis determines optimal search approach
+- **Graceful Fallback**: Robust error handling with automatic method switching
+- **Rich Insights**: Detailed explanations of search strategies and results
+- **Self-Healing**: Auto-recovery suggestions for common issues
+
+### 🔧 Technical Enhancements
+- **Better Relevance Scoring**: Multi-dimensional scoring with position and importance weighting
+- **Enhanced MCP Resources**: Live-updating resources with real-time insights
+- **Improved Type Safety**: Enhanced error handling with detailed context
+- **Performance Optimizations**: Smarter caching and batch processing
+
+### 📊 Analytics & Health
+- **Content Health Scoring**: Comprehensive assessment with grades (A+ to D)
+- **Usage Pattern Analysis**: Automated insights into content quality and organization
+- **Semantic Readiness**: Assessment of tables ready for semantic search
+- **Improvement Recommendations**: Prioritized suggestions for better knowledge management
+
+### 🛡️ Error Handling & Recovery
+- **Auto-Recovery System**: Intelligent suggestions for common errors
+- **Detailed Diagnostics**: Environment context, stack traces, and recovery steps
+- **Error Categorization**: Systematic classification with appropriate recovery actions
+- **Context-Aware Help**: Function-specific guidance and troubleshooting
+
+### 📈 Performance & Usability
+- **Unified Search Interface**: Single tool replaces complex multi-step workflows
+- **Smart Defaults**: Intelligent parameter selection based on content analysis
+- **Real-time Feedback**: Live insights into search strategies and performance
+- **Enhanced Documentation**: Rich examples and usage patterns in tool descriptions
+
+### 🔍 Search Quality Improvements
+- **Context Snippets**: Intelligent excerpt generation with proper ellipsis handling
+- **Match Quality Scoring**: Automatic assessment of result relevance and quality
+- **Multi-column Analysis**: Comprehensive text analysis across all searchable columns
+- **Position-aware Scoring**: Earlier matches receive higher relevance scores
+
+### 💻 Developer Experience
+- **Enhanced Error Messages**: Detailed context with recovery suggestions
+- **Better Tool Discovery**: Rich documentation with usage examples
+- **Live Resource Updates**: Real-time insights into memory bank status
+- **Comprehensive Analytics**: Deep insights into content quality and usage
+
+### 🧪 Quality Assurance
+- **All Tests Pass**: 18/18 existing tests continue to pass - no breaking changes
+- **Enhanced Type Safety**: Improved static analysis with better error handling
+- **Comprehensive Demo**: Full demonstration script showcasing all new features
+- **Backward Compatibility**: All existing functionality preserved and enhanced
+
+### 🎯 Impact Summary
+This release transforms the SQLite Memory Bank from a powerful but complex tool into an intelligent, self-managing knowledge assistant. The new intelligent_search() tool alone eliminates the need for multi-step workflows while providing superior results. Enhanced analytics give users deep insights into their knowledge base health, while the advanced error recovery system makes troubleshooting effortless.
+
+**Upgrade Priority: HIGH** - Significant improvements in usability, capability, and reliability.
+
+---
+
 ## [1.4.3] - Type Safety and Testing Enhancement (2025-06-27)
 
 ### 🔧 Improvements

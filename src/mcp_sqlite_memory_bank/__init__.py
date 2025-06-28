@@ -25,15 +25,25 @@ from .server import (
     update_rows,
     delete_rows,
     run_select_query,
-    # Search tools
-    search_content,
-    explore_tables,
     # FastMCP app
     app,
     # Constants
     DB_PATH,
 )
 
+# Import search tools from the tools module
+from .tools import (
+    # Search tools
+    search_content,
+    explore_tables,
+    add_embeddings,
+    semantic_search,
+    find_related,
+    smart_search,
+    embedding_stats,
+    auto_semantic_search,
+    auto_smart_search,
+)
 
 from .types import (
     # Response types
@@ -81,6 +91,13 @@ __all__ = [
     # Search tools
     "search_content",
     "explore_tables",
+    "add_embeddings",
+    "semantic_search",
+    "find_related", 
+    "smart_search",
+    "embedding_stats",
+    "auto_semantic_search",
+    "auto_smart_search",
     # FastMCP app
     "app",
     # Constants

@@ -403,27 +403,65 @@ class SQLiteMemoryDatabase:
                     for row in conn.execute(stmt).fetchall():
                         row_dict = dict(row._mapping)
 
-                        # Calculate relevance and matched content
-                        relevance = 0.0
+                        # Enhanced relevance calculation with multiple scoring factors
+                        relevance_scores = []
                         matched_content = []
                         query_lower = query.lower()
+                        query_terms = query_lower.split()
 
                         for col in text_columns:
                             if col.name in row_dict and row_dict[col.name]:
                                 content = str(row_dict[col.name]).lower()
+                                content_length = len(content)
+                                
                                 if query_lower in content:
-                                    frequency = content.count(query_lower)
-                                    relevance += frequency / len(content)
-                                    matched_content.append(f"{col.name}: {row_dict[col.name]}")
+                                    # Factor 1: Exact phrase frequency (weighted higher)
+                                    exact_frequency = content.count(query_lower)
+                                    exact_score = (exact_frequency * 2.0) / content_length if content_length > 0 else 0
+                                    
+                                    # Factor 2: Individual term frequency
+                                    term_score = 0.0
+                                    for term in query_terms:
+                                        if term in content:
+                                            term_score += content.count(term) / content_length if content_length > 0 else 0
+                                    
+                                    # Factor 3: Position bonus (early matches score higher)
+                                    position_bonus = 0.0
+                                    first_occurrence = content.find(query_lower)
+                                    if first_occurrence != -1:
+                                        position_bonus = (content_length - first_occurrence) / content_length * 0.1
+                                    
+                                    # Factor 4: Column importance (title/name columns get bonus)
+                                    column_bonus = 0.0
+                                    if any(keyword in col.name.lower() for keyword in ['title', 'name', 'summary', 'description']):
+                                        column_bonus = 0.2
+                                    
+                                    # Combined relevance score
+                                    col_relevance = exact_score + term_score + position_bonus + column_bonus
+                                    relevance_scores.append(col_relevance)
+                                    
+                                    # Enhanced matched content with context
+                                    snippet_start = max(0, first_occurrence - 50)
+                                    snippet_end = min(len(row_dict[col.name]), first_occurrence + len(query) + 50)
+                                    snippet = str(row_dict[col.name])[snippet_start:snippet_end]
+                                    if snippet_start > 0:
+                                        snippet = "..." + snippet
+                                    if snippet_end < len(str(row_dict[col.name])):
+                                        snippet = snippet + "..."
+                                    
+                                    matched_content.append(f"{col.name}: {snippet}")
 
-                        if relevance > 0:
+                        total_relevance = sum(relevance_scores)
+                        if total_relevance > 0:
                             results.append(
                                 {
                                     "table": table_name,
                                     "row_id": row_dict.get("id"),
                                     "row_data": row_dict,
                                     "matched_content": matched_content,
-                                    "relevance": round(relevance, 3),
+                                    "relevance": round(total_relevance, 4),
+                                    "match_quality": "high" if total_relevance > 0.5 else "medium" if total_relevance > 0.1 else "low",
+                                    "match_count": len(relevance_scores)
                                 }
                             )
 
@@ -910,10 +948,20 @@ class SQLiteMemoryDatabase:
                 )
 
             # Enhance with text matching scores
-            semantic_engine = get_semantic_engine(model_name)
-            enhanced_results = semantic_engine.hybrid_search(
-                query, semantic_results, text_columns or [], embedding_column, semantic_weight, text_weight, limit
-            )
+            try:
+                semantic_engine = get_semantic_engine(model_name)
+                
+                # Verify the engine has the required method
+                if not hasattr(semantic_engine, 'hybrid_search') or not callable(getattr(semantic_engine, 'hybrid_search')):
+                    raise DatabaseError("Semantic engine hybrid_search method is not callable")
+                
+                enhanced_results = semantic_engine.hybrid_search(
+                    query, semantic_results, text_columns or [], embedding_column, semantic_weight, text_weight, limit
+                )
+            except Exception as e:
+                # If semantic enhancement fails, return semantic results without text enhancement
+                logging.warning(f"Semantic enhancement failed: {e}")
+                enhanced_results = semantic_results[:limit]
 
             return {
                 "success": True,

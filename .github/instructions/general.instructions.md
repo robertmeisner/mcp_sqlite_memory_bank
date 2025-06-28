@@ -54,6 +54,7 @@ applyTo: '**'
 ### MAKING EDITS
 	- Include concise explanations of what changed and why
 	- Always check if the edit maintains the project's coding style
+	- If class or complex change is too large, decompose it down into smaller, manageable components
 
 ### Edit sequence:
 	1. [First specific change] - Purpose: [why]
