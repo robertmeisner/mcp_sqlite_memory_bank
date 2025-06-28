@@ -401,37 +401,25 @@ git branch -d feature/your-feature-name  # Delete local branch
 git push origin --delete feature/your-feature-name  # Delete remote branch
 ```
 
-### MAIN BRANCH PROTECTION
+### GIT PR CREATION BEST PRACTICES
 
-#### **Recommended Settings:**
-- **Require pull request reviews**: At least 1 reviewer
-- **Require status checks**: All CI/CD tests must pass
-- **Require branches to be up to date**: Prevent conflicts
-- **Restrict pushes to main**: Only via approved pull requests
-- **Require linear history**: Clean commit history
+#### **Avoid Interactive Mode Issues**
+- **Never use complex multi-line --body arguments** with `gh pr create`
+- **Use simple, single-line descriptions** for PR creation
+- **Add detailed descriptions via GitHub web interface** after PR creation
+- **Alternative**: Use separate commands for title and body
 
-#### **CI/CD Integration:**
-```yaml
-# .github/workflows/ci.yml should include:
-- Automated testing (pytest)
-- Code quality checks (flake8, mypy)
-- Security scanning
-- Performance benchmarks
-- Documentation builds
+#### **Recommended PR Creation Pattern**
+```bash
+# Simple PR creation (avoid interactive mode)
+gh pr create --title "feat: brief description of change" --body "Simple one-line description. Details added via web interface."
+
+# Or even simpler
+gh pr create --title "feat: brief description" --body "See commit message for details"
 ```
 
-### WHY THIS WORKFLOW?
-
-#### **Benefits:**
-- **Code Quality**: All changes reviewed before reaching main
-- **Collaboration**: Multiple developers can work simultaneously
-- **Rollback Safety**: Main branch always in deployable state
-- **CI/CD Integration**: Automated testing prevents broken deployments
-- **Documentation**: PR descriptions provide change history
-- **Conflict Resolution**: Merge conflicts resolved in feature branches
-
-#### **For Solo Development:**
-- **Still Recommended**: Establishes good habits and practices
-- **Local Testing**: Feature branches allow experimental work
-- **Clean History**: Main branch has clean, logical commit history
-- **Future Collaboration**: Ready for team development
+#### **Why This Matters**
+- **Prevents Terminal Hang**: Complex --body arguments cause interactive mode
+- **Faster Workflow**: Simple commands execute immediately  
+- **Better UX**: Detailed formatting done in GitHub web interface
+- **Reliable Automation**: Predictable command execution

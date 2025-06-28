@@ -357,14 +357,9 @@ class SemanticSearchEngine:
             semantic_weight /= total_weight
             text_weight /= total_weight
 
-        # Get semantic search results
-        semantic_results = self.semantic_search(
-            query,
-            content_data,
-            embedding_column,
-            similarity_threshold=0.3,
-            top_k=top_k * 2,  # Get more for reranking
-        )
+        # Use the provided content_data as semantic results (already filtered by database)
+        # The content_data passed here should already be the semantic search results
+        semantic_results = content_data.copy() if content_data else []
 
         # Add text matching scores
         query_lower = query.lower()
