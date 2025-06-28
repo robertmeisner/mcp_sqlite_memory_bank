@@ -147,7 +147,7 @@ def validate_table_exists(conn: sqlite3.Connection, table_name: str) -> None:
         raise SchemaError(f"Table does not exist: {table_name}", {"table_name": table_name})
 
 
-def build_where_clause(where: Dict[str, Any], valid_columns: List[str]) -> Union[Tuple[str, list], Dict[str, Any]]:
+def build_where_clause(where: Dict[str, Any], valid_columns: List[str]) -> Union[Tuple[str, List[Any]], Dict[str, Any]]:
     """
     Build a WHERE clause from a dictionary of column-value pairs.
 
@@ -301,7 +301,7 @@ def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
     return suggestions
 
 
-def enhanced_catch_errors(include_traceback: bool = False, auto_recovery: bool = True):
+def enhanced_catch_errors(include_traceback: bool = False, auto_recovery: bool = True) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Enhanced error decorator with debugging context and auto-recovery suggestions.
 

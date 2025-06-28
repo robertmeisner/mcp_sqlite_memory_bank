@@ -12,7 +12,7 @@ authors = [
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -21,7 +21,7 @@ dependencies = [
     "fastapi>=0.100.0",
     "uvicorn>=0.22.0",
     "pydantic>=1.10.0",
-    "fastmcp",
+    "fastmcp>=2.9.0",
     "sqlalchemy>=2.0.0",
     "sentence-transformers>=2.2.0",
     "torch>=1.9.0",
@@ -43,3 +43,18 @@ test = ["pytest"]
 [tool.setuptools.packages.find]
 where = ["src"]
 exclude = ["*__pycache__*", "*.pyc", "*.pyo"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+# Temporarily exclude files with type issues until separate type safety PR
+[[tool.mypy.overrides]]
+module = [
+    "mcp_sqlite_memory_bank.tools.discovery",
+    "mcp_sqlite_memory_bank.tools.analytics"
+]
+ignore_errors = true

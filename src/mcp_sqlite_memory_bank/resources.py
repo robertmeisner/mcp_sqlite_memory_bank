@@ -232,7 +232,7 @@ class MemoryBankResources:
             """AI-powered suggestions for content improvements and organization."""
             db = get_database(self.db_path)
             
-            suggestions = {
+            suggestions: dict[str, list[dict[str, Any]]] = {
                 "organization_suggestions": [],
                 "content_gaps": [],
                 "semantic_opportunities": [],
@@ -336,7 +336,7 @@ class MemoryBankResources:
             """Real-time analytics and insights about memory bank usage and patterns."""
             db = get_database(self.db_path)
             
-            insights = {
+            insights: dict[str, dict[str, Any]] = {
                 "usage_patterns": {},
                 "content_trends": {},
                 "search_recommendations": {},

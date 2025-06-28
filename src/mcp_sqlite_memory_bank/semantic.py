@@ -58,7 +58,7 @@ class SemanticSearchEngine:
             )
 
     @property
-    def model(self):
+    def model(self) -> Any:
         """Lazy load the sentence transformer model."""
         if self._model is None:
             if not SENTENCE_TRANSFORMERS_AVAILABLE or SentenceTransformer is None:
@@ -373,7 +373,7 @@ class SemanticSearchEngine:
 
         return semantic_results[:top_k]
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """Clear the embedding cache."""
         self._embedding_cache.clear()
         logging.info("Semantic search cache cleared")

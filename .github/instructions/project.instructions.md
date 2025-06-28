@@ -237,23 +237,31 @@ python examples/client_example.py           # Client usage demo
 
 ## GIT WORKFLOW & BRANCHING STRATEGY
 
-### RECOMMENDED WORKFLOW
-**Use feature branches for all development work, then Pull Requests to main**
+### ⚠️ MANDATORY WORKFLOW - NO EXCEPTIONS ⚠️
+**ALL development work MUST use feature branches, then Pull Requests to main**
+
+#### **🚫 FORBIDDEN ACTIONS:**
+- ❌ **NEVER commit directly to main branch**
+- ❌ **NEVER push directly to main branch**  
+- ❌ **NEVER deploy without PR approval**
+- ❌ **NEVER bypass the workflow "because it's urgent"**
 
 #### **Branch Protection Strategy:**
-- **`main` branch**: Protected, production-ready code only
-- **Feature branches**: All development work (`feature/test-improvements`, `feature/semantic-search`, etc.)  
+- **`main` branch**: Protected, production-ready code only - **ZERO DIRECT COMMITS**
+- **Feature branches**: ALL development work (`feature/test-improvements`, `feature/semantic-search`, etc.)  
 - **Hotfix branches**: Critical fixes (`hotfix/security-patch`, `hotfix/critical-bug`)
 
-#### **Development Workflow:**
-1. **Create Feature Branch**: `git checkout -b feature/descriptive-name`
+#### **MANDATORY Development Workflow:**
+1. **ALWAYS Create Feature Branch**: `git checkout -b feature/descriptive-name`
 2. **Develop & Test**: Make changes, ensure all tests pass
 3. **Commit Changes**: Use conventional commit messages
 4. **Push Feature Branch**: `git push origin feature/descriptive-name`
-5. **Create Pull Request**: Via GitHub web interface or `gh` CLI
+5. **ALWAYS Create Pull Request**: Via GitHub web interface or `gh` CLI
 6. **Code Review**: Review changes, run CI/CD checks
 7. **Merge to Main**: Only after approval and all checks pass
 8. **Cleanup**: Delete feature branch after merge
+
+**Deployment happens only after successful merge to main** (see Deployment Workflow section below)
 
 #### **Branch Naming Conventions:**
 - **Features**: `feature/semantic-search-enhancement`
@@ -323,21 +331,101 @@ git push origin --delete feature/your-feature-name  # Delete remote branch
 
 ### DEPLOYMENT WORKFLOW
 
+#### **PRE-DEPLOYMENT COMPLIANCE CHECKLIST:**
+- [ ] **Branch Check**: Changes merged to main via approved PR
+- [ ] **Test Status**: All tests passing
+- [ ] **Code Quality**: No linting or type errors
+- [ ] **Version Bump**: Version updated in pyproject.toml
+- [ ] **Changelog**: CHANGELOG.md updated with changes
+- [ ] **Technical Decisions Documentation**: Technical decisions recorded in memory bank
+
 #### **For Production Releases:**
-1. **Feature Development**: Work in feature branches
-2. **Pull Request**: Merge to main via PR
+1. **Feature Development**: Work in feature branches (**MANDATORY**)
+2. **Pull Request**: Merge to main via PR (**MANDATORY**)
 3. **Release Preparation**: Create release branch from main
 4. **Version Bump**: Update version numbers, changelog
 5. **Release Testing**: Final validation in release branch
 6. **Tag & Deploy**: Tag version, deploy to PyPI
 7. **GitHub Release**: Create release notes and artifacts
 
-#### **Emergency Hotfixes:**
-1. **Hotfix Branch**: `git checkout -b hotfix/critical-issue main`
+#### **WORKFLOW VIOLATION RECOVERY:**
+If workflow was violated (direct commits to main):
+1. **Document Violation**: Record in technical_decisions with rationale
+2. **Assess Risk**: Evaluate if rollback is needed
+3. **Immediate Review**: Get retroactive code review if possible
+4. **Process Fix**: Implement stricter branch protection rules
+5. **Team Learning**: Update procedures to prevent recurrence
+
+#### **Emergency Hotfixes - CONTROLLED PROCESS:**
+1. **STILL USE BRANCHES**: `git checkout -b hotfix/critical-issue main`
 2. **Fix & Test**: Implement fix, ensure tests pass
-3. **Direct PR to Main**: Fast-track review for critical issues
-4. **Immediate Deploy**: Deploy hotfix quickly
-5. **Backport**: Apply fix to development branches if needed
+3. **EXPEDITED PR**: Create PR with "URGENT" label for fast-track review
+4. **MINIMAL REVIEW**: Single reviewer minimum, focus on fix scope
+5. **IMMEDIATE DEPLOY**: Deploy after PR approval, not before
+6. **POST-DEPLOYMENT**: Document emergency procedure use in technical_decisions
+
+#### **DEPLOYMENT DECISION MATRIX:**
+
+| Situation | Workflow Required | Time to Deploy |
+|-----------|------------------|----------------|
+| **Feature Addition** | Feature Branch → PR → Review → Deploy | 1-2 hours |
+| **Bug Fix** | Feature Branch → PR → Review → Deploy | 30-60 minutes |
+| **Critical Hotfix** | Hotfix Branch → EXPEDITED PR → Deploy | 15-30 minutes |
+| **Emergency Security** | Hotfix Branch → EXPEDITED PR → Deploy | 5-15 minutes |
+
+**⚠️ NO situation justifies bypassing PR process entirely**
+
+### GIT COMMANDS FOR WORKFLOW
+
+#### **Starting New Feature:**
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/your-feature-name
+```
+
+#### **Working on Feature:**
+```bash
+git add .
+git commit -m "feat: descriptive commit message"
+git push origin feature/your-feature-name
+```
+
+#### **Creating Pull Request:**
+```bash
+# Via GitHub CLI (recommended)
+gh pr create --title "Feature: Your Feature Name" --body "Description of changes"
+
+# Or via web interface at github.com
+```
+
+#### **After PR Approval:**
+```bash
+# Merge via GitHub interface (recommended) or:
+git checkout main
+git pull origin main
+git branch -d feature/your-feature-name  # Delete local branch
+git push origin --delete feature/your-feature-name  # Delete remote branch
+```
+
+### MAIN BRANCH PROTECTION
+
+#### **Recommended Settings:**
+- **Require pull request reviews**: At least 1 reviewer
+- **Require status checks**: All CI/CD tests must pass
+- **Require branches to be up to date**: Prevent conflicts
+- **Restrict pushes to main**: Only via approved pull requests
+- **Require linear history**: Clean commit history
+
+#### **CI/CD Integration:**
+```yaml
+# .github/workflows/ci.yml should include:
+- Automated testing (pytest)
+- Code quality checks (flake8, mypy)
+- Security scanning
+- Performance benchmarks
+- Documentation builds
+```
 
 ### WHY THIS WORKFLOW?
 

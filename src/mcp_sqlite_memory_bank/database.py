@@ -63,7 +63,7 @@ class SQLiteMemoryDatabase:
         except Exception as e:
             logging.warning(f"Error closing database: {e}")
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Ensure cleanup when object is garbage collected."""
         self.close()
 
@@ -76,7 +76,7 @@ class SQLiteMemoryDatabase:
             logging.warning(f"Failed to refresh metadata: {e}")
 
     @contextmanager
-    def get_connection(self):
+    def get_connection(self) -> Any:
         """Get a database connection with automatic cleanup."""
         conn = self.engine.connect()
         try:
