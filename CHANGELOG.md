@@ -5,7 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Comprehensive Test Suite Enhancement
+## [Unreleased]
+
+### Added
+- Upcoming features will be documented here
+
+---
+
+## [1.5.1] - MCP Server Startup Fix (2025-06-28)
+
+### 🔧 Critical Fixes
+- **MCP Server Startup Issues**: Resolved "Server exited before responding to `initialize` request" errors
+- **Runtime Warning Elimination**: Fixed RuntimeWarning about 'src.mcp_sqlite_memory_bank.server' module execution
+- **Clean Module Entry Point**: Added `__main__.py` with proper import handling and clean execution path
+- **Stdio Transport Configuration**: Added explicit `transport="stdio"` specification for reliable MCP communication
+- **VS Code MCP Extension Compatibility**: Fixed connectivity issues with VS Code MCP extension
+
+### 🛠️ Technical Improvements
+- **Import Path Resolution**: Eliminated circular import conflicts with clean module structure
+- **Error Handling**: Enhanced error handling in module entry point with proper exception catching
+- **Help System**: Added `--help` argument support to MCP server entry point
+- **Testing Tools**: Added `test_mcp_connection.py` for MCP server validation and debugging
+- **Debug Utilities**: Added `minimal_test_server.py` for FastMCP troubleshooting
+
+### 📋 Documentation & Deployment
+- **Troubleshooting Guide**: Documented complete MCP server troubleshooting workflow including system reboot necessity
+- **Git Workflow Enhancement**: Added comprehensive Git workflow documentation and deployment procedures
+- **Issue Templates**: Added GitHub issue templates for bug reports and feature requests
+- **CI/CD Improvements**: Enhanced GitHub Actions workflow with better error handling
+
+### 🎯 Root Cause Resolution
+- **Two-Layer Problem**: Identified and fixed both code-level issues (import conflicts, missing entry points) and system-level caching problems
+- **Reboot Protocol**: Documented that system reboots are often necessary after code fixes for full MCP server recovery
+- **Configuration Updates**: Fixed mcp.json configuration paths for proper VS Code integration
+
+### 💡 Developer Experience
+- **Enhanced Error Messages**: Better error reporting with context and recovery suggestions
+- **Testing Infrastructure**: Comprehensive test tools for validating MCP server functionality
+- **Deployment Workflow**: Professional Git workflow with feature branches and PR process
+
+### 🔍 Quality Assurance
+- **Memory Bank Verification**: Confirmed all 10 tables and 110+ rows accessible after fixes
+- **Semantic Search**: Verified semantic search functionality working correctly
+- **Discovery Tools**: Validated intelligent discovery tools providing proper insights
+- **Full Functionality**: All SQLite Memory Bank features operational post-fix
+
+### 📊 Impact Summary
+This release resolves critical MCP server startup issues that prevented the SQLite Memory Bank from initializing properly in VS Code environments. The combination of technical fixes (clean entry points, proper transport configuration) and system-level awareness (reboot requirements) provides a complete solution for reliable MCP server operation.
+
+**Upgrade Priority: CRITICAL** - Fixes prevent server startup failures in many environments.
+
+---
+
+## [1.5.0] - Comprehensive Test Suite Enhancement
 
 ### 🧪 Major Testing Improvements
 - **Test Coverage Expansion**: Comprehensive test suite expansion from 27 to **57 tests** (111% increase)
