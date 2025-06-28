@@ -43,3 +43,18 @@ test = ["pytest"]
 [tool.setuptools.packages.find]
 where = ["src"]
 exclude = ["*__pycache__*", "*.pyc", "*.pyo"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+# Temporarily exclude files with type issues until separate type safety PR
+[[tool.mypy.overrides]]
+module = [
+    "mcp_sqlite_memory_bank.tools.discovery",
+    "mcp_sqlite_memory_bank.tools.analytics"
+]
+ignore_errors = true
