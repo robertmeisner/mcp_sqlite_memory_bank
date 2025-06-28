@@ -5,7 +5,14 @@ applyTo: '**'
 # SQLite Memory Bank Project Instructions
 
 ## PROJECT OVERVIEW
-This project provides a dynamic, agent-friendly SQLite memory bank implemented as a FastMCP server. The codebase is designed for LLM and agent frameworks with explicit, discoverable APIs.
+This project provides a dynamic, agent-friendly SQLite memory bank implemented as a FastMCP serv6. When I say "DEPLOY!", perform these steps in order:
+    1. Review CHANGELOG.md
+    2. Bump the version if needed
+    3. Update the documentation
+    4. Commit all changes, Tag with the version number
+    5. Push to GitHub
+    6. Publish the package to PyPI
+    7. Create a new GitHub release using gh cli (keep release notes concise to avoid editor prompts)codebase is designed for LLM and agent frameworks with explicit, discoverable APIs.
 
 ## PROJECT-SPECIFIC ARCHITECTURE
 
@@ -194,7 +201,7 @@ def tool_function(params):
     4. Commit all changes, TAag with the version number
     5. Push to GitHub
     6. Publish the package to PyPI
-    7. Create a new GitHub release
+    7. Create a new GitHub release using gh cli
 
 ## PROJECT-SPECIFIC COMMANDS
 
@@ -214,6 +221,15 @@ python examples/client_example.py           # Client usage demo
 ```bash
 # Pylance/mypy will run automatically in VS Code
 # Fix all type errors before committing
+```
+
+### GitHub Release Creation
+```bash
+# Use simple, concise release notes to avoid CLI hanging
+gh release create v1.5.0 --title "Version Title" --notes "Brief description with link to full details" --latest
+
+# 🎯 Key Lesson Learned: Keep --notes parameter concise to avoid triggering interactive editor
+# Complex release notes should be added via GitHub web interface if needed
 ```
 
 ## INSTRUCTION MAINTENANCE PROTOCOL
