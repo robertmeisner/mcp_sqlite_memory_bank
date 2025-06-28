@@ -374,6 +374,34 @@ applyTo: '**'
 
 ## TERMINAL COMMAND EFFICIENCY PROTOCOL
 
+### MANDATORY BACKGROUND TERMINAL USAGE
+**ALWAYS use isBackground=true for terminal commands and close them afterwards**:
+
+#### Background Terminal Protocol
+```python
+# ALWAYS use background terminals for all commands
+run_in_terminal(
+    command="your command here",
+    explanation="What the command does",
+    isBackground=true  # ← MANDATORY: Always use background=true
+)
+
+# After the operation is complete, close the terminal if needed
+# Background terminals automatically handle cleanup
+```
+
+#### Why Background Terminals Are Required
+- **Performance**: Background terminals don't block the AI's processing
+- **Efficiency**: Allows parallel operations and faster execution
+- **Resource Management**: Proper cleanup prevents terminal accumulation
+- **User Experience**: Non-blocking operations provide better responsiveness
+
+#### Background Terminal Best Practices
+- **Always set isBackground=true** unless specifically requiring interactive input
+- **Use clear explanations** to document what each command accomplishes
+- **Group related commands** when possible to minimize terminal calls
+- **Let background terminals auto-cleanup** instead of manual terminal management
+
 ### MANDATORY COMMAND BATCHING STRATEGY
 **NEVER make dozens of separate terminal calls**. Always group related commands and execute them efficiently to minimize tool calls and improve performance.
 
@@ -382,39 +410,51 @@ applyTo: '**'
 #### Single Command Line with Multiple Operations
 ```
 # WRONG - Multiple separate terminal calls
-1. run_in_terminal: "cd project_directory"
-2. run_in_terminal: "npm install"
-3. run_in_terminal: "npm run build"
-4. run_in_terminal: "npm test"
-5. run_in_terminal: "npm run lint"
+1. run_in_terminal(command="cd project_directory", isBackground=true)
+2. run_in_terminal(command="npm install", isBackground=true)
+3. run_in_terminal(command="npm run build", isBackground=true)
+4. run_in_terminal(command="npm test", isBackground=true)
+5. run_in_terminal(command="npm run lint", isBackground=true)
 
-# RIGHT - Group related commands
-run_in_terminal: "cd project_directory; npm install; npm run build; npm test; npm run lint"
+# RIGHT - Group related commands with background execution
+run_in_terminal(
+    command="cd project_directory; npm install; npm run build; npm test; npm run lint",
+    explanation="Complete build and test pipeline",
+    isBackground=true
+)
 ```
 
 #### Multi-line Commands for Complex Operations
 ```
 # WRONG - Fragmented file operations
-1. run_in_terminal: "mkdir -p src/components"
-2. run_in_terminal: "mkdir -p src/utils"
-3. run_in_terminal: "mkdir -p tests"
-4. run_in_terminal: "touch src/index.js"
-5. run_in_terminal: "touch README.md"
+1. run_in_terminal(command="mkdir -p src/components", isBackground=true)
+2. run_in_terminal(command="mkdir -p src/utils", isBackground=true)
+3. run_in_terminal(command="mkdir -p tests", isBackground=true)
+4. run_in_terminal(command="touch src/index.js", isBackground=true)
+5. run_in_terminal(command="touch README.md", isBackground=true)
 
-# RIGHT - Batch directory and file creation
-run_in_terminal: "mkdir -p src/components src/utils tests && touch src/index.js README.md"
+# RIGHT - Batch directory and file creation with background execution
+run_in_terminal(
+    command="mkdir -p src/components src/utils tests && touch src/index.js README.md",
+    explanation="Set up project structure and create initial files",
+    isBackground=true
+)
 ```
 
 #### Conditional Command Chains
 ```
 # WRONG - Multiple checks and actions
-1. run_in_terminal: "test -f package.json"
-2. run_in_terminal: "npm install"
-3. run_in_terminal: "test -f requirements.txt"  
-4. run_in_terminal: "pip install -r requirements.txt"
+1. run_in_terminal(command="test -f package.json", isBackground=true)
+2. run_in_terminal(command="npm install", isBackground=true)
+3. run_in_terminal(command="test -f requirements.txt", isBackground=true)
+4. run_in_terminal(command="pip install -r requirements.txt", isBackground=true)
 
-# RIGHT - Conditional execution in one call
-run_in_terminal: "[ -f package.json ] && npm install; [ -f requirements.txt ] && pip install -r requirements.txt"
+# RIGHT - Conditional execution in one call with background execution
+run_in_terminal(
+    command="[ -f package.json ] && npm install; [ -f requirements.txt ] && pip install -r requirements.txt",
+    explanation="Install dependencies based on available package files",
+    isBackground=true
+)
 ```
 
 ### EFFICIENT COMMAND STRATEGIES
@@ -454,10 +494,18 @@ run_in_terminal: "if (Test-Path 'package.json') { npm install }; if (Test-Path '
 4. **Deployment/Publishing**: Group deployment-related operations
 
 #### When to Use Separate Calls
-- **Long-running background processes** (servers, watch modes)
-- **Interactive commands** that require user input
-- **Commands with complex output** that need individual analysis
-- **Error-prone operations** that need individual error handling
+- **Long-running background processes** (servers, watch modes) - use `isBackground=true`
+- **Interactive commands** that require user input - use `isBackground=false` 
+- **Commands with complex output** that need individual analysis - use `isBackground=false`
+- **Error-prone operations** that need individual error handling - use `isBackground=false`
+
+#### Background vs Foreground Terminal Usage
+- **Default**: Always use `isBackground=true` for maximum efficiency
+- **Use isBackground=false ONLY when**:
+  - You need to see and analyze command output immediately
+  - The command requires interactive user input
+  - You need to check command exit codes or error conditions
+  - The command output is needed for the next step in your logic
 
 ### COMMAND EFFICIENCY BEST PRACTICES
 
