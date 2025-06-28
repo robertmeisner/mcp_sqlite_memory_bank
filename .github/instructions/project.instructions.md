@@ -187,7 +187,29 @@ def tool_function(params):
 3. Update memory bank with new context
 4. Validate error handling works correctly
 5. Fix linting issues with `flake8` and type issues with mypy and pylance errors
-6. When I say "DEPLOY!", follow the professional Git workflow deployment process outlined in the DEPLOYMENT WORKFLOW section below.
+6. **RESTART MCP SERVER IN VS CODE**: Use `Ctrl+Shift+P` → `MCP: Restart Server` to load code changes for testing
+7. When I say "DEPLOY!", follow the professional Git workflow deployment process outlined in the DEPLOYMENT WORKFLOW section below.
+
+## VS CODE MCP DEVELOPMENT WORKFLOW
+
+### ⚠️ CRITICAL: Manual Server Restart Required
+- **Code changes are NOT automatically loaded** in VS Code MCP environment
+- **ALWAYS restart MCP server** after making code changes before testing
+- **Keyboard shortcut**: `Ctrl+Shift+P` → Type `MCP: Restart Server` → Enter
+- **Alternative**: Use restart script: `.\restart-mcp.ps1` in terminal
+
+### VS Code MCP Testing Pattern
+1. **Make code changes** (edit files)
+2. **Save files** (Ctrl+S)
+3. **Restart MCP server** (Ctrl+Shift+P → `MCP: Restart Server`)
+4. **Test changes** using MCP tools
+5. **Repeat cycle** as needed
+
+### Why This Matters
+- **Cached modules**: VS Code MCP client caches Python modules
+- **Stale code**: Testing without restart uses old code version
+- **False negatives**: Fixes may appear not to work due to stale cache
+- **Development efficiency**: Proper restart cycle prevents debugging phantom issues
 
 ## DEPLOYMENT WORKFLOW
 

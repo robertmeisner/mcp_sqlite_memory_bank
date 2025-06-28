@@ -124,7 +124,9 @@ def create_table(table_name: str, columns: List[Dict[str, str]]) -> ToolResponse
         - Creates table if it doesn't exist (idempotent)
         - Raises appropriate errors for invalid input
     """
-    return cast(CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns))
+    return cast(
+        CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns)
+    )
 
 
 @mcp.tool
@@ -236,7 +238,9 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
         - Validates both old and new table names
         - Confirms old table exists and new name doesn't conflict
     """
-    return cast(RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name))
+    return cast(
+        RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name)
+    )
 
 
 @mcp.tool
@@ -267,6 +271,42 @@ def create_row(table_name: str, data: Dict[str, Any]) -> ToolResponse:
 
 @mcp.tool
 @catch_errors
+def upsert_memory(
+    table_name: str, data: Dict[str, Any], match_columns: List[str]
+) -> ToolResponse:
+    """
+    🔄 **SMART MEMORY UPSERT** - Prevent duplicates and maintain data consistency!
+
+    Update existing records or create new ones based on matching columns.
+    This is the preferred method for memory management as it prevents duplicates.
+
+    Args:
+        table_name (str): Table to upsert into
+        data (Dict[str, Any]): Data to upsert (column-value pairs)
+        match_columns (List[str]): Columns to use for finding existing records
+
+    Returns:
+        ToolResponse: On success: {"success": True, "action": "updated"|"created", "id": rowid}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> upsert_memory('technical_decisions',
+        ...     {'decision_name': 'API Design', 'chosen_approach': 'REST'},
+        ...     ['decision_name'])
+        {"success": True, "action": "updated", "id": 15, "rows_affected": 1}
+
+    FastMCP Tool Info:
+        - **PREVENTS DUPLICATES**: Automatically updates existing records instead of creating duplicates
+        - **SMART MATCHING**: Uses specified columns to find existing records
+        - **EFFICIENT MEMORY MANAGEMENT**: Ideal for agent memory patterns
+        - **CLEAR FEEDBACK**: Returns whether record was created or updated
+        - **PERFECT FOR AGENTS**: Handles the common "update or create" pattern automatically
+    """
+    return basic.upsert_memory(table_name, data, match_columns)
+
+
+@mcp.tool
+@catch_errors
 def read_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
     """
     Read rows from any table in the SQLite memory bank, with optional filtering.
@@ -293,7 +333,9 @@ def read_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolRe
 
 @mcp.tool
 @catch_errors
-def update_rows(table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None) -> ToolResponse:
+def update_rows(
+    table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None
+) -> ToolResponse:
     """
     Update rows in any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.
 
@@ -316,12 +358,16 @@ def update_rows(table_name: str, data: Dict[str, Any], where: Optional[Dict[str,
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it updates all rows!)
     """
-    return cast(UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where))
+    return cast(
+        UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where)
+    )
 
 
 @mcp.tool
 @catch_errors
-def delete_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
+def delete_rows(
+    table_name: str, where: Optional[Dict[str, Any]] = None
+) -> ToolResponse:
     """
     Delete rows from any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.
 
@@ -343,13 +389,18 @@ def delete_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> Tool
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it deletes all rows!)
     """
-    return cast(DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where))
+    return cast(
+        DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where)
+    )
 
 
 @mcp.tool
 @catch_errors
 def run_select_query(
-    table_name: str, columns: Optional[List[str]] = None, where: Optional[Dict[str, Any]] = None, limit: int = 100
+    table_name: str,
+    columns: Optional[List[str]] = None,
+    where: Optional[Dict[str, Any]] = None,
+    limit: int = 100,
 ) -> ToolResponse:
     """
     Run a safe SELECT query on a table in the SQLite memory bank.
@@ -374,7 +425,10 @@ def run_select_query(
         - Only SELECT queries are allowed (no arbitrary SQL)
         - Default limit of 100 rows prevents memory issues
     """
-    return cast(SelectQueryResponse, get_database(DB_PATH).select_query(table_name, columns, where, limit))
+    return cast(
+        SelectQueryResponse,
+        get_database(DB_PATH).select_query(table_name, columns, where, limit),
+    )
 
 
 @mcp.tool
@@ -402,14 +456,14 @@ def list_all_columns() -> ToolResponse:
 # Import the implementation functions from tools modules
 from .tools.search import (
     search_content as search_content_impl,
-    explore_tables as explore_tables_impl, 
+    explore_tables as explore_tables_impl,
     add_embeddings as add_embeddings_impl,
     auto_semantic_search as auto_semantic_search_impl,
     auto_smart_search as auto_smart_search_impl,
     embedding_stats as embedding_stats_impl,
 )
 
-# Import the implementation functions from discovery module  
+# Import the implementation functions from discovery module
 from .tools.discovery import (
     intelligent_discovery as intelligent_discovery_impl,
     discovery_templates as discovery_templates_impl,
@@ -417,6 +471,7 @@ from .tools.discovery import (
 )
 
 # --- MCP Tool Definitions (Required in main server.py for FastMCP) ---
+
 
 @mcp.tool
 @catch_errors
@@ -455,7 +510,7 @@ def search_content(
 
 
 @mcp.tool
-@catch_errors  
+@catch_errors
 def explore_tables(
     pattern: Optional[str] = None,
     include_row_counts: bool = True,
@@ -580,7 +635,9 @@ def auto_semantic_search(
         - Supports fuzzy matching and concept discovery
         - Perfect for agents - just search and it works!
     """
-    return auto_semantic_search_impl(query, tables, similarity_threshold, limit, model_name)
+    return auto_semantic_search_impl(
+        query, tables, similarity_threshold, limit, model_name
+    )
 
 
 @mcp.tool
@@ -627,7 +684,9 @@ def auto_smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return auto_smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
+    return auto_smart_search_impl(
+        query, tables, semantic_weight, text_weight, limit, model_name
+    )
 
 
 @mcp.tool
@@ -656,7 +715,7 @@ def embedding_stats(
 
     FastMCP Tool Info:
         - Shows how much content is ready for semantic search
-        - Helps identify tables that need embedding generation  
+        - Helps identify tables that need embedding generation
         - Provides embedding dimension info for debugging
         - Useful for monitoring semantic search capabilities
     """
@@ -761,7 +820,9 @@ def smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return _smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
+    return _smart_search_impl(
+        query, tables, semantic_weight, text_weight, limit, model_name
+    )
 
 
 @mcp.tool
@@ -803,10 +864,13 @@ def find_related(
         - Can reveal patterns and themes across your knowledge base
         - Enables serendipitous discovery of relevant information
     """
-    return _find_related_impl(table_name, row_id, similarity_threshold, limit, model_name)
+    return _find_related_impl(
+        table_name, row_id, similarity_threshold, limit, model_name
+    )
 
 
 # --- Advanced Discovery Tools for SQLite Memory Bank ---
+
 
 @mcp.tool
 @catch_errors
@@ -825,14 +889,14 @@ def intelligent_discovery(
     Args:
         discovery_goal (str): What you want to achieve
             - "understand_content": Learn what data is available and how it's organized
-            - "find_patterns": Discover themes, relationships, and content patterns  
+            - "find_patterns": Discover themes, relationships, and content patterns
             - "explore_structure": Understand database schema and organization
             - "assess_quality": Evaluate content quality and completeness
             - "prepare_search": Get ready for effective content searching
         focus_area (Optional[str]): Specific table or topic to focus on (default: all)
         depth (str): How thorough the discovery should be
             - "quick": Fast overview with key insights
-            - "moderate": Balanced analysis with actionable recommendations  
+            - "moderate": Balanced analysis with actionable recommendations
             - "comprehensive": Deep dive with detailed analysis
         agent_id (Optional[str]): Agent identifier for learning discovery patterns
 
@@ -861,8 +925,7 @@ def intelligent_discovery(
 @mcp.tool
 @catch_errors
 def discovery_templates(
-    template_type: str = "first_time_exploration",
-    customize_for: Optional[str] = None
+    template_type: str = "first_time_exploration", customize_for: Optional[str] = None
 ) -> ToolResponse:
     """
     📋 **DISCOVERY TEMPLATES** - Pre-built exploration workflows for common scenarios!
@@ -895,7 +958,7 @@ def discovery_templates(
         }}
 
     FastMCP Tool Info:
-        - **PROVEN WORKFLOWS**: Battle-tested discovery sequences  
+        - **PROVEN WORKFLOWS**: Battle-tested discovery sequences
         - **STEP-BY-STEP GUIDANCE**: Exact tools and parameters to use
         - **CUSTOMIZABLE**: Adapt templates to your specific needs
         - **LEARNING-OPTIMIZED**: Based on successful discovery patterns
@@ -907,8 +970,12 @@ def discovery_templates(
 @catch_errors
 def discover_relationships(
     table_name: Optional[str] = None,
-    relationship_types: List[str] = ["foreign_keys", "semantic_similarity", "temporal_patterns"],
-    similarity_threshold: float = 0.6
+    relationship_types: List[str] = [
+        "foreign_keys",
+        "semantic_similarity",
+        "temporal_patterns",
+    ],
+    similarity_threshold: float = 0.6,
 ) -> ToolResponse:
     """
     🔗 **RELATIONSHIP DISCOVERY** - Find hidden connections in your data!
@@ -944,7 +1011,9 @@ def discover_relationships(
         - **ACTIONABLE INSIGHTS**: Suggests how to leverage discovered relationships
         - **PERFECT FOR EXPLORATION**: Reveals hidden data organization patterns
     """
-    return discover_relationships_impl(table_name, relationship_types, similarity_threshold)
+    return discover_relationships_impl(
+        table_name, relationship_types, similarity_threshold
+    )
 
 
 # Export the FastMCP app for use in other modules and server runners
@@ -983,12 +1052,13 @@ __all__ = [
     "app",
     "mcp",
     "create_table",
-    "drop_table", 
+    "drop_table",
     "rename_table",
     "list_tables",
     "describe_table",
     "list_all_columns",
     "create_row",
+    "upsert_memory",
     "read_rows",
     "update_rows",
     "delete_rows",
@@ -1008,7 +1078,10 @@ __all__ = [
 def mcp_server():
     """Entry point for MCP stdio server (for uvx and package installations)."""
     # Configure logging for MCP server
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
 
     # Log startup information
     logging.info(f"Starting SQLite Memory Bank MCP server with database at {DB_PATH}")
@@ -1022,11 +1095,15 @@ def main():
     import uvicorn
     import argparse
 
-    parser = argparse.ArgumentParser(description="Run MCP SQLite Memory Bank Server in HTTP mode")
+    parser = argparse.ArgumentParser(
+        description="Run MCP SQLite Memory Bank Server in HTTP mode"
+    )
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
     parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
     parser.add_argument("--db-path", help="Path to SQLite database file")
-    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
+    parser.add_argument(
+        "--reload", action="store_true", help="Enable auto-reload for development"
+    )
 
     args = parser.parse_args()
 
@@ -1036,16 +1113,26 @@ def main():
         DB_PATH = args.db_path
         os.environ["DB_PATH"] = args.db_path
 
-    print(f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}")
+    print(
+        f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}"
+    )
     print(f"Database path: {DB_PATH}")
     print("Available at: http://localhost:8000/docs")
 
-    uvicorn.run("mcp_sqlite_memory_bank.server:app", host=args.host, port=args.port, reload=args.reload)
+    uvicorn.run(
+        "mcp_sqlite_memory_bank.server:app",
+        host=args.host,
+        port=args.port,
+        reload=args.reload,
+    )
 
 
 if __name__ == "__main__":
     # Configure logging
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
 
     # Log startup information
     logging.info(f"Starting SQLite Memory Bank with database at {DB_PATH}")
@@ -1085,3 +1172,88 @@ _get_content_health_score_impl = analytics.get_content_health_score
 _intelligent_discovery_impl = intelligent_discovery_impl
 _discovery_templates_impl = discovery_templates_impl
 _discover_relationships_impl = discover_relationships_impl
+
+
+@mcp.tool
+@catch_errors
+def batch_create_memories(
+    table_name: str,
+    data_list: List[Dict[str, Any]],
+    match_columns: Optional[List[str]] = None,
+    use_upsert: bool = True,
+) -> ToolResponse:
+    """
+    🚀 **BATCH MEMORY CREATION** - Efficiently add multiple memories at once!
+
+    Create multiple memory records in a single operation with optional duplicate prevention.
+    Much faster than creating records one by one.
+
+    Args:
+        table_name (str): Table to insert records into
+        data_list (List[Dict[str, Any]]): List of memory records to create
+        match_columns (Optional[List[str]]): Columns to use for duplicate detection (if use_upsert=True)
+        use_upsert (bool): Whether to use upsert logic to prevent duplicates (default: True)
+
+    Returns:
+        ToolResponse: On success: {"success": True, "created": int, "updated": int, "failed": int}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> batch_create_memories('technical_decisions', [
+        ...     {'decision_name': 'API Design', 'chosen_approach': 'REST'},
+        ...     {'decision_name': 'Database Choice', 'chosen_approach': 'SQLite'},
+        ...     {'decision_name': 'Frontend Framework', 'chosen_approach': 'React'}
+        ... ], match_columns=['decision_name'])
+        {"success": True, "created": 2, "updated": 1, "failed": 0, "total_processed": 3}
+
+    FastMCP Tool Info:
+        - **EFFICIENT**: Process multiple records in one operation
+        - **SMART DEDUPLICATION**: Optional upsert logic prevents duplicates
+        - **DETAILED FEEDBACK**: Returns counts for created, updated, and failed records
+        - **PARTIAL SUCCESS**: Continues processing even if some records fail
+        - **PERFECT FOR BULK IMPORTS**: Ideal for importing knowledge bases or datasets
+    """
+    return basic.batch_create_memories(table_name, data_list, match_columns, use_upsert)
+
+
+@mcp.tool
+@catch_errors
+def batch_delete_memories(
+    table_name: str, where_conditions: List[Dict[str, Any]], match_all: bool = False
+) -> ToolResponse:
+    """
+    🗑️ **BATCH MEMORY DELETION** - Efficiently delete multiple memories at once!
+
+    Delete multiple memory records in a single operation with flexible matching conditions.
+    Much faster than deleting records one by one.
+
+    Args:
+        table_name (str): Table to delete records from
+        where_conditions (List[Dict[str, Any]]): List of WHERE conditions for deletion
+        match_all (bool): If True, delete records matching ALL conditions; if False, delete records matching ANY condition (default: False)
+
+    Returns:
+        ToolResponse: On success: {"success": True, "deleted": int, "failed": int}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> batch_delete_memories('technical_decisions', [
+        ...     {'decision_name': 'Old Decision 1'},
+        ...     {'decision_name': 'Old Decision 2'},
+        ...     {'id': 42}
+        ... ])
+        {"success": True, "deleted": 3, "failed": 0, "total_conditions": 3}
+
+        >>> batch_delete_memories('notes', [
+        ...     {'category': 'temp', 'created_date': '2024-01-01'}
+        ... ], match_all=True)
+        {"success": True, "deleted": 15, "failed": 0}  # Deletes notes that are BOTH temp AND from that date
+
+    FastMCP Tool Info:
+        - **EFFICIENT**: Process multiple deletions in one operation
+        - **FLEXIBLE MATCHING**: Support both OR logic (any condition) and AND logic (all conditions)
+        - **DETAILED FEEDBACK**: Returns counts and per-condition results
+        - **PARTIAL SUCCESS**: Continues processing even if some deletions fail
+        - **SAFE**: Uses parameterized queries to prevent SQL injection
+    """
+    return basic.batch_delete_memories(table_name, where_conditions, match_all)

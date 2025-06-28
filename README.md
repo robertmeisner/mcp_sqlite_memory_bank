@@ -100,10 +100,10 @@ Restart your IDE and try asking your AI assistant:
 
 SQLite Memory Bank v1.4.0+ provides full Model Context Protocol (MCP) compliance with advanced features for enhanced LLM and agent integration:
 
-### 🔧 MCP Tools (20 Available)
+### 🔧 MCP Tools (23 Available)
 Organized into logical categories for easy discovery:
 - **Schema Management** (6 tools): Table creation, modification, and inspection
-- **Data Operations** (5 tools): CRUD operations with validation
+- **Data Operations** (8 tools): CRUD operations with validation and batch processing
 - **Search & Discovery** (2 tools): Content search and exploration
 - **Semantic Search** (5 tools): AI-powered natural language content discovery
 - **Analytics** (2 tools): Memory bank insights and statistics
@@ -149,7 +149,7 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 | `describe_table` | Get schema details | `table_name` (str) | None |
 | `list_all_columns` | List all columns for all tables | None | None |
 
-### Data Operations Tools (5 tools)
+### Data Operations Tools (8 tools)
 
 | Tool | Description | Required Parameters | Optional Parameters |
 |------|-------------|---------------------|---------------------|
@@ -158,6 +158,9 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 | `update_rows` | Update existing rows | `table_name` (str), `data` (dict), `where` (dict) | None |
 | `delete_rows` | Delete rows from table | `table_name` (str), `where` (dict) | None |
 | `run_select_query` | Run safe SELECT query | `table_name` (str) | `columns` (list[str]), `where` (dict), `limit` (int) |
+| `upsert_memory` | Smart update or create memory record | `table_name` (str), `data` (dict), `match_columns` (list[str]) | None |
+| `batch_create_memories` | Efficiently create multiple memory records | `table_name` (str), `data_list` (list[dict]) | `match_columns` (list[str]), `use_upsert` (bool) |
+| `batch_delete_memories` | Delete multiple memory records efficiently | `table_name` (str), `conditions_list` (list[dict]) | `match_mode` (str) |
 
 ### Search & Discovery Tools (2 tools)
 
@@ -184,6 +187,51 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 | `get_tools_by_category` | Get detailed tool information by category | `category` (str) | None |
 
 Each tool validates inputs and returns consistent response formats with success/error indicators and appropriate data payloads.
+
+## 🚀 Batch Operations & Smart Memory Management
+
+SQLite Memory Bank provides powerful batch operations for efficient memory management:
+
+### Smart Memory Updates
+- **`upsert_memory`**: Intelligent update-or-create for preventing duplicates
+- **Duplicate Prevention**: Uses match columns to find existing records
+- **Flexible Matching**: Specify which columns to match for finding existing records
+
+### Efficient Batch Processing
+- **`batch_create_memories`**: Create multiple records in a single operation
+- **Smart vs Fast Modes**: Choose between upsert logic (prevents duplicates) or fast insertion
+- **Partial Success Handling**: Continues processing even if some records fail
+- **Detailed Feedback**: Returns counts for created, updated, and failed records
+
+### Flexible Batch Deletion
+- **`batch_delete_memories`**: Delete multiple records with complex conditions
+- **Flexible Matching**: Support for OR (match_any) and AND (match_all) logic
+- **Condition Lists**: Delete based on multiple different criteria
+- **Safe Operations**: Validates conditions before deletion
+
+### Usage Examples
+
+```python
+# Smart memory upsert - prevents duplicates
+upsert_memory('technical_decisions', {
+    'decision_name': 'API Design',
+    'chosen_approach': 'REST APIs',
+    'rationale': 'Better discoverability for LLMs'
+}, match_columns=['decision_name'])
+
+# Batch create with duplicate prevention
+batch_create_memories('project_insights', [
+    {'category': 'performance', 'insight': 'Database indexing'},
+    {'category': 'security', 'insight': 'Input validation'},
+    {'category': 'architecture', 'insight': 'Microservice patterns'}
+], match_columns=['category', 'insight'], use_upsert=True)
+
+# Batch delete with flexible conditions
+batch_delete_memories('old_notes', [
+    {'status': 'archived'},
+    {'created_date': '2023-01-01', 'priority': 'low'}
+], match_mode='match_any')  # Delete if ANY condition matches
+```
 
 ---
 
