@@ -5,7 +5,21 @@ applyTo: '**'
 # SQLite Memory Bank Project Instructions
 
 ## PROJECT OVERVIEW
-This project provides a dynamic, agent-friendly SQLite memory bank implemented as a FastMCP serv6. When I say "DEPLOY!", perform these steps in order:
+This project provides a dynamic, agent-friendly SQLite memory bank implemented as a FastMCP serv6. When6. When I say "DEPLOY!", follow the proper Git workflow:
+    1. **Ensure on main branch**: `git checkout main && git pull origin main`
+    2. **Review CHANGELOG.md**: Verify all changes documented
+    3. **Quality Checks**: Run `flake8`, `mypy`, Pylance - fix all errors
+    4. **Test Suite**: Run full test suite - all tests must pass
+    5. **Version Bump**: Update version in `pyproject.toml`, `__init__.py` if needed
+    6. **Documentation**: Update `README.md`, `docs/`, instruction files
+    7. **Clean Working Directory**: `git status` should show clean state
+    8. **Create Release Branch**: `git checkout -b release/v1.x.x`
+    9. **Commit Release**: `git commit -m "chore: prepare release v1.x.x"`
+    10. **Push Release Branch**: `git push origin release/v1.x.x`
+    11. **Create Release PR**: Merge release branch to main via PR
+    12. **Tag Version**: `git tag v1.x.x && git push --tags`
+    13. **Deploy to PyPI**: `twine upload dist/*`
+    14. **GitHub Release**: `gh release create v1.x.x --latest`LOY!", perform these steps in order:
     1. Review CHANGELOG.md
     2. Bump the version if needed
     3. Update the documentation
@@ -195,13 +209,16 @@ def tool_function(params):
 4. Validate error handling works correctly
 5. Always before build and Fix linting issues with `flake8` and type issues with mypy and pylance errors
 6. When I say “DEPLOY!”, perform these steps in order:
-    1. Review CHANGELOG.md
-    2. Bump the version if needed
-    3. Update the documentation
-    4. Commit all changes, TAag with the version number
-    5. Push to GitHub
-    6. Publish the package to PyPI
-    7. Create a new GitHub release using gh cli
+    1. Review `CHANGELOG.md` for recent updates and ensure all changes are documented.
+    2. Run `flake8`, `mypy`, and Pylance to fix all linting and type errors.
+    3. Run the full test suite to ensure all tests pass.
+    4. Bump the version in all relevant files (e.g., `pyproject.toml`, `__init__.py`) if needed.
+    5. Update documentation (`README.md`, `docs/`, and instruction files) to reflect the latest changes.
+    6. Run `git status` to verify a clean working directory.
+    7. Commit all changes and tag the commit with the new version number (e.g., `v1.2.3`).
+    8. Push commits and tags to GitHub (`git push && git push --tags`).
+    9. Publish the package to PyPI (e.g., `twine upload dist/*`).
+    10. Create a new GitHub release using the `gh` CLI, keeping release notes concise to avoid triggering the interactive editor.
 
 ## PROJECT-SPECIFIC COMMANDS
 
@@ -232,80 +249,123 @@ gh release create v1.5.0 --title "Version Title" --notes "Brief description with
 # Complex release notes should be added via GitHub web interface if needed
 ```
 
-## INSTRUCTION MAINTENANCE PROTOCOL
+## GIT WORKFLOW & BRANCHING STRATEGY
 
-### MANDATORY UPDATE REQUIREMENTS
-When ANY of the following changes occur, you MUST update the relevant instruction files:
+### RECOMMENDED WORKFLOW
+**Use feature branches for all development work, then Pull Requests to main**
 
-#### Project Architecture Changes
-- **New components added** → Update PROJECT-SPECIFIC ARCHITECTURE section
-- **Module relationships change** → Update Core Components documentation
-- **Design patterns evolve** → Update Design Principles section
+#### **Branch Protection Strategy:**
+- **`main` branch**: Protected, production-ready code only
+- **Feature branches**: All development work (`feature/test-improvements`, `feature/semantic-search`, etc.)  
+- **Hotfix branches**: Critical fixes (`hotfix/security-patch`, `hotfix/critical-bug`)
 
-#### FastMCP Tool Changes
-- **New tools added** → Update FASTMCP TOOL DEVELOPMENT PATTERNS
-- **Tool signatures change** → Update Type Safety examples
-- **Error handling patterns change** → Update Error Response Pattern section
+#### **Development Workflow:**
+1. **Create Feature Branch**: `git checkout -b feature/descriptive-name`
+2. **Develop & Test**: Make changes, ensure all tests pass
+3. **Commit Changes**: Use conventional commit messages
+4. **Push Feature Branch**: `git push origin feature/descriptive-name`
+5. **Create Pull Request**: Via GitHub web interface or `gh` CLI
+6. **Code Review**: Review changes, run CI/CD checks
+7. **Merge to Main**: Only after approval and all checks pass
+8. **Cleanup**: Delete feature branch after merge
 
-#### Database Schema Changes
-- **New tables added** → Update memory.instructions.md schemas
-- **Column changes** → Update Memory Storage Patterns examples
-- **Query patterns change** → Update Memory Retrieval Patterns
+#### **Branch Naming Conventions:**
+- **Features**: `feature/semantic-search-enhancement`
+- **Bug fixes**: `fix/type-error-in-database`
+- **Tests**: `test/performance-benchmarks`
+- **Docs**: `docs/api-documentation-update`
+- **Hotfixes**: `hotfix/security-vulnerability`
 
-#### Testing Pattern Changes
-- **New test utilities** → Update PROJECT-SPECIFIC TESTING PATTERNS
-- **Test structure changes** → Update Test Structure section
-- **New assertion patterns** → Update MCP Response Testing examples
+#### **Pull Request Guidelines:**
+- **Title**: Clear, descriptive (e.g., "Add comprehensive test suite with 57 tests")
+- **Description**: What changed, why, testing done
+- **Reviewers**: Assign appropriate reviewers
+- **Labels**: Use GitHub labels for categorization
+- **CI/CD**: Ensure all automated checks pass
 
-#### Error Handling Changes
-- **New exception types** → Update Custom Exception Hierarchy
-- **Error response format changes** → Update Error Response Format
-- **New decorator patterns** → Update Decorator Usage examples
+### GIT COMMANDS FOR WORKFLOW
 
-### UPDATE WORKFLOW
-1. **Identify Change Type**: Determine which instruction section is affected
-2. **Update Documentation**: Modify the relevant instruction file(s)
-3. **Verify Examples**: Ensure all code examples in instructions still work
-4. **Test Instructions**: Validate that instructions are clear and complete
-5. **Store Memory**: Update SQLite Memory Bank with documentation changes
-
-### INSTRUCTION FILE RESPONSIBILITIES
-- **project.instructions.md**: All SQLite Memory Bank specific patterns and architecture
-- **memory.instructions.md**: Database schemas and memory usage patterns
-- **general.instructions.md**: Universal coding standards (only update if patterns apply broadly)
-- **code.review.instructions.md**: Review methodology (rarely needs updates)
-
-### VALIDATION COMMANDS
-After updating instructions, run these commands to verify accuracy:
+#### **Starting New Feature:**
 ```bash
-# Test that examples in instructions work
-python examples/agent_memory_example.py
-
-# Verify no type errors in examples
-# (Pylance will automatically check in VS Code)
-
-# Run tests to ensure patterns still work
-python -m pytest
+git checkout main
+git pull origin main
+git checkout -b feature/your-feature-name
 ```
 
-### MEMORY BANK UPDATES
-When updating instructions, also store the changes in memory:
-```python
-# Document instruction changes
-create_row('technical_decisions', {
-    'decision_name': 'Instruction Update',
-    'chosen_approach': 'Updated [specific section]',
-    'rationale': 'Changed due to [reason for change]'
-})
-
-# Update project structure if architectural changes
-create_row('project_structure', {
-    'category': 'documentation',
-    'title': 'Instruction File Updates',
-    'content': 'Updated instructions to reflect [specific changes]'
-})
+#### **Working on Feature:**
+```bash
+git add .
+git commit -m "feat: descriptive commit message"
+git push origin feature/your-feature-name
 ```
 
-**CRITICAL**: Never let instruction files become outdated. Stale instructions lead to confusion and development errors.
+#### **Creating Pull Request:**
+```bash
+# Via GitHub CLI (recommended)
+gh pr create --title "Feature: Your Feature Name" --body "Description of changes"
 
-This document should be updated whenever project-specific patterns or requirements change.
+# Or via web interface at github.com
+```
+
+#### **After PR Approval:**
+```bash
+# Merge via GitHub interface (recommended) or:
+git checkout main
+git pull origin main
+git branch -d feature/your-feature-name  # Delete local branch
+git push origin --delete feature/your-feature-name  # Delete remote branch
+```
+
+### MAIN BRANCH PROTECTION
+
+#### **Recommended Settings:**
+- **Require pull request reviews**: At least 1 reviewer
+- **Require status checks**: All CI/CD tests must pass
+- **Require branches to be up to date**: Prevent conflicts
+- **Restrict pushes to main**: Only via approved pull requests
+- **Require linear history**: Clean commit history
+
+#### **CI/CD Integration:**
+```yaml
+# .github/workflows/ci.yml should include:
+- Automated testing (pytest)
+- Code quality checks (flake8, mypy)
+- Security scanning
+- Performance benchmarks
+- Documentation builds
+```
+
+### DEPLOYMENT WORKFLOW
+
+#### **For Production Releases:**
+1. **Feature Development**: Work in feature branches
+2. **Pull Request**: Merge to main via PR
+3. **Release Preparation**: Create release branch from main
+4. **Version Bump**: Update version numbers, changelog
+5. **Release Testing**: Final validation in release branch
+6. **Tag & Deploy**: Tag version, deploy to PyPI
+7. **GitHub Release**: Create release notes and artifacts
+
+#### **Emergency Hotfixes:**
+1. **Hotfix Branch**: `git checkout -b hotfix/critical-issue main`
+2. **Fix & Test**: Implement fix, ensure tests pass
+3. **Direct PR to Main**: Fast-track review for critical issues
+4. **Immediate Deploy**: Deploy hotfix quickly
+5. **Backport**: Apply fix to development branches if needed
+
+### WHY THIS WORKFLOW?
+
+#### **Benefits:**
+- **Code Quality**: All changes reviewed before reaching main
+- **Collaboration**: Multiple developers can work simultaneously
+- **Rollback Safety**: Main branch always in deployable state
+- **CI/CD Integration**: Automated testing prevents broken deployments
+- **Documentation**: PR descriptions provide change history
+- **Conflict Resolution**: Merge conflicts resolved in feature branches
+
+#### **For Solo Development:**
+- **Still Recommended**: Establishes good habits and practices
+- **Local Testing**: Feature branches allow experimental work
+- **Clean History**: Main branch has clean, logical commit history
+- **Future Collaboration**: Ready for team development
+```
