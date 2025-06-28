@@ -13,7 +13,7 @@ def test_mcp_server():
     """Test MCP server stdio connection."""
     cmd = [
         "C:\\Users\\Robert\\anaconda3\\Scripts\\conda.exe",
-        "run", "-n", "llm_dev", "python", "-m", "src.mcp_sqlite_memory_bank.server"
+        "run", "-n", "llm_dev", "python", "-m", "src.mcp_sqlite_memory_bank"
     ]
     
     print("Starting MCP server...")
@@ -70,6 +70,10 @@ def test_mcp_server():
                 stderr_output = process.stderr.read()
                 if stderr_output:
                     print(f"Stderr: {stderr_output}")
+            if process.stdout:
+                stdout_output = process.stdout.read()
+                if stdout_output:
+                    print(f"Stdout: {stdout_output}")
             return False
         
         # Try to read response

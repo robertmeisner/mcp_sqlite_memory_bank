@@ -1051,7 +1051,7 @@ if __name__ == "__main__":
     logging.info(f"Starting SQLite Memory Bank with database at {DB_PATH}")
 
     # Run the FastMCP app in stdio mode for MCP clients
-    app.run()
+    app.run(transport="stdio")
 
 
 # Compatibility aliases for tests that expect _impl functions
