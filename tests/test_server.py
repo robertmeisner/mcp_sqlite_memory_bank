@@ -162,15 +162,21 @@ class TestKnowledgeGraph:
         n1 = smb._create_row_impl(table_name="nodes", data={"label": "Person"})
         n2 = smb._create_row_impl(table_name="nodes", data={"label": "Company"})
         assert n1["success"] and n2["success"]
-        e1 = smb._create_row_impl(table_name="edges", data={"source": n1["id"], "target": n2["id"], "type": "works_at"})
+        e1 = smb._create_row_impl(
+            table_name="edges", data={"source": n1["id"], "target": n2["id"], "type": "works_at"}
+        )
         assert e1["success"]
         nodes = smb._read_rows_impl(table_name="nodes", where={})
         assert nodes["success"]
         assert any(node["label"] == "Person" for node in nodes["rows"])
         edges = smb._read_rows_impl(table_name="edges", where={"type": "works_at"})
         assert edges["success"]
-        assert any(edge["source"] == n1["id"] and edge["target"] == n2["id"] for edge in edges["rows"])
-        upd = smb._update_rows_impl(table_name="nodes", data={"label": "Human"}, where={"id": n1["id"]})
+        assert any(
+            edge["source"] == n1["id"] and edge["target"] == n2["id"] for edge in edges["rows"]
+        )
+        upd = smb._update_rows_impl(
+            table_name="nodes", data={"label": "Human"}, where={"id": n1["id"]}
+        )
         assert upd["success"]
         del_edge = smb._delete_rows_impl(table_name="edges", where={"id": e1["id"]})
         assert del_edge["success"]

@@ -19,7 +19,7 @@ def temp_db_simple(monkeypatch):
     db_fd, db_path = tempfile.mkstemp(suffix=".db")
     os.close(db_fd)
     orig_db = smb.DB_PATH
-    monkeypatch.setattr(smb, 'DB_PATH', db_path)
+    monkeypatch.setattr(smb, "DB_PATH", db_path)
     yield db_path
     try:
         os.remove(db_path)
@@ -40,27 +40,24 @@ class TestBasicMocking:
                     "table_name": "test_semantic_flag",
                     "columns": [
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "content", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "content", "type": "TEXT"},
+                    ],
+                },
             )
 
             await client.call_tool(
                 "create_row",
-                {"table_name": "test_semantic_flag", "data": {"content": "test content"}}
+                {"table_name": "test_semantic_flag", "data": {"content": "test content"}},
             )
 
             # Mock the availability flag
-            with patch('mcp_sqlite_memory_bank.semantic.SENTENCE_TRANSFORMERS_AVAILABLE', False):
+            with patch("mcp_sqlite_memory_bank.semantic.SENTENCE_TRANSFORMERS_AVAILABLE", False):
                 result = await client.call_tool(
                     "add_embeddings",
-                    {
-                        "table_name": "test_semantic_flag",
-                        "text_columns": ["content"]
-                    }
+                    {"table_name": "test_semantic_flag", "text_columns": ["content"]},
                 )
                 result_out = extract_result(result)
-                
+
                 # Should handle gracefully
                 assert "success" in result_out
 
@@ -69,12 +66,9 @@ class TestBasicMocking:
         """Test that error responses have the expected structure."""
         async with Client(smb.app) as client:
             # Test with invalid table name to trigger error
-            result = await client.call_tool(
-                "read_rows",
-                {"table_name": "nonexistent_table"}
-            )
+            result = await client.call_tool("read_rows", {"table_name": "nonexistent_table"})
             result_out = extract_result(result)
-            
+
             # Should be a properly structured error response
             assert "success" in result_out
             if not result_out["success"]:
@@ -88,13 +82,10 @@ class TestBasicMocking:
             # Test creating table with invalid column data
             result = await client.call_tool(
                 "create_table",
-                {
-                    "table_name": "validation_test",
-                    "columns": []  # Empty columns should be handled
-                }
+                {"table_name": "validation_test", "columns": []},  # Empty columns should be handled
             )
             result_out = extract_result(result)
-            
+
             # Should handle validation error gracefully
             assert "success" in result_out
             if not result_out["success"]:
@@ -110,27 +101,24 @@ class TestBasicMocking:
                     "table_name": "json_test",
                     "columns": [
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "data", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "data", "type": "TEXT"},
+                    ],
+                },
             )
 
             # Test with complex data that needs JSON serialization
             complex_data = {
                 "nested": {"key": "value"},
                 "list": [1, 2, 3],
-                "unicode": "Test with émojis 🚀"
+                "unicode": "Test with émojis 🚀",
             }
 
             result = await client.call_tool(
                 "create_row",
-                {
-                    "table_name": "json_test",
-                    "data": {"data": json.dumps(complex_data)}
-                }
+                {"table_name": "json_test", "data": {"data": json.dumps(complex_data)}},
             )
             result_out = extract_result(result)
-            
+
             assert result_out["success"]
 
     @pytest.mark.asyncio
@@ -143,9 +131,9 @@ class TestBasicMocking:
                     "table_name": "concurrent_test",
                     "columns": [
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "value", "type": "INTEGER"}
-                    ]
-                }
+                        {"name": "value", "type": "INTEGER"},
+                    ],
+                },
             )
 
             # Simulate multiple operations
@@ -153,8 +141,7 @@ class TestBasicMocking:
             for i in range(5):
                 operations.append(
                     client.call_tool(
-                        "create_row",
-                        {"table_name": "concurrent_test", "data": {"value": i}}
+                        "create_row", {"table_name": "concurrent_test", "data": {"value": i}}
                     )
                 )
 
@@ -170,10 +157,7 @@ class TestBasicMocking:
                 assert result["success"]
 
             # Verify all data was inserted
-            read_result = await client.call_tool(
-                "read_rows",
-                {"table_name": "concurrent_test"}
-            )
+            read_result = await client.call_tool("read_rows", {"table_name": "concurrent_test"})
             read_out = extract_result(read_result)
             assert len(read_out["rows"]) == 5
 
@@ -201,12 +185,12 @@ class TestUtilityMocking:
                             "table_name": table_name,
                             "columns": [
                                 {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                                {"name": "data", "type": "TEXT"}
-                            ]
-                        }
+                                {"name": "data", "type": "TEXT"},
+                            ],
+                        },
                     )
                     result_out = extract_result(result)
-                    
+
                     # Results will vary based on SQLite validation
                     assert "success" in result_out
 
@@ -222,33 +206,25 @@ class TestUtilityMocking:
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
                         {"name": "int_col", "type": "INTEGER"},
                         {"name": "text_col", "type": "TEXT"},
-                        {"name": "real_col", "type": "REAL"}
-                    ]
-                }
+                        {"name": "real_col", "type": "REAL"},
+                    ],
+                },
             )
 
             # Test with various data types
-            test_data = {
-                "int_col": 42,
-                "text_col": "test string",
-                "real_col": 3.14159
-            }
+            test_data = {"int_col": 42, "text_col": "test string", "real_col": 3.14159}
 
             result = await client.call_tool(
-                "create_row",
-                {"table_name": "type_test", "data": test_data}
+                "create_row", {"table_name": "type_test", "data": test_data}
             )
             result_out = extract_result(result)
-            
+
             assert result_out["success"]
 
             # Verify data was stored correctly
-            read_result = await client.call_tool(
-                "read_rows",
-                {"table_name": "type_test"}
-            )
+            read_result = await client.call_tool("read_rows", {"table_name": "type_test"})
             read_out = extract_result(read_result)
-            
+
             assert len(read_out["rows"]) == 1
             row = read_out["rows"][0]
             assert row["int_col"] == 42
@@ -273,7 +249,7 @@ class TestErrorHandlingSimulation:
             for operation, params in operations:
                 result = await client.call_tool(operation, params)
                 result_out = extract_result(result)
-                
+
                 # Should handle gracefully
                 assert "success" in result_out
                 if not result_out["success"]:
@@ -289,27 +265,25 @@ class TestErrorHandlingSimulation:
                     "table_name": "boundary_test",
                     "columns": [
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "data", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "data", "type": "TEXT"},
+                    ],
+                },
             )
 
             # Test with very long string
             long_string = "x" * 10000
             result = await client.call_tool(
-                "create_row",
-                {"table_name": "boundary_test", "data": {"data": long_string}}
+                "create_row", {"table_name": "boundary_test", "data": {"data": long_string}}
             )
             result_out = extract_result(result)
-            
+
             assert result_out["success"]
 
             # Test with unicode characters
             unicode_string = "Testing unicode: 🌟 ñ ü ñ ö ë ä"
             result = await client.call_tool(
-                "create_row",
-                {"table_name": "boundary_test", "data": {"data": unicode_string}}
+                "create_row", {"table_name": "boundary_test", "data": {"data": unicode_string}}
             )
             result_out = extract_result(result)
-            
+
             assert result_out["success"]

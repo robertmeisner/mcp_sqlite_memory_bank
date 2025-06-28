@@ -133,3 +133,18 @@ desktop.ini
 # Coverage reports
 .coverage
 htmlcov/
+
+# Debug and test files in root (should go in tests/ or examples/)
+debug_*.py
+test_*.py
+*_test.py
+*_debug.py
+validate_*.py
+demo_*.py
+minimal_*.py
+
+# Exclude legitimate test files in proper directories
+!tests/test_*.py
+!tests/*_test.py
+!examples/test_*.py
+!examples/*_test.py

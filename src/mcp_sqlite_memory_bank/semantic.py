@@ -69,9 +69,7 @@ class SemanticSearchEngine:
                 self._model = SentenceTransformer(self.model_name)
                 logging.info(f"Loaded semantic search model: {self.model_name}")
             except Exception as e:
-                raise DatabaseError(
-                    f"Failed to load semantic search model {self.model_name}: {e}"
-                )
+                raise DatabaseError(f"Failed to load semantic search model {self.model_name}: {e}")
         return self._model
 
     def get_embedding_dimensions(self) -> Optional[int]:
@@ -136,9 +134,7 @@ class SemanticSearchEngine:
         except Exception as e:
             raise DatabaseError(f"Failed to generate batch embeddings: {e}")
 
-    def calculate_similarity(
-        self, embedding1: List[float], embedding2: List[float]
-    ) -> float:
+    def calculate_similarity(self, embedding1: List[float], embedding2: List[float]) -> float:
         """
         Calculate cosine similarity between two embeddings.
 
@@ -226,9 +222,7 @@ class SemanticSearchEngine:
                 results.sort(key=lambda x: x[1], reverse=True)
                 return results[:top_k]
             except Exception as e:
-                logging.warning(
-                    f"Torch similarity search failed, using numpy fallback: {e}"
-                )
+                logging.warning(f"Torch similarity search failed, using numpy fallback: {e}")
 
         # Fallback to numpy implementation
         results = []
@@ -317,11 +311,7 @@ class SemanticSearchEngine:
                 if content_columns:
                     matched_content = []
                     for col in content_columns:
-                        if (
-                            col in row
-                            and row[col]
-                            and query.lower() in str(row[col]).lower()
-                        ):
+                        if col in row and row[col] and query.lower() in str(row[col]).lower():
                             matched_content.append(f"{col}: {row[col]}")
                     if matched_content:
                         row["matched_content"] = matched_content
@@ -367,14 +357,9 @@ class SemanticSearchEngine:
             semantic_weight /= total_weight
             text_weight /= total_weight
 
-        # Get semantic search results
-        semantic_results = self.semantic_search(
-            query,
-            content_data,
-            embedding_column,
-            similarity_threshold=0.3,
-            top_k=top_k * 2,  # Get more for reranking
-        )
+        # Use the provided content_data as semantic results (already filtered by database)
+        # The content_data passed here should already be the semantic search results
+        semantic_results = content_data.copy() if content_data else []
 
         # Add text matching scores
         query_lower = query.lower()
@@ -387,15 +372,11 @@ class SemanticSearchEngine:
                         content = str(result[col]).lower()
                         if query_lower in content:
                             # Simple frequency-based text scoring
-                            text_score += content.count(query_lower) / len(
-                                content.split()
-                            )
+                            text_score += content.count(query_lower) / len(content.split())
 
             # Combine scores
             semantic_score = result.get("similarity_score", 0.0)
-            combined_score = (semantic_score * semantic_weight) + (
-                text_score * text_weight
-            )
+            combined_score = (semantic_score * semantic_weight) + (text_score * text_weight)
             result["combined_score"] = round(combined_score, 3)
             result["text_score"] = round(text_score, 3)
 
@@ -421,9 +402,7 @@ def get_semantic_engine(model_name: str = "all-MiniLM-L6-v2") -> SemanticSearchE
     try:
         if _semantic_engine is None or _semantic_engine.model_name != model_name:
             if not SENTENCE_TRANSFORMERS_AVAILABLE:
-                raise ValueError(
-                    "Sentence transformers not available for semantic search"
-                )
+                raise ValueError("Sentence transformers not available for semantic search")
             _semantic_engine = SemanticSearchEngine(model_name)
 
         # Verify the engine is properly initialized
