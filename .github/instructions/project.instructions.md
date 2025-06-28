@@ -215,49 +215,118 @@ def tool_function(params):
 
 When I say **"DEPLOY!"**, follow these steps in order:
 
-### Pre-Deployment Checklist
+### ⚠️ CRITICAL: PRE-DEPLOYMENT COMPLIANCE CHECKLIST
+**NEVER skip these steps - they prevent production failures**
+
 1. **Review CHANGELOG.md**: Verify all changes are documented
 2. **Quality Checks**: Run `flake8`, `mypy`, Pylance - fix all errors
-3. **Test Suite**: Run full test suite - all tests must pass
+3. **Test Suite**: Run full test suite - **ALL TESTS MUST PASS**
 4. **Version Bump**: Update version in `pyproject.toml`, `__init__.py` if needed
 5. **Documentation**: Update `README.md`, `docs/`, instruction files
 6. **Clean Working Directory**: `git status` should show clean state
 
-### Release Process (with Professional Git Workflow)
+### 🔒 MANDATORY: Professional Git Workflow for Releases
+**Follow this process exactly - NO SHORTCUTS ALLOWED**
+
 1. **Ensure on main branch**: `git checkout main && git pull origin main`
 2. **Create Release Branch**: `git checkout -b release/v1.x.x`
 3. **Commit Release**: `git commit -m "chore: prepare release v1.x.x"`
 4. **Push Release Branch**: `git push origin release/v1.x.x`
-5. **Create Release PR**: Merge release branch to main via PR
-6. **Tag Version**: `git tag v1.x.x && git push --tags`
-7. **Deploy to PyPI**: `twine upload dist/*`
-8. **GitHub Release**: `gh release create v1.x.x --latest`
+5. **Create Release PR**: `gh pr create --title "Release v1.x.x" --body "Release notes"`
 
-### Release Notes Best Practices
-- Keep `--notes` parameter concise to avoid triggering interactive editor
-- Complex release notes should be added via GitHub web interface if needed
+### ⏳ CRITICAL: Wait for CI/CD Checks to Complete
+**🚫 NEVER MERGE WITHOUT GREEN CHECKS 🚫**
 
-## PROJECT-SPECIFIC COMMANDS
+6. **Monitor CI/CD Pipeline**: Wait for ALL automated checks to complete
+   - ✅ **pytest tests**: All tests must pass
+   - ✅ **Code quality**: flake8, mypy, pylance checks
+   - ✅ **Security scans**: No vulnerabilities detected
+   - ✅ **Coverage reports**: Maintain test coverage standards
+7. **Address Failures IMMEDIATELY**: If any check fails:
+   - ❌ **DO NOT MERGE the PR**
+   - 🔧 **Fix the issue in the release branch**
+   - 🔄 **Push fixes and wait for checks to re-run**
+   - ✅ **Only proceed when ALL checks are green**
 
-### Running Tests
-```bash
-python -m pytest                    # Run all tests
-python -m pytest tests/test_api.py  # Run API tests only
-```
+### 🚀 Deployment After Successful CI/CD
+**Only proceed after ALL automated checks pass**
 
-### Running Examples
-```bash
-python examples/agent_memory_example.py     # Memory usage demo
-python examples/client_example.py           # Client usage demo
-```
+8. **Merge PR**: Only after approval AND green CI/CD checks
+9. **Switch to Main**: `git checkout main && git pull origin main`
+10. **Tag Version**: `git tag v1.x.x && git push --tags`
+11. **Build Package**: `python -m build`
+12. **Deploy to PyPI**: `twine upload dist/*`
+13. **GitHub Release**: `gh release create v1.x.x --latest`
 
-### Type Checking
-```bash
-# Pylance/mypy will run automatically in VS Code
-# Fix all type errors before committing
-```
+### 📋 CI/CD Check Requirements
+**All of these MUST pass before merging:**
 
-## GIT WORKFLOW & BRANCHING STRATEGY
+- **✅ pytest**: All unit and integration tests pass
+- **✅ flake8**: No linting errors
+- **✅ mypy/pylance**: No type errors
+- **✅ Coverage**: Minimum coverage thresholds met
+- **✅ Security**: No vulnerabilities detected
+- **✅ Build**: Package builds successfully
+
+### 🚨 Error Handling During Deployment
+**If CI/CD checks fail:**
+
+1. **STOP**: Do not proceed with deployment
+2. **Analyze**: Review failed check logs carefully
+3. **Fix**: Address the root cause in the release branch
+4. **Test**: Verify fix locally before pushing
+5. **Re-run**: Push fix and wait for checks to complete
+6. **Verify**: Ensure ALL checks are now green
+7. **Document**: Update CHANGELOG if fix affects functionality
+
+### 🚨 DEPLOYMENT FAILURE PROTOCOLS & LEARNING
+
+#### **When Deployment Violations Occur:**
+If CI/CD checks were bypassed or failed tests were merged to production:
+
+1. **IMMEDIATE ASSESSMENT**:
+   - Stop any ongoing deployments
+   - Assess severity of production impact
+   - Document the violation and its consequences
+
+2. **ROLLBACK PROCEDURES**:
+   - Revert to last known good version if production is affected
+   - Notify stakeholders about the rollback
+   - Document rollback actions and timeline
+
+3. **ROOT CAUSE ANALYSIS**:
+   - Analyze why CI/CD checks were bypassed
+   - Identify specific test failure that reached production
+   - Review deployment logs and decision-making process
+   - Document findings in technical_decisions table
+
+4. **PROCESS IMPROVEMENT**:
+   - Update deployment procedures to prevent recurrence
+   - Strengthen branch protection rules if necessary
+   - Add additional automated checks if gaps identified
+   - Ensure team understands updated procedures
+
+#### **Example Failure: v1.6.0 Deployment (June 28, 2025)**
+**Issue**: Merged PR without waiting for CI/CD checks, resulting in failed test reaching production
+- Test failure: `test_auto_smart_search_complete_workflow` (0 results expected >= 2)
+- Root cause: Used `--admin` flag to bypass branch protection
+- Impact: Production deployment with known failing test
+- Lesson: NEVER use admin privileges to bypass CI/CD requirements
+
+**Corrective Actions**:
+- ✅ Updated project instructions to emphasize CI/CD wait requirements
+- ✅ Added explicit warnings about bypassing automated checks
+- ✅ Documented this failure as learning example
+- 🔄 TODO: Strengthen branch protection to prevent admin bypasses
+- 🔄 TODO: Add post-deployment verification scripts
+
+#### **Prevention Strategies**:
+- **Patience Over Speed**: Wait for all checks, even if it takes longer
+- **No Admin Overrides**: Admin privileges are for emergencies only, not convenience
+- **Double-Check Green Status**: Visually verify all checks are green before merging
+- **Test in Production**: Quick smoke test after deployment to catch immediate issues
+
+### GIT WORKFLOW & BRANCHING STRATEGY
 
 ### ⚠️ MANDATORY WORKFLOW - NO EXCEPTIONS ⚠️
 **ALL development work MUST use feature branches, then Pull Requests to main**
@@ -298,104 +367,6 @@ python examples/client_example.py           # Client usage demo
 - **Reviewers**: Assign appropriate reviewers
 - **Labels**: Use GitHub labels for categorization
 - **CI/CD**: Ensure all automated checks pass
-
-### GIT COMMANDS FOR WORKFLOW
-
-#### **Starting New Feature:**
-```bash
-git checkout main
-git pull origin main
-git checkout -b feature/your-feature-name
-```
-
-#### **Working on Feature:**
-```bash
-git add .
-git commit -m "feat: descriptive commit message"
-git push origin feature/your-feature-name
-```
-
-#### **Creating Pull Request:**
-```bash
-# Via GitHub CLI (recommended)
-gh pr create --title "Feature: Your Feature Name" --body "Description of changes"
-
-# Or via web interface at github.com
-```
-
-#### **After PR Approval:**
-```bash
-# Merge via GitHub interface (recommended) or:
-git checkout main
-git pull origin main
-git branch -d feature/your-feature-name  # Delete local branch
-git push origin --delete feature/your-feature-name  # Delete remote branch
-```
-
-### MAIN BRANCH PROTECTION
-
-#### **Recommended Settings:**
-- **Require pull request reviews**: At least 1 reviewer
-- **Require status checks**: All CI/CD tests must pass
-- **Require branches to be up to date**: Prevent conflicts
-- **Restrict pushes to main**: Only via approved pull requests
-- **Require linear history**: Clean commit history
-
-#### **CI/CD Integration:**
-```yaml
-# .github/workflows/ci.yml should include:
-- Automated testing (pytest)
-- Code quality checks (flake8, mypy)
-- Security scanning
-- Performance benchmarks
-- Documentation builds
-```
-
-### DEPLOYMENT WORKFLOW
-
-#### **PRE-DEPLOYMENT COMPLIANCE CHECKLIST:**
-- [ ] **Branch Check**: Changes merged to main via approved PR
-- [ ] **Test Status**: All tests passing
-- [ ] **Code Quality**: No linting or type errors
-- [ ] **Version Bump**: Version updated in pyproject.toml
-- [ ] **Changelog**: CHANGELOG.md updated with changes
-- [ ] **Technical Decisions Documentation**: Technical decisions recorded in memory bank
-
-#### **For Production Releases:**
-1. **Feature Development**: Work in feature branches (**MANDATORY**)
-2. **Pull Request**: Merge to main via PR (**MANDATORY**)
-3. **Release Preparation**: Create release branch from main
-4. **Version Bump**: Update version numbers, changelog
-5. **Release Testing**: Final validation in release branch
-6. **Tag & Deploy**: Tag version, deploy to PyPI
-7. **GitHub Release**: Create release notes and artifacts
-
-#### **WORKFLOW VIOLATION RECOVERY:**
-If workflow was violated (direct commits to main):
-1. **Document Violation**: Record in technical_decisions with rationale
-2. **Assess Risk**: Evaluate if rollback is needed
-3. **Immediate Review**: Get retroactive code review if possible
-4. **Process Fix**: Implement stricter branch protection rules
-5. **Team Learning**: Update procedures to prevent recurrence
-
-#### **Emergency Hotfixes - CONTROLLED PROCESS:**
-1. **STILL USE BRANCHES**: `git checkout -b hotfix/critical-issue main`
-2. **Fix & Test**: Implement fix, ensure tests pass
-3. **EXPEDITED PR**: Create PR with "URGENT" label for fast-track review
-4. **MINIMAL REVIEW**: Single reviewer minimum, focus on fix scope
-5. **IMMEDIATE DEPLOY**: Deploy after PR approval, not before
-6. **POST-DEPLOYMENT**: Document emergency procedure use in technical_decisions
-
-#### **DEPLOYMENT DECISION MATRIX:**
-
-| Situation | Workflow Required | Time to Deploy |
-|-----------|------------------|----------------|
-| **Feature Addition** | Feature Branch → PR → Review → Deploy | 1-2 hours |
-| **Bug Fix** | Feature Branch → PR → Review → Deploy | 30-60 minutes |
-| **Critical Hotfix** | Hotfix Branch → EXPEDITED PR → Deploy | 15-30 minutes |
-| **Emergency Security** | Hotfix Branch → EXPEDITED PR → Deploy | 5-15 minutes |
-
-**⚠️ NO situation justifies bypassing PR process entirely**
 
 ### GIT COMMANDS FOR WORKFLOW
 

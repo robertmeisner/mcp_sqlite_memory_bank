@@ -12,6 +12,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.2] - Enhanced Upsert with Change Tracking (2025-06-28)
+
+### 🚀 Major Feature Enhancement
+- **Enhanced Upsert Output**: `upsert_memory` now shows detailed field changes
+  - Displays old vs new values for each updated field
+  - Format: `"updated_fields": {"field": {"old": "previous", "new": "current"}}`
+  - Empty `updated_fields: {}` when no changes detected
+  - Improved transparency and debugging capabilities
+
+### 📋 Benefits
+- **Better Debugging**: See exactly what changed during upsert operations
+- **Transparency**: Complete visibility into field modifications
+- **User Experience**: Enhanced feedback for memory management operations
+
+---
+
+## [1.6.1] - Code Quality & Process Improvements (2025-06-28)
+
+### 🔧 Code Quality
+- **Code Formatting**: Applied Black formatter to entire codebase for consistent style
+- **Import Cleanup**: Removed unused imports across all modules
+- **Variable Cleanup**: Fixed unused variable warnings
+- **Linting Improvements**: Addressed majority of flake8 issues
+
+### 📋 Process Improvements  
+- **Enhanced CI/CD Documentation**: Updated deployment protocols with mandatory check requirements
+- **Deployment Failure Learning**: Documented v1.6.0 deployment violation as learning example
+- **Professional Standards**: Strengthened branch protection and review requirements
+
+### ✅ Quality Assurance
+- **All Tests Passing**: 81 tests including previously failing `test_auto_smart_search_complete_workflow`
+- **Type Safety**: Zero type errors in main codebase
+- **Stability**: No regressions introduced during cleanup
+
+---
+
 ## [1.6.0] - Batch Operations & Memory Management (2025-06-28)
 
 ### 🚀 Major Features

@@ -36,9 +36,7 @@ class MemoryBankResources:
             result = cast(Dict[str, Any], db.list_tables())
 
             if not result.get("success"):
-                return json.dumps(
-                    {"error": "Failed to fetch tables", "details": result}
-                )
+                return json.dumps({"error": "Failed to fetch tables", "details": result})
 
             resource_content = {
                 "resource_type": "table_list",
@@ -110,9 +108,7 @@ class MemoryBankResources:
             )  # Search all tables, limit to 50 results
 
             if not result.get("success"):
-                return json.dumps(
-                    {"error": f"Failed to search for '{query}'", "details": result}
-                )
+                return json.dumps({"error": f"Failed to search for '{query}'", "details": result})
 
             search_results = result.get("results", [])
             resource_content = {
@@ -167,11 +163,7 @@ class MemoryBankResources:
                 max_rows = 0
                 for table_name, stats in table_stats.items():
                     row_count_obj = stats.get("row_count", 0)
-                    row_count = (
-                        int(row_count_obj)
-                        if isinstance(row_count_obj, (int, str))
-                        else 0
-                    )
+                    row_count = int(row_count_obj) if isinstance(row_count_obj, (int, str)) else 0
                     if row_count > max_rows:
                         max_rows = row_count
                         largest_table = table_name
@@ -198,9 +190,7 @@ class MemoryBankResources:
             # Get tables with timestamp columns for activity tracking
             tables_result = cast(Dict[str, Any], db.list_tables())
             if not tables_result.get("success"):
-                return json.dumps(
-                    {"error": "Failed to get tables", "details": tables_result}
-                )
+                return json.dumps({"error": "Failed to get tables", "details": tables_result})
 
             recent_activity = []
             tables = tables_result.get("tables", [])
@@ -214,16 +204,12 @@ class MemoryBankResources:
 
                     columns = schema_result.get("columns", [])
                     timestamp_cols = [
-                        col
-                        for col in columns
-                        if "timestamp" in col.get("name", "").lower()
+                        col for col in columns if "timestamp" in col.get("name", "").lower()
                     ]
 
                     if timestamp_cols:
                         # Get recent entries (last 10)
-                        recent_result = cast(
-                            Dict[str, Any], db.read_rows(table_name, None, 10)
-                        )
+                        recent_result = cast(Dict[str, Any], db.read_rows(table_name, None, 10))
                         if recent_result.get("success"):
                             rows = recent_result.get("rows", [])
                             for row in rows:
@@ -240,7 +226,7 @@ class MemoryBankResources:
                                 }
                                 recent_activity.append(activity_entry)
 
-                except Exception as e:
+                except Exception:
                     continue
 
             # Sort by timestamp (most recent first)
@@ -308,9 +294,7 @@ class MemoryBankResources:
                                 embedding_stats.get("success")
                                 and embedding_stats.get("coverage_percent", 0) == 0
                             ):
-                                schema_result = cast(
-                                    Dict[str, Any], db.describe_table(table_name)
-                                )
+                                schema_result = cast(Dict[str, Any], db.describe_table(table_name))
                                 if schema_result.get("success"):
                                     text_cols = [
                                         col
@@ -354,7 +338,7 @@ class MemoryBankResources:
                                     }
                                 )
 
-                    except Exception as e:
+                    except Exception:
                         continue
 
                 # Prioritize suggestions
@@ -407,9 +391,7 @@ class MemoryBankResources:
             try:
                 tables_result = cast(Dict[str, Any], db.list_tables())
                 if not tables_result.get("success"):
-                    return json.dumps(
-                        {"error": "Failed to get insights", "details": tables_result}
-                    )
+                    return json.dumps({"error": "Failed to get insights", "details": tables_result})
 
                 tables = tables_result.get("tables", [])
                 total_rows = 0
@@ -433,13 +415,9 @@ class MemoryBankResources:
                                         total_content_length += len(value)
 
                             avg_content_length = (
-                                total_content_length / sample_size
-                                if sample_size > 0
-                                else 0
+                                total_content_length / sample_size if sample_size > 0 else 0
                             )
-                            quality_score = min(
-                                10, avg_content_length / 50
-                            )  # Normalize to 0-10
+                            quality_score = min(10, avg_content_length / 50)  # Normalize to 0-10
                             content_quality_scores.append(quality_score)
 
                             insights["usage_patterns"][table_name] = {
@@ -449,11 +427,7 @@ class MemoryBankResources:
                                 "category": (
                                     "high_value"
                                     if quality_score > 7
-                                    else (
-                                        "medium_value"
-                                        if quality_score > 3
-                                        else "low_value"
-                                    )
+                                    else ("medium_value" if quality_score > 3 else "low_value")
                                 ),
                             }
 

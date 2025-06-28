@@ -7,12 +7,11 @@ semantic search, embedding management, and intelligent search capabilities.
 
 import logging
 import traceback
-from typing import Any, Dict, List, Optional, cast
+from typing import List, Optional, cast
 
 from ..database import get_database
-from ..types import MemoryBankError, DatabaseError, ToolResponse
+from ..types import ToolResponse
 from ..utils import catch_errors
-from ..semantic import is_semantic_search_available
 
 
 @catch_errors
@@ -24,9 +23,7 @@ def search_content(
     """Perform full-text search across table content using natural language queries."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).search_content(query, tables, limit)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).search_content(query, tables, limit))
 
 
 @catch_errors
@@ -228,10 +225,7 @@ def auto_semantic_search(
                 columns = schema_result.get("columns", [])
                 if isinstance(columns, list):
                     for col in columns:
-                        if (
-                            isinstance(col, dict)
-                            and "TEXT" in col.get("type", "").upper()
-                        ):
+                        if isinstance(col, dict) and "TEXT" in col.get("type", "").upper():
                             text_columns.append(col["name"])
 
                 # Auto-embed text columns
@@ -365,10 +359,7 @@ def auto_smart_search(
                 columns = schema_result.get("columns", [])
                 if isinstance(columns, list):
                     for col in columns:
-                        if (
-                            isinstance(col, dict)
-                            and "TEXT" in col.get("type", "").upper()
-                        ):
+                        if isinstance(col, dict) and "TEXT" in col.get("type", "").upper():
                             text_columns.append(col["name"])
 
                 # Auto-embed text columns
@@ -397,9 +388,7 @@ def auto_smart_search(
             )
         except Exception as search_error:
             # If hybrid search fails, fall back to regular content search
-            logging.warning(
-                f"Hybrid search failed, falling back to content search: {search_error}"
-            )
+            logging.warning(f"Hybrid search failed, falling back to content search: {search_error}")
             try:
                 fallback_result = get_database(server.DB_PATH).search_content(
                     query, search_tables, limit

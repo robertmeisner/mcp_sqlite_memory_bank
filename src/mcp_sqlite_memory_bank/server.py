@@ -43,14 +43,25 @@ Each tool is designed for explicit, discoverable use by LLMs and agents:
 Author: Robert Meisner
 """
 
+from .tools.discovery import (
+    intelligent_discovery as intelligent_discovery_impl,
+    discovery_templates as discovery_templates_impl,
+    discover_relationships as discover_relationships_impl,
+)
+from .tools.search import (
+    search_content as search_content_impl,
+    explore_tables as explore_tables_impl,
+    add_embeddings as add_embeddings_impl,
+    auto_semantic_search as auto_semantic_search_impl,
+    auto_smart_search as auto_smart_search_impl,
+    embedding_stats as embedding_stats_impl,
+)
 import os
-import re
 import logging
 from typing import Dict, Optional, List, cast, Any
 from fastmcp import FastMCP
 
 from .database import get_database
-from .semantic import is_semantic_search_available
 from .types import (
     ToolResponse,
     CreateTableResponse,
@@ -124,9 +135,7 @@ def create_table(table_name: str, columns: List[Dict[str, str]]) -> ToolResponse
         - Creates table if it doesn't exist (idempotent)
         - Raises appropriate errors for invalid input
     """
-    return cast(
-        CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns)
-    )
+    return cast(CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns))
 
 
 @mcp.tool
@@ -238,9 +247,7 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
         - Validates both old and new table names
         - Confirms old table exists and new name doesn't conflict
     """
-    return cast(
-        RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name)
-    )
+    return cast(RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name))
 
 
 @mcp.tool
@@ -271,9 +278,7 @@ def create_row(table_name: str, data: Dict[str, Any]) -> ToolResponse:
 
 @mcp.tool
 @catch_errors
-def upsert_memory(
-    table_name: str, data: Dict[str, Any], match_columns: List[str]
-) -> ToolResponse:
+def upsert_memory(table_name: str, data: Dict[str, Any], match_columns: List[str]) -> ToolResponse:
     """
     🔄 **SMART MEMORY UPSERT** - Prevent duplicates and maintain data consistency!
 
@@ -358,16 +363,12 @@ def update_rows(
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it updates all rows!)
     """
-    return cast(
-        UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where)
-    )
+    return cast(UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where))
 
 
 @mcp.tool
 @catch_errors
-def delete_rows(
-    table_name: str, where: Optional[Dict[str, Any]] = None
-) -> ToolResponse:
+def delete_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
     """
     Delete rows from any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.
 
@@ -389,9 +390,7 @@ def delete_rows(
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it deletes all rows!)
     """
-    return cast(
-        DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where)
-    )
+    return cast(DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where))
 
 
 @mcp.tool
@@ -454,21 +453,8 @@ def list_all_columns() -> ToolResponse:
 
 
 # Import the implementation functions from tools modules
-from .tools.search import (
-    search_content as search_content_impl,
-    explore_tables as explore_tables_impl,
-    add_embeddings as add_embeddings_impl,
-    auto_semantic_search as auto_semantic_search_impl,
-    auto_smart_search as auto_smart_search_impl,
-    embedding_stats as embedding_stats_impl,
-)
 
 # Import the implementation functions from discovery module
-from .tools.discovery import (
-    intelligent_discovery as intelligent_discovery_impl,
-    discovery_templates as discovery_templates_impl,
-    discover_relationships as discover_relationships_impl,
-)
 
 # --- MCP Tool Definitions (Required in main server.py for FastMCP) ---
 
@@ -635,9 +621,7 @@ def auto_semantic_search(
         - Supports fuzzy matching and concept discovery
         - Perfect for agents - just search and it works!
     """
-    return auto_semantic_search_impl(
-        query, tables, similarity_threshold, limit, model_name
-    )
+    return auto_semantic_search_impl(query, tables, similarity_threshold, limit, model_name)
 
 
 @mcp.tool
@@ -684,9 +668,7 @@ def auto_smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return auto_smart_search_impl(
-        query, tables, semantic_weight, text_weight, limit, model_name
-    )
+    return auto_smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
 
 
 @mcp.tool
@@ -820,9 +802,7 @@ def smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return _smart_search_impl(
-        query, tables, semantic_weight, text_weight, limit, model_name
-    )
+    return _smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
 
 
 @mcp.tool
@@ -864,9 +844,7 @@ def find_related(
         - Can reveal patterns and themes across your knowledge base
         - Enables serendipitous discovery of relevant information
     """
-    return _find_related_impl(
-        table_name, row_id, similarity_threshold, limit, model_name
-    )
+    return _find_related_impl(table_name, row_id, similarity_threshold, limit, model_name)
 
 
 # --- Advanced Discovery Tools for SQLite Memory Bank ---
@@ -1011,9 +989,7 @@ def discover_relationships(
         - **ACTIONABLE INSIGHTS**: Suggests how to leverage discovered relationships
         - **PERFECT FOR EXPLORATION**: Reveals hidden data organization patterns
     """
-    return discover_relationships_impl(
-        table_name, relationship_types, similarity_threshold
-    )
+    return discover_relationships_impl(table_name, relationship_types, similarity_threshold)
 
 
 # Export the FastMCP app for use in other modules and server runners
@@ -1095,15 +1071,11 @@ def main():
     import uvicorn
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Run MCP SQLite Memory Bank Server in HTTP mode"
-    )
+    parser = argparse.ArgumentParser(description="Run MCP SQLite Memory Bank Server in HTTP mode")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
     parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
     parser.add_argument("--db-path", help="Path to SQLite database file")
-    parser.add_argument(
-        "--reload", action="store_true", help="Enable auto-reload for development"
-    )
+    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
 
     args = parser.parse_args()
 
@@ -1113,9 +1085,7 @@ def main():
         DB_PATH = args.db_path
         os.environ["DB_PATH"] = args.db_path
 
-    print(
-        f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}"
-    )
+    print(f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}")
     print(f"Database path: {DB_PATH}")
     print("Available at: http://localhost:8000/docs")
 

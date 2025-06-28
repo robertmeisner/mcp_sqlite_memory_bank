@@ -27,12 +27,14 @@ def temp_db_perf(monkeypatch):
     # Cleanup with retry for Windows
     try:
         from mcp_sqlite_memory_bank.database import _db_instance
+
         if _db_instance:
             _db_instance.close()
     except Exception:
         pass
 
     import gc
+
     gc.collect()
     try:
         os.remove(db_path)
@@ -60,15 +62,15 @@ class TestPerformance:
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
                         {"name": "name", "type": "TEXT"},
                         {"name": "data", "type": "TEXT"},
-                        {"name": "value", "type": "INTEGER"}
-                    ]
-                }
+                        {"name": "value", "type": "INTEGER"},
+                    ],
+                },
             )
 
             # Measure bulk insert performance
             start_time = time.time()
             insert_count = 1000
-            
+
             for i in range(insert_count):
                 create_result = await client.call_tool(
                     "create_row",
@@ -77,9 +79,9 @@ class TestPerformance:
                         "data": {
                             "name": f"item_{i:04d}",
                             "data": f"test_data_for_item_{i}" * 10,  # Larger text data
-                            "value": i * 2
-                        }
-                    }
+                            "value": i * 2,
+                        },
+                    },
                 )
                 if i % 100 == 0:  # Progress check
                     create_out = extract_result(create_result)
@@ -115,15 +117,15 @@ class TestPerformance:
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
                         {"name": "category", "type": "TEXT"},
                         {"name": "status", "type": "TEXT"},
-                        {"name": "metadata", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "metadata", "type": "TEXT"},
+                    ],
+                },
             )
 
             # Insert test data
             categories = ["type_a", "type_b", "type_c", "type_d"]
             statuses = ["active", "inactive", "pending"]
-            
+
             for i in range(2000):
                 await client.call_tool(
                     "create_row",
@@ -132,28 +134,28 @@ class TestPerformance:
                         "data": {
                             "category": categories[i % len(categories)],
                             "status": statuses[i % len(statuses)],
-                            "metadata": f"metadata_content_{i}" * 5
-                        }
-                    }
+                            "metadata": f"metadata_content_{i}" * 5,
+                        },
+                    },
                 )
 
             # Test query performance with filters
             start_time = time.time()
-            
+
             query_result = await client.call_tool(
                 "read_rows",
                 {
                     "table_name": "large_query_test",
-                    "where": {"category": "type_a", "status": "active"}
-                }
+                    "where": {"category": "type_a", "status": "active"},
+                },
             )
-            
+
             end_time = time.time()
             query_duration = end_time - start_time
 
             query_out = extract_result(query_result)
             assert query_out["success"]
-            
+
             print(f"\nLarge Query Performance:")
             print(f"  Queried 2000 rows with filters in {query_duration:.3f} seconds")
             print(f"  Found {len(query_out['rows'])} matching rows")
@@ -173,33 +175,35 @@ class TestPerformance:
                     "columns": [
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
                         {"name": "title", "type": "TEXT"},
-                        {"name": "content", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "content", "type": "TEXT"},
+                    ],
+                },
             )
 
             # Insert substantial text content
             test_content = [
-                {"title": f"Document {i}", "content": f"This is a comprehensive document about topic {i}. " * 20}
+                {
+                    "title": f"Document {i}",
+                    "content": f"This is a comprehensive document about topic {i}. " * 20,
+                }
                 for i in range(100)
             ]
 
             for content in test_content:
-                create_result = await client.call_tool("create_row", {"table_name": "embedding_perf_test", "data": content})
+                create_result = await client.call_tool(
+                    "create_row", {"table_name": "embedding_perf_test", "data": content}
+                )
                 create_out = extract_result(create_result)
                 assert create_out["success"]
 
             # Measure embedding generation performance
             start_time = time.time()
-            
+
             embed_result = await client.call_tool(
                 "add_embeddings",
-                {
-                    "table_name": "embedding_perf_test",
-                    "text_columns": ["title", "content"]
-                }
+                {"table_name": "embedding_perf_test", "text_columns": ["title", "content"]},
             )
-            
+
             end_time = time.time()
             embed_duration = end_time - start_time
 
@@ -214,9 +218,11 @@ class TestPerformance:
             print(f"  Performance: {docs_per_second:.2f} docs/second")
 
             # Performance assertion - should process at least 5 docs/sec
-            assert docs_per_second > 5, f"Embedding generation too slow: {docs_per_second:.2f} docs/sec"
+            assert (
+                docs_per_second > 5
+            ), f"Embedding generation too slow: {docs_per_second:.2f} docs/sec"
 
-    @pytest.mark.asyncio 
+    @pytest.mark.asyncio
     async def test_semantic_search_performance(self, temp_db_perf):
         """Test performance of semantic search operations."""
         async with Client(smb.app) as client:
@@ -228,16 +234,25 @@ class TestPerformance:
                     "columns": [
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
                         {"name": "topic", "type": "TEXT"},
-                        {"name": "description", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "description", "type": "TEXT"},
+                    ],
+                },
             )
 
             # Insert diverse content for search testing
             topics = [
-                "Machine Learning", "Database Systems", "Web Development", "Mobile Apps",
-                "Cloud Computing", "Cybersecurity", "Data Science", "DevOps",
-                "Artificial Intelligence", "Blockchain", "IoT", "Quantum Computing"
+                "Machine Learning",
+                "Database Systems",
+                "Web Development",
+                "Mobile Apps",
+                "Cloud Computing",
+                "Cybersecurity",
+                "Data Science",
+                "DevOps",
+                "Artificial Intelligence",
+                "Blockchain",
+                "IoT",
+                "Quantum Computing",
             ]
 
             for i, topic in enumerate(topics * 20):  # 240 documents
@@ -248,20 +263,17 @@ class TestPerformance:
                         "data": {
                             "topic": f"{topic} {i}",
                             "description": f"Comprehensive guide to {topic.lower()} covering advanced concepts, "
-                                          f"implementation strategies, and real-world applications. "
-                                          f"This document provides detailed insights into {topic.lower()} "
-                                          f"methodologies and best practices for professionals."
-                        }
-                    }
+                            f"implementation strategies, and real-world applications. "
+                            f"This document provides detailed insights into {topic.lower()} "
+                            f"methodologies and best practices for professionals.",
+                        },
+                    },
                 )
 
             # Generate embeddings
             embed_result = await client.call_tool(
                 "add_embeddings",
-                {
-                    "table_name": "search_perf_test", 
-                    "text_columns": ["topic", "description"]
-                }
+                {"table_name": "search_perf_test", "text_columns": ["topic", "description"]},
             )
             embed_out = extract_result(embed_result)
             assert embed_out["success"]
@@ -272,23 +284,23 @@ class TestPerformance:
                 "database optimization performance",
                 "web application development",
                 "cloud infrastructure security",
-                "data analysis algorithms"
+                "data analysis algorithms",
             ]
 
             total_search_time = 0
             for query in search_queries:
                 start_time = time.time()
-                
+
                 search_result = await client.call_tool(
                     "semantic_search",
                     {
                         "query": query,
                         "tables": ["search_perf_test"],
                         "similarity_threshold": 0.3,
-                        "limit": 10
-                    }
+                        "limit": 10,
+                    },
                 )
-                
+
                 end_time = time.time()
                 search_duration = end_time - start_time
                 total_search_time += search_duration
@@ -323,16 +335,16 @@ class TestConcurrency:
                     "table_name": "concurrent_read_test",
                     "columns": [
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "data", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "data", "type": "TEXT"},
+                    ],
+                },
             )
 
             # Insert test data
             for i in range(50):
                 await client.call_tool(
                     "create_row",
-                    {"table_name": "concurrent_read_test", "data": {"data": f"test_data_{i}"}}
+                    {"table_name": "concurrent_read_test", "data": {"data": f"test_data_{i}"}},
                 )
 
         async def read_worker(worker_id: int) -> Dict[str, Any]:
@@ -340,7 +352,9 @@ class TestConcurrency:
             async with Client(smb.app) as client:
                 results = []
                 for i in range(10):
-                    result = await client.call_tool("read_rows", {"table_name": "concurrent_read_test"})
+                    result = await client.call_tool(
+                        "read_rows", {"table_name": "concurrent_read_test"}
+                    )
                     result_out = extract_result(result)
                     results.append(result_out["success"])
                 return {"worker_id": worker_id, "successes": sum(results), "total": len(results)}
@@ -353,7 +367,9 @@ class TestConcurrency:
 
         # Verify all reads succeeded
         for result in results:
-            assert result["successes"] == result["total"], f"Worker {result['worker_id']} had failures"
+            assert (
+                result["successes"] == result["total"]
+            ), f"Worker {result['worker_id']} had failures"
 
         total_operations = sum(result["total"] for result in results)
         duration = end_time - start_time
@@ -378,9 +394,9 @@ class TestConcurrency:
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
                         {"name": "worker_id", "type": "INTEGER"},
                         {"name": "sequence", "type": "INTEGER"},
-                        {"name": "data", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "data", "type": "TEXT"},
+                    ],
+                },
             )
 
         async def write_worker(worker_id: int) -> Dict[str, Any]:
@@ -395,9 +411,9 @@ class TestConcurrency:
                             "data": {
                                 "worker_id": worker_id,
                                 "sequence": i,
-                                "data": f"worker_{worker_id}_item_{i}"
-                            }
-                        }
+                                "data": f"worker_{worker_id}_item_{i}",
+                            },
+                        },
                     )
                     result_out = extract_result(result)
                     if result_out["success"]:
@@ -412,14 +428,16 @@ class TestConcurrency:
 
         # Verify all writes succeeded
         for result in results:
-            assert result["successes"] == result["total"], f"Worker {result['worker_id']} had failures"
+            assert (
+                result["successes"] == result["total"]
+            ), f"Worker {result['worker_id']} had failures"
 
         # Verify data integrity
         async with Client(smb.app) as client:
             all_rows = await client.call_tool("read_rows", {"table_name": "concurrent_write_test"})
             all_rows_out = extract_result(all_rows)
             assert all_rows_out["success"]
-            
+
             # Should have 30 total rows (3 workers × 10 rows each)
             assert len(all_rows_out["rows"]) == 30
 
@@ -427,7 +445,7 @@ class TestConcurrency:
             for worker_id in range(3):
                 worker_rows = await client.call_tool(
                     "read_rows",
-                    {"table_name": "concurrent_write_test", "where": {"worker_id": worker_id}}
+                    {"table_name": "concurrent_write_test", "where": {"worker_id": worker_id}},
                 )
                 worker_rows_out = extract_result(worker_rows)
                 assert len(worker_rows_out["rows"]) == 10
@@ -458,18 +476,17 @@ class TestResourceUsage:
                     "table_name": "memory_test",
                     "columns": [
                         {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
-                        {"name": "large_text", "type": "TEXT"}
-                    ]
-                }
+                        {"name": "large_text", "type": "TEXT"},
+                    ],
+                },
             )
 
             # Insert large text data
             large_text = "X" * 10000  # 10KB per row
-            
+
             for i in range(100):  # 1MB total
                 result = await client.call_tool(
-                    "create_row",
-                    {"table_name": "memory_test", "data": {"large_text": large_text}}
+                    "create_row", {"table_name": "memory_test", "data": {"large_text": large_text}}
                 )
                 result_out = extract_result(result)
                 assert result_out["success"]
@@ -506,8 +523,11 @@ class TestResourceUsage:
                 "create_table",
                 {
                     "table_name": "connection_test",
-                    "columns": [{"name": "id", "type": "INTEGER PRIMARY KEY"}, {"name": "test", "type": "TEXT"}]
-                }
+                    "columns": [
+                        {"name": "id", "type": "INTEGER PRIMARY KEY"},
+                        {"name": "test", "type": "TEXT"},
+                    ],
+                },
             )
             result_out = extract_result(result)
             assert result_out["success"]

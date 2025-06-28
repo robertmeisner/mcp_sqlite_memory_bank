@@ -8,7 +8,7 @@ data operations, and core functionality.
 from typing import Any, Dict, List, Optional, cast
 
 from ..database import get_database
-from ..types import MemoryBankError, DatabaseError, ToolResponse
+from ..types import ToolResponse
 from ..utils import catch_errors
 
 
@@ -20,9 +20,7 @@ def create_table(
     """Create a new table in the SQLite memory bank."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).create_table(table_name, columns)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).create_table(table_name, columns))
 
 
 @catch_errors
@@ -54,9 +52,7 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
     """Rename a table in the SQLite memory bank."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).rename_table(old_name, new_name)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).rename_table(old_name, new_name))
 
 
 @catch_errors
@@ -90,9 +86,7 @@ def update_rows(
     """Update rows in any table in the SQLite Memory Bank, matching the WHERE clause."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).update_rows(table_name, data, where)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).update_rows(table_name, data, where))
 
 
 @catch_errors
@@ -103,9 +97,7 @@ def delete_rows(
     """Delete rows from any table in the SQLite Memory Bank, matching the WHERE clause."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).delete_rows(table_name, where)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).delete_rows(table_name, where))
 
 
 @catch_errors
@@ -133,9 +125,7 @@ def list_all_columns() -> ToolResponse:
 
 
 @catch_errors
-def upsert_memory(
-    table_name: str, data: Dict[str, Any], match_columns: List[str]
-) -> ToolResponse:
+def upsert_memory(table_name: str, data: Dict[str, Any], match_columns: List[str]) -> ToolResponse:
     """
     Smart memory upsert: Update existing records or create new ones based on matching columns.
 
@@ -148,7 +138,8 @@ def upsert_memory(
         match_columns (List[str]): Columns to use for finding existing records
 
     Returns:
-        ToolResponse: {"success": True, "action": "updated"|"created", "id": rowid}
+        ToolResponse: For updates: {"success": True, "action": "updated", "id": rowid, "updated_fields": {...}}
+                     For creates: {"success": True, "action": "created", "id": rowid}
     """
     import os
 
@@ -174,8 +165,21 @@ def upsert_memory(
             # Update the first matching record
             row_id = existing_rows[0].get("id")
             if row_id:
+                # Get the original record to compare changes
+                original_record = existing_rows[0]
+                
                 update_result = db.update_rows(table_name, data, {"id": row_id})
                 if update_result.get("success"):
+                    # Determine which fields were actually updated
+                    updated_fields = {}
+                    for key, new_value in data.items():
+                        original_value = original_record.get(key)
+                        if original_value != new_value:
+                            updated_fields[key] = {
+                                "old": original_value,
+                                "new": new_value
+                            }
+                    
                     return cast(
                         ToolResponse,
                         {
@@ -183,6 +187,7 @@ def upsert_memory(
                             "action": "updated",
                             "id": row_id,
                             "rows_affected": update_result.get("rows_affected", 1),
+                            "updated_fields": updated_fields,
                         },
                     )
                 return cast(ToolResponse, update_result)
@@ -308,9 +313,7 @@ def batch_create_memories(
 
             except Exception as e:
                 failed_count += 1
-                results.append(
-                    {"index": i, "action": "failed", "error": str(e), "success": False}
-                )
+                results.append({"index": i, "action": "failed", "error": str(e), "success": False})
 
         return cast(
             ToolResponse,
