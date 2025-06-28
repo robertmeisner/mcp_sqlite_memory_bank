@@ -63,7 +63,7 @@ class SQLiteMemoryDatabase:
         except Exception as e:
             logging.warning(f"Error closing database: {e}")
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Ensure cleanup when object is garbage collected."""
         self.close()
 
