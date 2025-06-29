@@ -3,7 +3,7 @@
   "tools_by_module": {
     "server": 37
   },
-  "generated_at": "2025-06-29T22:04:25.981406",
+  "generated_at": "2025-06-29T20:59:52.940988",
   "tools": [
     {
       "name": "create_table",

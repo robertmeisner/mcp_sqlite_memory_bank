@@ -1,6 +1,6 @@
 # SQLite Memory Bank API Reference
 
-*Generated on 2025-06-29 22:04:25*
+*Generated on 2025-06-29 20:59:52*
 
 This document provides comprehensive API reference for all MCP tools in the SQLite Memory Bank.
 
@@ -628,7 +628,7 @@ def batch_create_memories(table_name: str, data_list: List[Dict[Any]], match_col
 - `match_columns` (Optional[List[str]]): Parameter description
 - `use_upsert` (bool): Parameter description
 
-*Source: server.py:1298*
+*Source: server.py:1304*
 
 ---
 
@@ -648,7 +648,7 @@ def batch_delete_memories(table_name: str, where_conditions: List[Dict[Any]], ma
 - `where_conditions` (List[Dict[Any]]): Parameter description
 - `match_all` (bool): Parameter description
 
-*Source: server.py:1340*
+*Source: server.py:1346*
 
 ---
 
@@ -669,7 +669,7 @@ def find_duplicates(table_name: str, content_columns: List[str], similarity_thre
 - `similarity_threshold` (float): Parameter description
 - `sample_size` (Optional[int]): Parameter description
 
-*Source: server.py:1381*
+*Source: server.py:1387*
 
 ---
 
@@ -689,7 +689,7 @@ def optimize_memory_bank(table_name: str, optimization_strategy: str, dry_run: b
 - `optimization_strategy` (str): Parameter description
 - `dry_run` (bool): Parameter description
 
-*Source: server.py:1420*
+*Source: server.py:1426*
 
 ---
 
@@ -710,7 +710,7 @@ def archive_old_memories(table_name: str, archive_days: int, archive_table_suffi
 - `archive_table_suffix` (str): Parameter description
 - `delete_after_archive` (bool): Parameter description
 
-*Source: server.py:1454*
+*Source: server.py:1460*
 
 ---
 
@@ -730,7 +730,7 @@ def intelligent_duplicate_analysis(table_name: str, content_columns: List[str], 
 - `content_columns` (List[str]): Parameter description
 - `analysis_depth` (str): Parameter description
 
-*Source: server.py:1497*
+*Source: server.py:1503*
 
 ---
 
@@ -749,7 +749,7 @@ def intelligent_optimization_strategy(table_name: str, optimization_goals: Optio
 - `table_name` (str): Parameter description
 - `optimization_goals` (Optional[List[str]]): Parameter description
 
-*Source: server.py:1529*
+*Source: server.py:1535*
 
 ---
 
@@ -769,7 +769,7 @@ def smart_archiving_policy(table_name: str, business_context: Optional[str], ret
 - `business_context` (Optional[str]): Parameter description
 - `retention_requirements` (Optional[Dict[Any]]): Parameter description
 
-*Source: server.py:1555*
+*Source: server.py:1561*
 
 ---
 
@@ -793,7 +793,7 @@ def create_3d_knowledge_graph(output_path: Optional[str], table_name: str, inclu
 - `animation_enabled` (bool): Parameter description
 - `export_formats` (Optional[List[str]]): Parameter description
 
-*Source: server.py:1591*
+*Source: server.py:1597*
 
 ---
 
