@@ -1228,6 +1228,12 @@ __all__ = [
     "intelligent_discovery",
     "discovery_templates",
     "discover_relationships",
+    # Internal implementation functions for testing
+    "_create_row_impl",
+    "_read_rows_impl", 
+    "_update_rows_impl",
+    "_delete_rows_impl",
+    "_create_table_impl",
 ]
 
 
