@@ -14,9 +14,7 @@ from ..types import ToolResponse
 from ..utils import catch_errors
 
 
-def _auto_embed_tables(
-    search_tables: List[str], model_name: str = "all-MiniLM-L6-v2"
-) -> List[str]:
+def _auto_embed_tables(search_tables: List[str], model_name: str = "all-MiniLM-L6-v2") -> List[str]:
     """
     Auto-embed text columns in tables that don't have embeddings.
 
@@ -37,11 +35,7 @@ def _auto_embed_tables(
             # Check if table has embeddings
             stats_result = db.get_embedding_stats(table_name, "embedding")
             coverage_percent = stats_result.get("coverage_percent", 0)
-            if (
-                stats_result.get("success")
-                and isinstance(coverage_percent, (int, float))
-                and coverage_percent > 0
-            ):
+            if stats_result.get("success") and isinstance(coverage_percent, (int, float)) and coverage_percent > 0:
                 continue  # Table already has embeddings
 
             # Get table schema to find text columns
@@ -59,9 +53,7 @@ def _auto_embed_tables(
 
             # Auto-embed text columns
             if text_columns:
-                embed_result = db.generate_embeddings(
-                    table_name, text_columns, "embedding", model_name
-                )
+                embed_result = db.generate_embeddings(table_name, text_columns, "embedding", model_name)
                 if embed_result.get("success"):
                     auto_embedded_tables.append(table_name)
 
@@ -105,9 +97,7 @@ def search_content(
     """Perform full-text search across table content using natural language queries."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).search_content(query, tables, limit)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).search_content(query, tables, limit))
 
 
 @catch_errors
@@ -136,9 +126,7 @@ def add_embeddings(
 
     return cast(
         ToolResponse,
-        get_database(server.DB_PATH).generate_embeddings(
-            table_name, text_columns, embedding_column, model_name
-        ),
+        get_database(server.DB_PATH).generate_embeddings(table_name, text_columns, embedding_column, model_name),
     )
 
 
@@ -155,9 +143,7 @@ def semantic_search(
 
     return cast(
         ToolResponse,
-        get_database(server.DB_PATH).semantic_search(
-            query, tables, "embedding", None, similarity_threshold, limit, model_name
-        ),
+        get_database(server.DB_PATH).semantic_search(query, tables, "embedding", None, similarity_threshold, limit, model_name),
     )
 
 
@@ -174,9 +160,7 @@ def find_related(
 
     return cast(
         ToolResponse,
-        get_database(server.DB_PATH).find_related_content(
-            table_name, row_id, "embedding", similarity_threshold, limit, model_name
-        ),
+        get_database(server.DB_PATH).find_related_content(table_name, row_id, "embedding", similarity_threshold, limit, model_name),
     )
 
 
@@ -299,9 +283,7 @@ def auto_semantic_search(
         if isinstance(search_result, dict):
             search_result["auto_embedded_tables"] = auto_embedded_tables
             if auto_embedded_tables:
-                search_result["auto_embedding_note"] = (
-                    f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
-                )
+                search_result["auto_embedding_note"] = f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
 
         return cast(ToolResponse, search_result)
 
@@ -391,13 +373,9 @@ def auto_smart_search(
             )
         except Exception as search_error:
             # If hybrid search fails, fall back to regular content search
-            logging.warning(
-                f"Hybrid search failed, falling back to content search: {search_error}"
-            )
+            logging.warning(f"Hybrid search failed, falling back to content search: {search_error}")
             try:
-                fallback_result = get_database(server.DB_PATH).search_content(
-                    query, search_tables, limit
-                )
+                fallback_result = get_database(server.DB_PATH).search_content(query, search_tables, limit)
                 if fallback_result.get("success"):
                     # Create a new dictionary to avoid type issues
                     enhanced_fallback = dict(fallback_result)
@@ -434,9 +412,7 @@ def auto_smart_search(
             final_result["search_type"] = "auto_hybrid"
             final_result["auto_embedded_tables"] = auto_embedded_tables
             if auto_embedded_tables:
-                final_result["auto_embedding_note"] = (
-                    f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
-                )
+                final_result["auto_embedding_note"] = f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
             return cast(ToolResponse, final_result)
         else:
             return cast(ToolResponse, hybrid_result)

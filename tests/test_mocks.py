@@ -54,9 +54,7 @@ class TestBasicMocking:
             )
 
             # Mock the availability flag
-            with patch(
-                "mcp_sqlite_memory_bank.semantic.SENTENCE_TRANSFORMERS_AVAILABLE", False
-            ):
+            with patch("mcp_sqlite_memory_bank.semantic.SENTENCE_TRANSFORMERS_AVAILABLE", False):
                 result = await client.call_tool(
                     "add_embeddings",
                     {"table_name": "test_semantic_flag", "text_columns": ["content"]},
@@ -71,9 +69,7 @@ class TestBasicMocking:
         """Test that error responses have the expected structure."""
         async with Client(smb.app) as client:
             # Test with invalid table name to trigger error
-            result = await client.call_tool(
-                "read_rows", {"table_name": "nonexistent_table"}
-            )
+            result = await client.call_tool("read_rows", {"table_name": "nonexistent_table"})
             result_out = extract_result(result)
 
             # Should be a properly structured error response
@@ -168,9 +164,7 @@ class TestBasicMocking:
                 assert result["success"]
 
             # Verify all data was inserted
-            read_result = await client.call_tool(
-                "read_rows", {"table_name": "concurrent_test"}
-            )
+            read_result = await client.call_tool("read_rows", {"table_name": "concurrent_test"})
             read_out = extract_result(read_result)
             assert len(read_out["rows"]) == 5
 
@@ -230,17 +224,13 @@ class TestUtilityMocking:
             # Test with various data types
             test_data = {"int_col": 42, "text_col": "test string", "real_col": 3.14159}
 
-            result = await client.call_tool(
-                "create_row", {"table_name": "type_test", "data": test_data}
-            )
+            result = await client.call_tool("create_row", {"table_name": "type_test", "data": test_data})
             result_out = extract_result(result)
 
             assert result_out["success"]
 
             # Verify data was stored correctly
-            read_result = await client.call_tool(
-                "read_rows", {"table_name": "type_test"}
-            )
+            read_result = await client.call_tool("read_rows", {"table_name": "type_test"})
             read_out = extract_result(read_result)
 
             assert len(read_out["rows"]) == 1

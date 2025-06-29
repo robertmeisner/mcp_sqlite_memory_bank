@@ -91,21 +91,14 @@ Focus on high-level strategic insights about the memory bank's utility and organ
             return prompt
 
         @self.mcp.prompt("search-and-summarize")
-        async def search_and_summarize(
-            query: str, max_results: Optional[int] = 10
-        ) -> str:
+        async def search_and_summarize(query: str, max_results: Optional[int] = 10) -> str:
             """Search memory content and create a summary prompt."""
             db = get_database(self.db_path)
 
             # Perform search
-            result = cast(
-                Dict[str, Any], db.search_content(query, None, max_results or 10)
-            )
+            result = cast(Dict[str, Any], db.search_content(query, None, max_results or 10))
             if not result.get("success"):
-                return (
-                    f"Error: Could not search for '{query}'. "
-                    f"{result.get('error', 'Unknown error')}"
-                )
+                return f"Error: Could not search for '{query}'. " f"{result.get('error', 'Unknown error')}"
 
             search_results = result.get("results", [])
             if not search_results:
@@ -114,15 +107,9 @@ Focus on high-level strategic insights about the memory bank's utility and organ
             # Format results for prompt
             formatted_results = []
             for i, result in enumerate(search_results[: max_results or 10], 1):
-                formatted_results.append(
-                    f"{i}. Table: {result.get('table', 'unknown')}"
-                )
-                formatted_results.append(
-                    f"   Content: {result.get('content', 'No content')[:200]}..."
-                )
-                formatted_results.append(
-                    f"   Relevance: {result.get('relevance', 'N/A')}"
-                )
+                formatted_results.append(f"{i}. Table: {result.get('table', 'unknown')}")
+                formatted_results.append(f"   Content: {result.get('content', 'No content')[:200]}...")
+                formatted_results.append(f"   Relevance: {result.get('relevance', 'N/A')}")
                 formatted_results.append("")
 
             prompt = f"""Based on the search query "{query}", here are the most relevant results from the memory bank:
@@ -182,22 +169,12 @@ The table should include fields like: decision_name, chosen_approach, rationale,
             formatted_decisions = []
             decisions_list = cast(List[Dict[str, Any]], decisions)
             for i, decision in enumerate(decisions_list, 1):
-                formatted_decisions.append(
-                    f"{i}. Decision: {decision.get('decision_name', 'Unknown')}"
-                )
-                formatted_decisions.append(
-                    f"   Approach: {decision.get('chosen_approach', 'Not specified')}"
-                )
-                formatted_decisions.append(
-                    f"   Rationale: {decision.get('rationale', 'Not provided')}"
-                )
+                formatted_decisions.append(f"{i}. Decision: {decision.get('decision_name', 'Unknown')}")
+                formatted_decisions.append(f"   Approach: {decision.get('chosen_approach', 'Not specified')}")
+                formatted_decisions.append(f"   Rationale: {decision.get('rationale', 'Not provided')}")
                 if decision.get("alternatives"):
-                    formatted_decisions.append(
-                        f"   Alternatives: {decision.get('alternatives')}"
-                    )
-                formatted_decisions.append(
-                    f"   Date: {decision.get('timestamp', 'Unknown')}"
-                )
+                    formatted_decisions.append(f"   Alternatives: {decision.get('alternatives')}")
+                formatted_decisions.append(f"   Date: {decision.get('timestamp', 'Unknown')}")
                 formatted_decisions.append("")
 
             prompt = f"""Please analyze these technical decisions from the memory bank:

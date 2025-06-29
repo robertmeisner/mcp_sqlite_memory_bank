@@ -71,9 +71,7 @@ class DependencyChecker:
             if package in self.REQUIRED_PACKAGES:
                 try:
                     cmd = self.REQUIRED_PACKAGES[package]["install_cmd"]
-                    result = subprocess.run(
-                        cmd.split(), capture_output=True, text=True, timeout=300
-                    )
+                    result = subprocess.run(cmd.split(), capture_output=True, text=True, timeout=300)
 
                     if result.returncode == 0:
                         install_results[package] = {
@@ -119,15 +117,11 @@ class DatabaseDiagnostic:
 
             if not diagnostics["database_exists"]:
                 diagnostics["issues_found"].append("Database file does not exist")
-                diagnostics["repair_suggestions"].append(
-                    "Database will be created automatically on first use"
-                )
+                diagnostics["repair_suggestions"].append("Database will be created automatically on first use")
                 return diagnostics
 
             # Check file permissions
-            diagnostics["database_readable"] = (
-                db_file.is_file() and db_file.stat().st_size > 0
-            )
+            diagnostics["database_readable"] = db_file.is_file() and db_file.stat().st_size > 0
 
             # Test database connection and integrity
             with sqlite3.connect(self.db_path) as conn:
@@ -139,18 +133,12 @@ class DatabaseDiagnostic:
                 diagnostics["corruption_check"] = integrity_result
 
                 if integrity_result != "ok":
-                    diagnostics["issues_found"].append(
-                        f"Database integrity issue: {integrity_result}"
-                    )
+                    diagnostics["issues_found"].append(f"Database integrity issue: {integrity_result}")
                     diagnostics["backup_recommended"] = True
-                    diagnostics["repair_suggestions"].append(
-                        "Consider running database repair or creating backup"
-                    )
+                    diagnostics["repair_suggestions"].append("Consider running database repair or creating backup")
 
                 # Count tables and rows
-                cursor = conn.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table'"
-                )
+                cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
                 tables = cursor.fetchall()
                 diagnostics["table_count"] = len(tables)
 
@@ -159,9 +147,7 @@ class DatabaseDiagnostic:
                     table_name = table[0]
                     if not table_name.startswith("sqlite_"):
                         try:
-                            cursor = conn.execute(
-                                f"SELECT COUNT(*) FROM `{table_name}`"
-                            )
+                            cursor = conn.execute(f"SELECT COUNT(*) FROM `{table_name}`")
                             count = cursor.fetchone()[0]
                             total_rows += count
                         except sqlite3.Error:
@@ -171,9 +157,7 @@ class DatabaseDiagnostic:
 
         except sqlite3.DatabaseError as e:
             diagnostics["issues_found"].append(f"Database error: {str(e)}")
-            diagnostics["repair_suggestions"].append(
-                "Database may be corrupted - consider backup and repair"
-            )
+            diagnostics["repair_suggestions"].append("Database may be corrupted - consider backup and repair")
         except Exception as e:
             diagnostics["issues_found"].append(f"Unexpected error: {str(e)}")
 
@@ -192,9 +176,7 @@ class DatabaseDiagnostic:
         try:
             # Create backup before repair
             if Path(self.db_path).exists():
-                backup_path = (
-                    f"{self.db_path}.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                )
+                backup_path = f"{self.db_path}.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 shutil.copy2(self.db_path, backup_path)
                 repair_results["backup_created"] = True
                 repair_results["backup_path"] = backup_path
@@ -351,26 +333,16 @@ class SystemHealthMonitor:
         if health_report["database"]["issues_found"]:
             if health_report["database"]["corruption_check"] != "ok":
                 health_report["overall_status"] = "critical"
-                health_report["critical_issues"].extend(
-                    health_report["database"]["issues_found"]
-                )
+                health_report["critical_issues"].extend(health_report["database"]["issues_found"])
             else:
-                health_report["warnings"].extend(
-                    health_report["database"]["issues_found"]
-                )
+                health_report["warnings"].extend(health_report["database"]["issues_found"])
 
-            health_report["recommendations"].extend(
-                health_report["database"]["repair_suggestions"]
-            )
+            health_report["recommendations"].extend(health_report["database"]["repair_suggestions"])
 
         # Analyze features
-        unavailable_features = [
-            k for k, v in health_report["features"].items() if not v
-        ]
+        unavailable_features = [k for k, v in health_report["features"].items() if not v]
         if unavailable_features:
-            health_report["warnings"].append(
-                f"Features with limited functionality: {', '.join(unavailable_features)}"
-            )
+            health_report["warnings"].append(f"Features with limited functionality: {', '.join(unavailable_features)}")
 
         return health_report
 
@@ -390,43 +362,31 @@ class SystemHealthMonitor:
         # Attempt dependency repairs
         if not health["dependencies"]["all_available"]:
             repair_report["repairs_attempted"].append("dependency_installation")
-            install_results = self.dependency_checker.auto_install_missing(
-                health["dependencies"]["missing_packages"]
-            )
+            install_results = self.dependency_checker.auto_install_missing(health["dependencies"]["missing_packages"])
 
             for package, result in install_results.items():
                 if result["success"]:
                     repair_report["repairs_successful"].append(f"Installed {package}")
                 else:
-                    repair_report["repairs_failed"].append(
-                        f"Failed to install {package}: {result['error']}"
-                    )
+                    repair_report["repairs_failed"].append(f"Failed to install {package}: {result['error']}")
 
         # Attempt database repairs
         if health["database"]["issues_found"]:
             repair_report["repairs_attempted"].append("database_repair")
             db_repair_results = self.db_diagnostic.auto_repair()
 
-            repair_report["repairs_successful"].extend(
-                db_repair_results["repairs_successful"]
-            )
+            repair_report["repairs_successful"].extend(db_repair_results["repairs_successful"])
             repair_report["repairs_failed"].extend(db_repair_results["repairs_failed"])
 
             if db_repair_results["backup_created"]:
-                repair_report["repairs_successful"].append(
-                    f"Database backup created: {db_repair_results['backup_path']}"
-                )
+                repair_report["repairs_successful"].append(f"Database backup created: {db_repair_results['backup_path']}")
 
         # Check for manual intervention needs
         if health["overall_status"] == "critical":
-            repair_report["manual_intervention_required"].append(
-                "Critical database issues require manual attention"
-            )
+            repair_report["manual_intervention_required"].append("Critical database issues require manual attention")
 
         if repair_report["repairs_failed"]:
-            repair_report["manual_intervention_required"].append(
-                "Some automatic repairs failed - manual intervention may be needed"
-            )
+            repair_report["manual_intervention_required"].append("Some automatic repairs failed - manual intervention may be needed")
 
         return repair_report
 

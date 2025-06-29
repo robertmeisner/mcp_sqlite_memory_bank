@@ -85,9 +85,7 @@ async def test_create_and_read_table(temp_db):
         out = extract_result(result)
         assert out["success"]  # type: ignore
         # Insert row
-        row = await client.call_tool(
-            "create_row", {"table_name": "notes", "data": {"content": "Hello, agent!"}}
-        )
+        row = await client.call_tool("create_row", {"table_name": "notes", "data": {"content": "Hello, agent!"}})
         row_out = extract_result(row)
         assert row_out["success"]  # type: ignore
         # Read row
@@ -117,9 +115,7 @@ async def test_error_handling(temp_db):
                 ],
             },
         )
-        res2 = await client.call_tool(
-            "create_row", {"table_name": "users", "data": {"notacol": 1}}
-        )
+        res2 = await client.call_tool("create_row", {"table_name": "users", "data": {"notacol": 1}})
         res2_out = extract_result(res2)
         assert not res2_out["success"]  # type: ignore
         assert "error" in res2_out
@@ -147,9 +143,7 @@ async def test_tool_discovery_and_introspection(temp_db):
             "run_select_query",
             "list_all_columns",
         }
-        assert all(
-            tool in tool_names for tool in required_tools
-        ), f"Missing required tools. Found: {tool_names}"
+        assert all(tool in tool_names for tool in required_tools), f"Missing required tools. Found: {tool_names}"
 
         # 2. Schema Introspection
         # Create a test table
@@ -168,9 +162,7 @@ async def test_tool_discovery_and_introspection(temp_db):
         assert create_out["success"]
 
         # Verify table description
-        desc_result = await client.call_tool(
-            "describe_table", {"table_name": "test_table"}
-        )
+        desc_result = await client.call_tool("describe_table", {"table_name": "test_table"})
         desc_out = extract_result(desc_result)
         assert desc_out["success"]
 
@@ -263,9 +255,7 @@ async def test_update_rows_and_list_columns(temp_db):
         assert update_out["success"]
 
         # Verify update
-        read_result = await client.call_tool(
-            "read_rows", {"table_name": "products", "where": {"id": product_id}}
-        )
+        read_result = await client.call_tool("read_rows", {"table_name": "products", "where": {"id": product_id}})
         read_out = extract_result(read_result)
         assert read_out["success"]
         # SQLite returns DECIMAL as float/numeric, not string
@@ -444,16 +434,12 @@ async def test_batch_operations(temp_db):
         bulk_data = [{"name": f"item{i}", "value": i} for i in range(1, 6)]
 
         for data in bulk_data:
-            create = await client.call_tool(
-                "create_row", {"table_name": "batch_test", "data": data}
-            )
+            create = await client.call_tool("create_row", {"table_name": "batch_test", "data": data})
             create_out = extract_result(create)
             assert create_out["success"]
 
         # Verify initial inserts
-        rows = await client.call_tool(
-            "read_rows", {"table_name": "batch_test", "where": {"value": 3}}
-        )
+        rows = await client.call_tool("read_rows", {"table_name": "batch_test", "where": {"value": 3}})
         rows_out = extract_result(rows)
         assert rows_out["success"]
         assert rows_out["rows"][0]["name"] == "item3"
@@ -467,24 +453,18 @@ async def test_batch_operations(temp_db):
         assert update_out["success"]
 
         # Verify the update
-        read = await client.call_tool(
-            "read_rows", {"table_name": "batch_test", "where": {"id": 1}}
-        )
+        read = await client.call_tool("read_rows", {"table_name": "batch_test", "where": {"id": 1}})
         read_out = extract_result(read)
         assert read_out["success"]
         assert read_out["rows"][0]["value"] == 100
 
         # Delete multiple rows
-        delete = await client.call_tool(
-            "delete_rows", {"table_name": "batch_test", "where": {"id": 1}}
-        )
+        delete = await client.call_tool("delete_rows", {"table_name": "batch_test", "where": {"id": 1}})
         delete_out = extract_result(delete)
         assert delete_out["success"]
 
         # Verify deletion
-        remaining = await client.call_tool(
-            "read_rows", {"table_name": "batch_test", "where": {"id": 1}}
-        )
+        remaining = await client.call_tool("read_rows", {"table_name": "batch_test", "where": {"id": 1}})
         remaining_out = extract_result(remaining)
         assert remaining_out["success"]
         assert len(remaining_out["rows"]) == 0
@@ -549,26 +529,18 @@ async def test_search_content_functionality(temp_db):
         ]
 
         for doc in test_docs:
-            create = await client.call_tool(
-                "create_row", {"table_name": "documents", "data": doc}
-            )
+            create = await client.call_tool("create_row", {"table_name": "documents", "data": doc})
             create_out = extract_result(create)
             assert create_out["success"]
 
         # Test search functionality
-        search = await client.call_tool(
-            "search_content", {"query": "programming", "tables": ["documents"]}
-        )
+        search = await client.call_tool("search_content", {"query": "programming", "tables": ["documents"]})
         search_out = extract_result(search)
         assert search_out["success"]
-        assert (
-            len(search_out["results"]) >= 2
-        )  # Should find both programming-related docs
+        assert len(search_out["results"]) >= 2  # Should find both programming-related docs
 
         # Test more specific search
-        search2 = await client.call_tool(
-            "search_content", {"query": "machine learning", "tables": ["documents"]}
-        )
+        search2 = await client.call_tool("search_content", {"query": "machine learning", "tables": ["documents"]})
         search2_out = extract_result(search2)
         assert search2_out["success"]
         assert len(search2_out["results"]) >= 1
@@ -671,9 +643,7 @@ async def test_add_embeddings_functionality(temp_db):
         ]
 
         for content in test_content:
-            create = await client.call_tool(
-                "create_row", {"table_name": "knowledge_base", "data": content}
-            )
+            create = await client.call_tool("create_row", {"table_name": "knowledge_base", "data": content})
             create_out = extract_result(create)
             assert create_out["success"]
 
@@ -729,9 +699,7 @@ async def test_semantic_search_functionality(temp_db):
         ]
 
         for doc in tech_docs:
-            create = await client.call_tool(
-                "create_row", {"table_name": "tech_docs", "data": doc}
-            )
+            create = await client.call_tool("create_row", {"table_name": "tech_docs", "data": doc})
             create_out = extract_result(create)
             assert create_out["success"]
 
@@ -801,9 +769,7 @@ async def test_smart_search_hybrid_functionality(temp_db):
         ]
 
         for article in articles:
-            create = await client.call_tool(
-                "create_row", {"table_name": "articles", "data": article}
-            )
+            create = await client.call_tool("create_row", {"table_name": "articles", "data": article})
             create_out = extract_result(create)
             assert create_out["success"]
 
@@ -866,9 +832,7 @@ async def test_auto_semantic_search_zero_setup(temp_db):
         ]
 
         for doc in docs:
-            create = await client.call_tool(
-                "create_row", {"table_name": "auto_docs", "data": doc}
-            )
+            create = await client.call_tool("create_row", {"table_name": "auto_docs", "data": doc})
             create_out = extract_result(create)
             assert create_out["success"]
 
@@ -927,9 +891,7 @@ async def test_auto_smart_search_complete_workflow(temp_db):
         ]
 
         for paper in papers:
-            create = await client.call_tool(
-                "create_row", {"table_name": "research_papers", "data": paper}
-            )
+            create = await client.call_tool("create_row", {"table_name": "research_papers", "data": paper})
             create_out = extract_result(create)
             assert create_out["success"]
 
@@ -997,9 +959,7 @@ async def test_find_related_content(temp_db):
 
         concept_ids = []
         for concept in concepts:
-            create = await client.call_tool(
-                "create_row", {"table_name": "knowledge", "data": concept}
-            )
+            create = await client.call_tool("create_row", {"table_name": "knowledge", "data": concept})
             create_out = extract_result(create)
             assert create_out["success"]
             concept_ids.append(create_out["id"])
@@ -1069,9 +1029,7 @@ async def test_embedding_stats_and_coverage(temp_db):
             assert create_out["success"]
 
         # Check stats before embeddings (should be 0% coverage)
-        stats_before = await client.call_tool(
-            "embedding_stats", {"table_name": "test_stats"}
-        )
+        stats_before = await client.call_tool("embedding_stats", {"table_name": "test_stats"})
         stats_before_out = extract_result(stats_before)
         assert stats_before_out["success"]
         assert stats_before_out["coverage_percent"] == 0.0
@@ -1086,9 +1044,7 @@ async def test_embedding_stats_and_coverage(temp_db):
         assert embed_out["success"]
 
         # Check stats after embeddings (should be 100% coverage)
-        stats_after = await client.call_tool(
-            "embedding_stats", {"table_name": "test_stats"}
-        )
+        stats_after = await client.call_tool("embedding_stats", {"table_name": "test_stats"})
         stats_after_out = extract_result(stats_after)
         assert stats_after_out["success"]
         assert stats_after_out["coverage_percent"] == 100.0

@@ -20,9 +20,7 @@ def create_table(
     """Create a new table in the SQLite memory bank."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).create_table(table_name, columns)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).create_table(table_name, columns))
 
 
 @catch_errors
@@ -54,9 +52,7 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
     """Rename a table in the SQLite memory bank."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).rename_table(old_name, new_name)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).rename_table(old_name, new_name))
 
 
 @catch_errors
@@ -90,9 +86,7 @@ def update_rows(
     """Update rows in any table in the SQLite Memory Bank, matching the WHERE clause."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).update_rows(table_name, data, where)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).update_rows(table_name, data, where))
 
 
 @catch_errors
@@ -103,9 +97,7 @@ def delete_rows(
     """Delete rows from any table in the SQLite Memory Bank, matching the WHERE clause."""
     from .. import server
 
-    return cast(
-        ToolResponse, get_database(server.DB_PATH).delete_rows(table_name, where)
-    )
+    return cast(ToolResponse, get_database(server.DB_PATH).delete_rows(table_name, where))
 
 
 @catch_errors
@@ -133,9 +125,7 @@ def list_all_columns() -> ToolResponse:
 
 
 @catch_errors
-def upsert_memory(
-    table_name: str, data: Dict[str, Any], match_columns: List[str]
-) -> ToolResponse:
+def upsert_memory(table_name: str, data: Dict[str, Any], match_columns: List[str]) -> ToolResponse:
     """
     Smart memory upsert: Update existing records or create new ones based on matching columns.
 
@@ -323,9 +313,7 @@ def batch_create_memories(
                                     {
                                         "index": i,
                                         "action": "failed",
-                                        "error": insert_result.get(
-                                            "error", "Unknown error"
-                                        ),
+                                        "error": insert_result.get("error", "Unknown error"),
                                         "success": False,
                                     }
                                 )
@@ -380,9 +368,7 @@ def batch_create_memories(
 
 
 @catch_errors
-def batch_delete_memories(
-    table_name: str, where_conditions: List[Dict[str, Any]], match_all: bool = False
-) -> ToolResponse:
+def batch_delete_memories(table_name: str, where_conditions: List[Dict[str, Any]], match_all: bool = False) -> ToolResponse:
     """
     Efficiently delete multiple memory records in a single operation.
 

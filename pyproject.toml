@@ -58,3 +58,7 @@ module = [
     "mcp_sqlite_memory_bank.tools.analytics"
 ]
 ignore_errors = true
+
+[tool.black]
+line-length = 150
+target-version = ['py310']

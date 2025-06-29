@@ -129,9 +129,7 @@ async def client_with_sample_data(temp_db):
         ]
 
         for project in sample_projects:
-            await client.call_tool(
-                "create_row", {"table_name": "projects", "data": project}
-            )
+            await client.call_tool("create_row", {"table_name": "projects", "data": project})
 
         sample_knowledge = [
             {
@@ -167,9 +165,7 @@ async def client_with_sample_data(temp_db):
         ]
 
         for knowledge in sample_knowledge:
-            await client.call_tool(
-                "create_row", {"table_name": "knowledge", "data": knowledge}
-            )
+            await client.call_tool("create_row", {"table_name": "knowledge", "data": knowledge})
 
         yield client
 
@@ -302,9 +298,7 @@ class TestIntelligentDiscovery:
         """Test intelligent discovery with invalid goal."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "intelligent_discovery", {"discovery_goal": "invalid_goal"}
-        )
+        result = await client.call_tool("intelligent_discovery", {"discovery_goal": "invalid_goal"})
 
         output = extract_result(result)
         # Should still work but with default behavior
@@ -319,9 +313,7 @@ class TestDiscoveryTemplates:
         """Test first_time_exploration template."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "discovery_templates", {"template_type": "first_time_exploration"}
-        )
+        result = await client.call_tool("discovery_templates", {"template_type": "first_time_exploration"})
 
         output = extract_result(result)
         assert output["success"] is True
@@ -351,9 +343,7 @@ class TestDiscoveryTemplates:
         """Test content_audit template."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "discovery_templates", {"template_type": "content_audit"}
-        )
+        result = await client.call_tool("discovery_templates", {"template_type": "content_audit"})
 
         output = extract_result(result)
         assert output["success"] is True
@@ -368,9 +358,7 @@ class TestDiscoveryTemplates:
         """Test search_optimization template."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "discovery_templates", {"template_type": "search_optimization"}
-        )
+        result = await client.call_tool("discovery_templates", {"template_type": "search_optimization"})
 
         output = extract_result(result)
         assert output["success"] is True
@@ -383,9 +371,7 @@ class TestDiscoveryTemplates:
         """Test problem_solving template."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "discovery_templates", {"template_type": "problem_solving"}
-        )
+        result = await client.call_tool("discovery_templates", {"template_type": "problem_solving"})
 
         output = extract_result(result)
         assert output["success"] is True
@@ -416,9 +402,7 @@ class TestDiscoveryTemplates:
         """Test invalid template type."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "discovery_templates", {"template_type": "nonexistent_template"}
-        )
+        result = await client.call_tool("discovery_templates", {"template_type": "nonexistent_template"})
 
         output = extract_result(result)
         assert output["success"] is False
@@ -429,9 +413,7 @@ class TestDiscoveryTemplates:
         """Test that available templates are listed."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "discovery_templates", {"template_type": "first_time_exploration"}
-        )
+        result = await client.call_tool("discovery_templates", {"template_type": "first_time_exploration"})
 
         output = extract_result(result)
         assert output["success"] is True
@@ -483,9 +465,7 @@ class TestDiscoverRelationships:
         """Test discovering relationships for specific table."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "discover_relationships", {"table_name": "users"}
-        )
+        result = await client.call_tool("discover_relationships", {"table_name": "users"})
 
         output = extract_result(result)
         assert output["success"] is True
@@ -553,17 +533,13 @@ class TestDiscoverRelationships:
         """Test discovering relationships for non-existent table."""
         client = client_with_sample_data
 
-        result = await client.call_tool(
-            "discover_relationships", {"table_name": "nonexistent_table"}
-        )
+        result = await client.call_tool("discover_relationships", {"table_name": "nonexistent_table"})
 
         output = extract_result(result)
         assert output["success"] is True  # Should succeed but find no relationships
 
         relationships = output["relationships"]
-        assert len(relationships) == 0 or (
-            len(relationships) == 1 and not any(relationships.values())
-        )
+        assert len(relationships) == 0 or (len(relationships) == 1 and not any(relationships.values()))
 
 
 class TestDiscoveryIntegration:
@@ -575,9 +551,7 @@ class TestDiscoveryIntegration:
         client = client_with_sample_data
 
         # Step 1: Get discovery template
-        template_result = await client.call_tool(
-            "discovery_templates", {"template_type": "first_time_exploration"}
-        )
+        template_result = await client.call_tool("discovery_templates", {"template_type": "first_time_exploration"})
         template_output = extract_result(template_result)
         assert template_output["success"] is True
 
@@ -603,9 +577,7 @@ class TestDiscoveryIntegration:
         """Test discovery tools with empty database."""
         async with Client(smb.app) as client:
             # Test intelligent discovery on empty database
-            result = await client.call_tool(
-                "intelligent_discovery", {"discovery_goal": "understand_content"}
-            )
+            result = await client.call_tool("intelligent_discovery", {"discovery_goal": "understand_content"})
 
             output = extract_result(result)
             assert output["success"] is True
@@ -690,9 +662,7 @@ class TestDiscoveryPerformance:
 
         # Run multiple discovery operations
         tasks = [
-            client.call_tool(
-                "intelligent_discovery", {"discovery_goal": "understand_content"}
-            ),
+            client.call_tool("intelligent_discovery", {"discovery_goal": "understand_content"}),
             client.call_tool("discovery_templates", {"template_type": "content_audit"}),
             client.call_tool("discover_relationships", {"table_name": "users"}),
         ]

@@ -30,16 +30,12 @@ def analyze_graph_potential_impl(db: SQLiteMemoryDatabase) -> ToolResponse:
         schema_analysis = analyzer.analyze_schema_structure()
 
         if "error" in schema_analysis:
-            return cast(
-                ToolResponse, {"success": False, "error": schema_analysis["error"]}
-            )
+            return cast(ToolResponse, {"success": False, "error": schema_analysis["error"]})
 
         # Analyze graph potential
         tables = schema_analysis.get("tables", {})
         total_nodes = sum(info.get("row_count", 0) for info in tables.values())
-        node_types = list(
-            set(info.get("detected_node_type", "record") for info in tables.values())
-        )
+        node_types = list(set(info.get("detected_node_type", "record") for info in tables.values()))
         text_columns = len(schema_analysis.get("text_columns", []))
 
         # Assess graph visualization potential
@@ -61,21 +57,13 @@ def analyze_graph_potential_impl(db: SQLiteMemoryDatabase) -> ToolResponse:
 
         recommendations = []
         if text_columns >= 3:
-            recommendations.append(
-                "Enable semantic relationships for richer connections"
-            )
+            recommendations.append("Enable semantic relationships for richer connections")
         if len(tables) >= 3:
-            recommendations.append(
-                "Use structural analysis to find foreign key relationships"
-            )
+            recommendations.append("Use structural analysis to find foreign key relationships")
         if total_nodes > 50:
-            recommendations.append(
-                "Consider filtering by node type or date range for clarity"
-            )
+            recommendations.append("Consider filtering by node type or date range for clarity")
         if len(node_types) == 1:
-            recommendations.append(
-                "Data appears homogeneous - consider categorization by content"
-            )
+            recommendations.append("Data appears homogeneous - consider categorization by content")
 
         return cast(
             ToolResponse,
@@ -141,17 +129,10 @@ def build_knowledge_graph_impl(
 
         # Apply node type filtering if specified
         if node_types:
-            filtered_nodes = [
-                node for node in graph_data["nodes"] if node["nodeType"] in node_types
-            ]
+            filtered_nodes = [node for node in graph_data["nodes"] if node["nodeType"] in node_types]
             # Also filter edges to only include nodes that remain
             remaining_node_ids = {node["id"] for node in filtered_nodes}
-            filtered_edges = [
-                edge
-                for edge in graph_data["edges"]
-                if edge["source"] in remaining_node_ids
-                and edge["target"] in remaining_node_ids
-            ]
+            filtered_edges = [edge for edge in graph_data["edges"] if edge["source"] in remaining_node_ids and edge["target"] in remaining_node_ids]
 
             graph_data["nodes"] = filtered_nodes
             graph_data["edges"] = filtered_edges
@@ -161,9 +142,7 @@ def build_knowledge_graph_impl(
         # Add layout information
         graph_data["layout"] = {
             "algorithm": layout_algorithm,
-            "parameters": _get_layout_parameters(
-                layout_algorithm, len(graph_data["nodes"])
-            ),
+            "parameters": _get_layout_parameters(layout_algorithm, len(graph_data["nodes"])),
         }
 
         return {
@@ -198,9 +177,7 @@ def get_graph_insights_impl(db: SQLiteMemoryDatabase) -> ToolResponse:
                 "success": True,
                 "insights": {
                     "summary": "No data available for graph analysis",
-                    "recommendations": [
-                        "Add data to your memory bank to enable graph insights"
-                    ],
+                    "recommendations": ["Add data to your memory bank to enable graph insights"],
                 },
             }
 
@@ -243,9 +220,7 @@ def get_graph_insights_impl(db: SQLiteMemoryDatabase) -> ToolResponse:
             "relationship_analysis": {
                 "total_relationships": total_edges,
                 "relationship_types": relationship_types,
-                "average_connectivity": round(
-                    connectivity,
-                    2),
+                "average_connectivity": round(connectivity, 2),
             },
             "recommendations": [],
         }
@@ -254,22 +229,17 @@ def get_graph_insights_impl(db: SQLiteMemoryDatabase) -> ToolResponse:
         if len(isolated_nodes) > total_nodes * 0.3:
             insights["recommendations"].append(
                 f"High isolation: {len(isolated_nodes)} nodes have no connections. "
-                f"Consider adding semantic relationships or reviewing data organization.")
+                f"Consider adding semantic relationships or reviewing data organization."
+            )
 
         if connectivity < 0.5:
-            insights["recommendations"].append(
-                "Low connectivity detected. Enable semantic relationship detection to discover hidden connections."
-            )
+            insights["recommendations"].append("Low connectivity detected. Enable semantic relationship detection to discover hidden connections.")
 
         if len(node_types) == 1:
-            insights["recommendations"].append(
-                "All nodes are the same type. Consider adding categorization or creating different entity types."
-            )
+            insights["recommendations"].append("All nodes are the same type. Consider adding categorization or creating different entity types.")
 
         if "semantic" not in relationship_types and len(table_distribution) > 1:
-            insights["recommendations"].append(
-                "No semantic relationships found. Enable semantic analysis to discover content-based connections."
-            )
+            insights["recommendations"].append("No semantic relationships found. Enable semantic analysis to discover content-based connections.")
 
         if not insights["recommendations"]:
             insights["recommendations"].append(
@@ -279,10 +249,7 @@ def get_graph_insights_impl(db: SQLiteMemoryDatabase) -> ToolResponse:
         return {
             "success": True,
             "insights": insights,
-            "isolated_nodes": [
-                {"id": node["id"], "label": node["label"]}
-                for node in isolated_nodes[:10]
-            ],
+            "isolated_nodes": [{"id": node["id"], "label": node["label"]} for node in isolated_nodes[:10]],
             "graph_health_score": min(
                 10,
                 max(
@@ -299,9 +266,7 @@ def get_graph_insights_impl(db: SQLiteMemoryDatabase) -> ToolResponse:
         }
 
 
-def export_graph_data_impl(
-    db: SQLiteMemoryDatabase, format_type: str = "json", include_positions: bool = False
-) -> ToolResponse:
+def export_graph_data_impl(db: SQLiteMemoryDatabase, format_type: str = "json", include_positions: bool = False) -> ToolResponse:
     """
     Export knowledge graph data in various formats for use in external
     visualization tools or for backup/sharing purposes.
@@ -344,10 +309,7 @@ def export_graph_data_impl(
             # Create relationships
             for edge in graph_data["edges"]:
                 rel_type = edge["relationshipType"].upper()
-                cypher_statements.append(
-                    f"MATCH (a {{id: '{edge['source']}'}}), (b {{id: '{edge['target']}'}})"
-                    f"CREATE (a)-[:{rel_type}]->(b)"
-                )
+                cypher_statements.append(f"MATCH (a {{id: '{edge['source']}'}}), (b {{id: '{edge['target']}'}})" f"CREATE (a)-[:{rel_type}]->(b)")
 
             export_data = {
                 "format": "cypher",

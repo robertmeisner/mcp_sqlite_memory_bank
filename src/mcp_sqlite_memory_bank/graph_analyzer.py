@@ -96,9 +96,7 @@ class GenericGraphAnalyzer:
                 if not table_info_result.get("success"):
                     continue
 
-                columns = {
-                    col["name"]: col for col in table_info_result.get("columns", [])
-                }
+                columns = {col["name"]: col for col in table_info_result.get("columns", [])}
 
                 schema_analysis["tables"][table_name] = {
                     "columns": columns,
@@ -111,9 +109,7 @@ class GenericGraphAnalyzer:
                 # Find text columns for semantic analysis
                 for col_name, col_info in columns.items():
                     if "TEXT" in col_info["type"].upper():
-                        schema_analysis["text_columns"].append(
-                            {"table": table_name, "column": col_name}
-                        )
+                        schema_analysis["text_columns"].append({"table": table_name, "column": col_name})
 
             return schema_analysis
 
@@ -154,9 +150,7 @@ class GenericGraphAnalyzer:
 
             # Build semantic relationships if requested
             if include_semantic and schema["text_columns"]:
-                semantic_edges = self._detect_semantic_relationships(
-                    schema, threshold=semantic_threshold
-                )
+                semantic_edges = self._detect_semantic_relationships(schema, threshold=semantic_threshold)
                 edges.extend(semantic_edges)
 
             # Build inferred relationships (naming patterns)
@@ -172,9 +166,7 @@ class GenericGraphAnalyzer:
                         "node_count": len(nodes),
                         "edge_count": len(edges),
                         "tables_analyzed": len(schema["tables"]),
-                        "relationship_types": len(
-                            set(e.relationship_type for e in edges)
-                        ),
+                        "relationship_types": len(set(e.relationship_type for e in edges)),
                     },
                 },
                 "schema_analysis": schema,
@@ -230,18 +222,11 @@ class GenericGraphAnalyzer:
         ref_columns = []
         for col_name, col_info in columns.items():
             col_lower = col_name.lower()
-            if (
-                col_lower.endswith("_id")
-                or col_lower.endswith("_ref")
-                or "reference" in col_lower
-                or "parent" in col_lower
-            ):
+            if col_lower.endswith("_id") or col_lower.endswith("_ref") or "reference" in col_lower or "parent" in col_lower:
                 ref_columns.append(col_name)
         return ref_columns
 
-    def _build_nodes_from_table(
-        self, table_name: str, table_info: Dict, max_nodes_per_table: int
-    ) -> List[GraphNode]:
+    def _build_nodes_from_table(self, table_name: str, table_info: Dict, max_nodes_per_table: int) -> List[GraphNode]:
         """Build graph nodes from a table's records."""
         nodes = []
         try:
@@ -264,9 +249,7 @@ class GenericGraphAnalyzer:
                     source_record_id=row.get("id"),
                     properties=row,
                     color=self._get_node_color(table_info["detected_node_type"]),
-                    size=min(
-                        40, max(15, len(str(label)))
-                    ),  # Size based on label length
+                    size=min(40, max(15, len(str(label)))),  # Size based on label length
                     shape=self._get_node_shape(table_info["detected_node_type"]),
                 )
                 nodes.append(node)
@@ -337,9 +320,7 @@ class GenericGraphAnalyzer:
         # This is a simplified version - full implementation would be more sophisticated
         return edges
 
-    def _detect_semantic_relationships(
-        self, schema: Dict, threshold: float
-    ) -> List[GraphEdge]:
+    def _detect_semantic_relationships(self, schema: Dict, threshold: float) -> List[GraphEdge]:
         """Detect relationships based on content similarity."""
         edges = []
         # Implementation would use existing semantic search capabilities
