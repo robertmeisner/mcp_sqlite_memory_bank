@@ -300,8 +300,8 @@ def auto_semantic_search(
             search_result["auto_embedded_tables"] = auto_embedded_tables
             if auto_embedded_tables:
                 search_result["auto_embedding_note"] = (
-                    f"Automatically generated embeddings for {
-                        len(auto_embedded_tables)} table(s)")
+                    f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
+                )
 
         return cast(ToolResponse, search_result)
 
@@ -412,9 +412,7 @@ def auto_smart_search(
                         "success": False,
                         "error": f"Both hybrid and fallback search failed. Hybrid: {search_error}, Fallback: {fallback_error}",
                         "category": "HYBRID_SEARCH_ERROR",
-                        "details": {
-                            "query": query,
-                            "tables": tables},
+                        "details": {"query": query, "tables": tables},
                     },
                 )
 
@@ -438,7 +436,8 @@ def auto_smart_search(
             if auto_embedded_tables:
                 final_result["auto_embedding_note"] = (
                     f"Automatically generated embeddings for {
-                        len(auto_embedded_tables)} table(s)")
+                        len(auto_embedded_tables)} table(s)"
+                )
             return cast(ToolResponse, final_result)
         else:
             return cast(ToolResponse, hybrid_result)

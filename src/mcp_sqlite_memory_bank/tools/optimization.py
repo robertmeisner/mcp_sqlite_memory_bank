@@ -249,8 +249,11 @@ def optimize_memory_bank(
 
                 # Estimate embedding storage size
                 if embedding_rows > 0:
-                    sample_embedding_result = conn.execute(text(
-                        f"SELECT LENGTH(embedding) FROM `{table_name}` WHERE embedding IS NOT NULL LIMIT 1"))
+                    sample_embedding_result = conn.execute(
+                        text(
+                            f"SELECT LENGTH(embedding) FROM `{table_name}` WHERE embedding IS NOT NULL LIMIT 1"
+                        )
+                    )
                     sample_size = sample_embedding_result.fetchone()
                     if sample_size:
                         total_embedding_size_mb = (embedding_rows * sample_size[0]) / (
@@ -259,11 +262,11 @@ def optimize_memory_bank(
                         optimizations_performed.append(
                             {
                                 "type": "embedding_analysis",
-                                "description": f"Embedding storage: {
-                                    total_embedding_size_mb:.2f} MB for {embedding_rows} rows",
+                                "description": f"Embedding storage: {total_embedding_size_mb:.2f} MB for {embedding_rows} rows",
                                 "action": "Embeddings are efficiently stored",
                                 "rows_affected": 0,
-                            })
+                            }
+                        )
 
             # Step 5: Database optimization
             if not dry_run:
@@ -275,7 +278,8 @@ def optimize_memory_bank(
                         "description": "Reclaimed deleted space and optimized database file",
                         "action": "VACUUM completed",
                         "rows_affected": 0,
-                    })
+                    }
+                )
 
                 # ANALYZE to update statistics
                 conn.execute(text("ANALYZE"))
@@ -480,7 +484,8 @@ def _generate_cleanup_recommendations(
     total_duplicates = sum(len(group["rows"]) - 1 for group in duplicate_groups)
     recommendations.append(
         f"🔍 Found {
-            len(duplicate_groups)} duplicate groups with {total_duplicates} redundant records")
+            len(duplicate_groups)} duplicate groups with {total_duplicates} redundant records"
+    )
 
     # Group recommendations by suggested action
     actions = defaultdict(int)

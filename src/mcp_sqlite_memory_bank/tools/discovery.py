@@ -227,218 +227,260 @@ def discovery_templates(
         - **LEARNING-OPTIMIZED**: Based on successful discovery patterns
     """
     try:
-        templates = {"first_time_exploration": {"name": "First Time Exploration",
-                                                "description": "Complete discovery workflow for agents new to this memory bank",
-                                                "estimated_time": "2-3 minutes",
-                                                "workflow": [{"step": 1,
-                                                              "action": "Get Overview",
-                                                              "tool": "intelligent_discovery",
-                                                              "params": {"discovery_goal": "understand_content",
-                                                                         "depth": "moderate",
-                                                                         },
-                                                              "purpose": "Understand what data is available and how it's organized",
-                                                              "look_for": ["total tables",
-                                                                           "content types",
-                                                                           "data volume"],
-                                                              },
-                                                             {"step": 2,
-                                                              "action": "Explore Structure",
-                                                              "tool": "explore_tables",
-                                                              "params": {"include_row_counts": True},
-                                                              "purpose": "See detailed table schemas and sample data",
-                                                              "look_for": ["column types",
-                                                                           "sample content",
-                                                                           "data relationships",
-                                                                           ],
-                                                              },
-                                                             {"step": 3,
-                                                              "action": "Test Search Capabilities",
-                                                              "tool": "auto_smart_search",
-                                                              "params": {"query": "recent important information",
-                                                                         "limit": 5},
-                                                              "purpose": "Understand search capabilities and content accessibility",
-                                                              "look_for": ["search quality",
-                                                                           "result relevance",
-                                                                           "content types found",
-                                                                           ],
-                                                              },
-                                                             {"step": 4,
-                                                              "action": "Assess Quality",
-                                                              "tool": "get_content_health_score",
-                                                              "params": {},
-                                                              "purpose": "Understand overall memory bank quality and opportunities",
-                                                              "look_for": ["health score",
-                                                                           "improvement recommendations",
-                                                                           "strengths",
-                                                                           ],
-                                                              },
-                                                             ],
-                                                "success_criteria": ["Understand what types of information are stored",
-                                                                     "Know which tables contain the most valuable content",
-                                                                     "Identify best search strategies for this memory bank",
-                                                                     "Have actionable next steps for productive use",
-                                                                     ],
-                                                },
-                     "content_audit": {"name": "Content Quality Audit",
-                                       "description": "Systematic review of content quality and completeness",
-                                       "estimated_time": "5-7 minutes",
-                                       "workflow": [{"step": 1,
-                                                     "action": "Quality Assessment",
-                                                     "tool": "get_content_health_score",
-                                                     "params": {},
-                                                     "purpose": "Get overall quality metrics and problem areas",
-                                                     "look_for": ["quality scores",
-                                                                  "problem tables",
-                                                                  "recommendations",
-                                                                  ],
-                                                     },
-                                                    {"step": 2,
-                                                     "action": "Pattern Analysis",
-                                                     "tool": "analyze_memory_patterns",
-                                                     "params": {},
-                                                     "purpose": "Identify content patterns and organizational issues",
-                                                     "look_for": ["content distribution",
-                                                                  "sparse tables",
-                                                                  "organization gaps",
-                                                                  ],
-                                                     },
-                                                    {"step": 3,
-                                                     "action": "Table-by-Table Review",
-                                                     "tool": "explore_tables",
-                                                     "params": {"include_row_counts": True},
-                                                     "purpose": "Detailed examination of each table's content",
-                                                     "look_for": ["empty tables",
-                                                                  "low-quality content",
-                                                                  "missing data",
-                                                                  ],
-                                                     },
-                                                    {"step": 4,
-                                                     "action": "Search Readiness",
-                                                     "tool": "intelligent_discovery",
-                                                     "params": {"discovery_goal": "prepare_search",
-                                                                "depth": "comprehensive",
-                                                                },
-                                                     "purpose": "Ensure content is optimally searchable",
-                                                     "look_for": ["embedding coverage",
-                                                                  "search optimization opportunities",
-                                                                  ],
-                                                     },
-                                                    ],
-                                       "success_criteria": ["Identify all content quality issues",
-                                                            "Have specific recommendations for improvement",
-                                                            "Understand which content areas need attention",
-                                                            "Know how to optimize for better searchability",
-                                                            ],
-                                       },
-                     "search_optimization": {"name": "Search Optimization Setup",
-                                             "description": "Prepare memory bank for optimal content discovery and searching",
-                                             "estimated_time": "3-5 minutes",
-                                             "workflow": [{"step": 1,
-                                                           "action": "Search Capability Assessment",
-                                                           "tool": "intelligent_discovery",
-                                                           "params": {"discovery_goal": "prepare_search",
-                                                                      "depth": "comprehensive",
-                                                                      },
-                                                           "purpose": "Understand current search capabilities and gaps",
-                                                           "look_for": ["semantic readiness",
-                                                                        "text column identification",
-                                                                        "embedding status",
-                                                                        ],
-                                                           },
-                                                          {"step": 2,
-                                                           "action": "Content Analysis for Search",
-                                                           "tool": "analyze_memory_patterns",
-                                                           "params": {},
-                                                           "purpose": "Identify high-value content for search optimization",
-                                                           "look_for": ["text-rich tables",
-                                                                        "high-value content",
-                                                                        "search opportunities",
-                                                                        ],
-                                                           },
-                                                          {"step": 3,
-                                                           "action": "Test Current Search",
-                                                           "tool": "search_content",
-                                                           "params": {"query": "test search capabilities",
-                                                                      "limit": 10},
-                                                           "purpose": "Baseline current search performance",
-                                                           "look_for": ["search result quality",
-                                                                        "coverage",
-                                                                        "relevance"],
-                                                           },
-                                                          {"step": 4,
-                                                           "action": "Semantic Search Setup",
-                                                           "tool": "auto_semantic_search",
-                                                           "params": {"query": "important valuable content",
-                                                                      "limit": 5},
-                                                           "purpose": "Enable and test semantic search capabilities",
-                                                           "look_for": ["automatic embedding generation",
-                                                                        "semantic result quality",
-                                                                        ],
-                                                           },
-                                                          ],
-                                             "success_criteria": ["Semantic search is enabled for key tables",
-                                                                  "Both keyword and semantic search work effectively",
-                                                                  "Search performance meets quality standards",
-                                                                  "Clear strategy for ongoing search optimization",
-                                                                  ],
-                                             },
-                     "problem_solving": {"name": "Problem-Solving Discovery",
-                                         "description": "Find information to solve specific problems or answer questions",
-                                         "estimated_time": "2-4 minutes",
-                                         "workflow": [{"step": 1,
-                                                       "action": "Quick Content Survey",
-                                                       "tool": "intelligent_discovery",
-                                                       "params": {"discovery_goal": "understand_content",
-                                                                  "depth": "quick",
-                                                                  },
-                                                       "purpose": "Rapid overview of available information",
-                                                       "look_for": ["relevant content areas",
-                                                                    "potential information sources",
-                                                                    ],
-                                                       },
-                                                      {"step": 2,
-                                                       "action": "Targeted Search",
-                                                       "tool": "auto_smart_search",
-                                                       "params": {"query": "REPLACE_WITH_PROBLEM_KEYWORDS",
-                                                                  "limit": 10,
-                                                                  },
-                                                       "purpose": "Find directly relevant information",
-                                                       "look_for": ["directly applicable content",
-                                                                    "related information",
-                                                                    "context clues",
-                                                                    ],
-                                                       },
-                                                      {"step": 3,
-                                                       "action": "Related Content Discovery",
-                                                       "tool": "auto_semantic_search",
-                                                       "params": {"query": "REPLACE_WITH_CONCEPTUAL_TERMS",
-                                                                  "similarity_threshold": 0.3,
-                                                                  },
-                                                       "purpose": "Find conceptually related information",
-                                                       "look_for": ["broader context",
-                                                                    "related concepts",
-                                                                    "background information",
-                                                                    ],
-                                                       },
-                                                      {"step": 4,
-                                                       "action": "Information Gap Analysis",
-                                                       "tool": "explore_tables",
-                                                       "params": {"include_row_counts": True},
-                                                       "purpose": "Identify what information might be missing",
-                                                       "look_for": ["information gaps",
-                                                                    "additional context sources",
-                                                                    "related data",
-                                                                    ],
-                                                       },
-                                                      ],
-                                         "customization_note": "Replace REPLACE_WITH_PROBLEM_KEYWORDS and REPLACE_WITH_CONCEPTUAL_TERMS with your specific problem terms",
-                                         "success_criteria": ["Found directly relevant information",
-                                                              "Identified related/contextual information",
-                                                              "Understand what information might be missing",
-                                                              "Have clear next steps for problem resolution",
-                                                              ],
-                                         },
-                     }
+        templates = {
+            "first_time_exploration": {
+                "name": "First Time Exploration",
+                "description": "Complete discovery workflow for agents new to this memory bank",
+                "estimated_time": "2-3 minutes",
+                "workflow": [
+                    {
+                        "step": 1,
+                        "action": "Get Overview",
+                        "tool": "intelligent_discovery",
+                        "params": {
+                            "discovery_goal": "understand_content",
+                            "depth": "moderate",
+                        },
+                        "purpose": "Understand what data is available and how it's organized",
+                        "look_for": ["total tables", "content types", "data volume"],
+                    },
+                    {
+                        "step": 2,
+                        "action": "Explore Structure",
+                        "tool": "explore_tables",
+                        "params": {"include_row_counts": True},
+                        "purpose": "See detailed table schemas and sample data",
+                        "look_for": [
+                            "column types",
+                            "sample content",
+                            "data relationships",
+                        ],
+                    },
+                    {
+                        "step": 3,
+                        "action": "Test Search Capabilities",
+                        "tool": "auto_smart_search",
+                        "params": {"query": "recent important information", "limit": 5},
+                        "purpose": "Understand search capabilities and content accessibility",
+                        "look_for": [
+                            "search quality",
+                            "result relevance",
+                            "content types found",
+                        ],
+                    },
+                    {
+                        "step": 4,
+                        "action": "Assess Quality",
+                        "tool": "get_content_health_score",
+                        "params": {},
+                        "purpose": "Understand overall memory bank quality and opportunities",
+                        "look_for": [
+                            "health score",
+                            "improvement recommendations",
+                            "strengths",
+                        ],
+                    },
+                ],
+                "success_criteria": [
+                    "Understand what types of information are stored",
+                    "Know which tables contain the most valuable content",
+                    "Identify best search strategies for this memory bank",
+                    "Have actionable next steps for productive use",
+                ],
+            },
+            "content_audit": {
+                "name": "Content Quality Audit",
+                "description": "Systematic review of content quality and completeness",
+                "estimated_time": "5-7 minutes",
+                "workflow": [
+                    {
+                        "step": 1,
+                        "action": "Quality Assessment",
+                        "tool": "get_content_health_score",
+                        "params": {},
+                        "purpose": "Get overall quality metrics and problem areas",
+                        "look_for": [
+                            "quality scores",
+                            "problem tables",
+                            "recommendations",
+                        ],
+                    },
+                    {
+                        "step": 2,
+                        "action": "Pattern Analysis",
+                        "tool": "analyze_memory_patterns",
+                        "params": {},
+                        "purpose": "Identify content patterns and organizational issues",
+                        "look_for": [
+                            "content distribution",
+                            "sparse tables",
+                            "organization gaps",
+                        ],
+                    },
+                    {
+                        "step": 3,
+                        "action": "Table-by-Table Review",
+                        "tool": "explore_tables",
+                        "params": {"include_row_counts": True},
+                        "purpose": "Detailed examination of each table's content",
+                        "look_for": [
+                            "empty tables",
+                            "low-quality content",
+                            "missing data",
+                        ],
+                    },
+                    {
+                        "step": 4,
+                        "action": "Search Readiness",
+                        "tool": "intelligent_discovery",
+                        "params": {
+                            "discovery_goal": "prepare_search",
+                            "depth": "comprehensive",
+                        },
+                        "purpose": "Ensure content is optimally searchable",
+                        "look_for": [
+                            "embedding coverage",
+                            "search optimization opportunities",
+                        ],
+                    },
+                ],
+                "success_criteria": [
+                    "Identify all content quality issues",
+                    "Have specific recommendations for improvement",
+                    "Understand which content areas need attention",
+                    "Know how to optimize for better searchability",
+                ],
+            },
+            "search_optimization": {
+                "name": "Search Optimization Setup",
+                "description": "Prepare memory bank for optimal content discovery and searching",
+                "estimated_time": "3-5 minutes",
+                "workflow": [
+                    {
+                        "step": 1,
+                        "action": "Search Capability Assessment",
+                        "tool": "intelligent_discovery",
+                        "params": {
+                            "discovery_goal": "prepare_search",
+                            "depth": "comprehensive",
+                        },
+                        "purpose": "Understand current search capabilities and gaps",
+                        "look_for": [
+                            "semantic readiness",
+                            "text column identification",
+                            "embedding status",
+                        ],
+                    },
+                    {
+                        "step": 2,
+                        "action": "Content Analysis for Search",
+                        "tool": "analyze_memory_patterns",
+                        "params": {},
+                        "purpose": "Identify high-value content for search optimization",
+                        "look_for": [
+                            "text-rich tables",
+                            "high-value content",
+                            "search opportunities",
+                        ],
+                    },
+                    {
+                        "step": 3,
+                        "action": "Test Current Search",
+                        "tool": "search_content",
+                        "params": {"query": "test search capabilities", "limit": 10},
+                        "purpose": "Baseline current search performance",
+                        "look_for": ["search result quality", "coverage", "relevance"],
+                    },
+                    {
+                        "step": 4,
+                        "action": "Semantic Search Setup",
+                        "tool": "auto_semantic_search",
+                        "params": {"query": "important valuable content", "limit": 5},
+                        "purpose": "Enable and test semantic search capabilities",
+                        "look_for": [
+                            "automatic embedding generation",
+                            "semantic result quality",
+                        ],
+                    },
+                ],
+                "success_criteria": [
+                    "Semantic search is enabled for key tables",
+                    "Both keyword and semantic search work effectively",
+                    "Search performance meets quality standards",
+                    "Clear strategy for ongoing search optimization",
+                ],
+            },
+            "problem_solving": {
+                "name": "Problem-Solving Discovery",
+                "description": "Find information to solve specific problems or answer questions",
+                "estimated_time": "2-4 minutes",
+                "workflow": [
+                    {
+                        "step": 1,
+                        "action": "Quick Content Survey",
+                        "tool": "intelligent_discovery",
+                        "params": {
+                            "discovery_goal": "understand_content",
+                            "depth": "quick",
+                        },
+                        "purpose": "Rapid overview of available information",
+                        "look_for": [
+                            "relevant content areas",
+                            "potential information sources",
+                        ],
+                    },
+                    {
+                        "step": 2,
+                        "action": "Targeted Search",
+                        "tool": "auto_smart_search",
+                        "params": {
+                            "query": "REPLACE_WITH_PROBLEM_KEYWORDS",
+                            "limit": 10,
+                        },
+                        "purpose": "Find directly relevant information",
+                        "look_for": [
+                            "directly applicable content",
+                            "related information",
+                            "context clues",
+                        ],
+                    },
+                    {
+                        "step": 3,
+                        "action": "Related Content Discovery",
+                        "tool": "auto_semantic_search",
+                        "params": {
+                            "query": "REPLACE_WITH_CONCEPTUAL_TERMS",
+                            "similarity_threshold": 0.3,
+                        },
+                        "purpose": "Find conceptually related information",
+                        "look_for": [
+                            "broader context",
+                            "related concepts",
+                            "background information",
+                        ],
+                    },
+                    {
+                        "step": 4,
+                        "action": "Information Gap Analysis",
+                        "tool": "explore_tables",
+                        "params": {"include_row_counts": True},
+                        "purpose": "Identify what information might be missing",
+                        "look_for": [
+                            "information gaps",
+                            "additional context sources",
+                            "related data",
+                        ],
+                    },
+                ],
+                "customization_note": "Replace REPLACE_WITH_PROBLEM_KEYWORDS and REPLACE_WITH_CONCEPTUAL_TERMS with your specific problem terms",
+                "success_criteria": [
+                    "Found directly relevant information",
+                    "Identified related/contextual information",
+                    "Understand what information might be missing",
+                    "Have clear next steps for problem resolution",
+                ],
+            },
+        }
 
         if template_type not in templates:
             available_templates = list(templates.keys())
@@ -468,8 +510,7 @@ def discovery_templates(
                 "template": template,
                 "template_type": template_type,
                 "customized_for": customize_for,
-                "available_templates": list(
-                    templates.keys()),
+                "available_templates": list(templates.keys()),
                 "usage_tip": "Follow the workflow steps in order, adapting parameters as needed for your specific situation",
             },
         )
@@ -566,8 +607,8 @@ def discover_relationships(
                 table_relationships["foreign_key_refs"] = fk_relationships
                 if fk_relationships:
                     insights.append(
-                        f"Table '{target_table}' has structural relationships with {
-                            len(fk_relationships)} other tables")
+                        f"Table '{target_table}' has structural relationships with {len(fk_relationships)} other tables"
+                    )
 
             # Discover semantic similarity relationships
             if (
@@ -581,7 +622,8 @@ def discover_relationships(
                 if semantic_relationships:
                     insights.append(
                         f"Table '{target_table}' has semantic similarity with {
-                            len(semantic_relationships)} tables")
+                            len(semantic_relationships)} tables"
+                    )
 
             # Discover temporal patterns
             if "temporal_patterns" in relationship_types:
@@ -592,7 +634,8 @@ def discover_relationships(
                 if temporal_relationships:
                     insights.append(
                         f"Table '{target_table}' shows temporal patterns with {
-                            len(temporal_relationships)} tables")
+                            len(temporal_relationships)} tables"
+                    )
 
             # Discover naming pattern relationships
             if "naming_patterns" in relationship_types:
@@ -603,7 +646,8 @@ def discover_relationships(
                 if naming_relationships:
                     insights.append(
                         f"Table '{target_table}' has naming pattern relationships with {
-                            len(naming_relationships)} tables")
+                            len(naming_relationships)} tables"
+                    )
 
             relationships[target_table] = table_relationships
 
@@ -623,7 +667,8 @@ def discover_relationships(
         else:
             insights.append(
                 f"Discovered {total_relationships} total relationships across {
-                    len(relationships)} tables")
+                    len(relationships)} tables"
+            )
 
         return cast(
             ToolResponse,

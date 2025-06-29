@@ -243,7 +243,8 @@ def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
                 ],
                 "explanation": "Semantic search requires the sentence-transformers library",
                 "fallback_available": "Keyword search is available as fallback",
-            })
+            }
+        )
 
     # Database errors
     elif "database" in error_str or "sqlite" in error_str:
@@ -260,7 +261,8 @@ def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
                     "check_db_path": "Verify DB_PATH environment variable",
                     "check_permissions": "Ensure write permissions to database directory",
                 },
-            })
+            }
+        )
 
     # Table/schema errors
     elif "table" in error_str and ("not exist" in error_str or "missing" in error_str):
@@ -305,7 +307,8 @@ def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
                     "python_version": sys.version,
                     "check_packages": "pip list | grep -E '(torch|transformers|sentence)'",
                 },
-            })
+            }
+        )
 
     # Function/method errors (like our recent 'FunctionTool' issue)
     elif "not callable" in error_str or "has no attribute" in error_str:

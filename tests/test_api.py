@@ -709,19 +709,24 @@ async def test_semantic_search_functionality(temp_db):
             },
         )
 
-        tech_docs = [{"title": "Neural Networks",
-                      "content": "Deep learning with artificial neural networks for pattern recognition",
-                      },
-                     {"title": "SQL Queries",
-                      "content": "Database queries using structured query language for data retrieval",
-                      },
-                     {"title": "Python Programming",
-                      "content": "Object-oriented programming language for software development",
-                      },
-                     {"title": "Machine Learning",
-                      "content": "Algorithms that enable computers to learn from data automatically",
-                      },
-                     ]
+        tech_docs = [
+            {
+                "title": "Neural Networks",
+                "content": "Deep learning with artificial neural networks for pattern recognition",
+            },
+            {
+                "title": "SQL Queries",
+                "content": "Database queries using structured query language for data retrieval",
+            },
+            {
+                "title": "Python Programming",
+                "content": "Object-oriented programming language for software development",
+            },
+            {
+                "title": "Machine Learning",
+                "content": "Algorithms that enable computers to learn from data automatically",
+            },
+        ]
 
         for doc in tech_docs:
             create = await client.call_tool(
@@ -845,16 +850,20 @@ async def test_auto_semantic_search_zero_setup(temp_db):
         )
 
         # Insert content
-        docs = [{"subject": "Quantum Computing",
-                 "details": "Quantum algorithms using qubits for computational advantages",
-                 },
-                {"subject": "Blockchain Technology",
-                 "details": "Distributed ledger systems for secure transactions",
-                 },
-                {"subject": "Cloud Computing",
-                 "details": "Remote computing resources accessible over the internet",
-                 },
-                ]
+        docs = [
+            {
+                "subject": "Quantum Computing",
+                "details": "Quantum algorithms using qubits for computational advantages",
+            },
+            {
+                "subject": "Blockchain Technology",
+                "details": "Distributed ledger systems for secure transactions",
+            },
+            {
+                "subject": "Cloud Computing",
+                "details": "Remote computing resources accessible over the internet",
+            },
+        ]
 
         for doc in docs:
             create = await client.call_tool(
@@ -899,19 +908,23 @@ async def test_auto_smart_search_complete_workflow(temp_db):
             },
         )
 
-        papers = [{"title": "Deep Learning for Computer Vision",
-                   "abstract": "Convolutional neural networks for image recognition and object detection",
-                   "keywords": "deep learning, CNN, computer vision, image processing",
-                   },
-                  {"title": "Natural Language Processing with Transformers",
-                   "abstract": "Attention mechanisms and transformer architectures for language understanding",
-                   "keywords": "NLP, transformers, attention, language models",
-                   },
-                  {"title": "Reinforcement Learning in Robotics",
-                   "abstract": "Learning optimal control policies through trial and error in robotic systems",
-                   "keywords": "reinforcement learning, robotics, control, AI",
-                   },
-                  ]
+        papers = [
+            {
+                "title": "Deep Learning for Computer Vision",
+                "abstract": "Convolutional neural networks for image recognition and object detection",
+                "keywords": "deep learning, CNN, computer vision, image processing",
+            },
+            {
+                "title": "Natural Language Processing with Transformers",
+                "abstract": "Attention mechanisms and transformer architectures for language understanding",
+                "keywords": "NLP, transformers, attention, language models",
+            },
+            {
+                "title": "Reinforcement Learning in Robotics",
+                "abstract": "Learning optimal control policies through trial and error in robotic systems",
+                "keywords": "reinforcement learning, robotics, control, AI",
+            },
+        ]
 
         for paper in papers:
             create = await client.call_tool(
@@ -963,19 +976,24 @@ async def test_find_related_content(temp_db):
             },
         )
 
-        concepts = [{"concept": "Machine Learning",
-                     "explanation": "Algorithms that improve automatically through experience",
-                     },
-                    {"concept": "Deep Learning",
-                     "explanation": "Multi-layered neural networks for complex pattern recognition",
-                     },
-                    {"concept": "Data Mining",
-                     "explanation": "Extracting patterns and knowledge from large datasets",
-                     },
-                    {"concept": "Statistics",
-                     "explanation": "Mathematical analysis of data collections and probability",
-                     },
-                    ]
+        concepts = [
+            {
+                "concept": "Machine Learning",
+                "explanation": "Algorithms that improve automatically through experience",
+            },
+            {
+                "concept": "Deep Learning",
+                "explanation": "Multi-layered neural networks for complex pattern recognition",
+            },
+            {
+                "concept": "Data Mining",
+                "explanation": "Extracting patterns and knowledge from large datasets",
+            },
+            {
+                "concept": "Statistics",
+                "explanation": "Mathematical analysis of data collections and probability",
+            },
+        ]
 
         concept_ids = []
         for concept in concepts:

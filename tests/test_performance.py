@@ -223,8 +223,8 @@ class TestPerformance:
 
             print("\nEmbedding Generation Performance:")
             print(
-                f"  Generated embeddings for 100 documents in {
-                    embed_duration:.2f} seconds")
+                f"  Generated embeddings for 100 documents in {embed_duration:.2f} seconds"
+            )
             print(f"  Performance: {docs_per_second:.2f} docs/second")
 
             # Performance assertion - should process at least 5 docs/sec
@@ -329,7 +329,8 @@ class TestPerformance:
             print(
                 f"  Completed {
                     len(search_queries)} searches in {
-                    total_search_time:.3f} seconds")
+                    total_search_time:.3f} seconds"
+            )
             print(f"  Average search time: {avg_search_time:.3f} seconds")
             print(f"  Performance: {searches_per_second:.2f} searches/second")
 
@@ -491,7 +492,8 @@ class TestConcurrency:
         print("\nConcurrent Write Performance:")
         print(
             f"  Completed {total_operations} concurrent writes in {
-                duration:.2f} seconds")
+                duration:.2f} seconds"
+        )
         print(f"  Performance: {ops_per_second:.2f} ops/second")
 
         # Performance assertion

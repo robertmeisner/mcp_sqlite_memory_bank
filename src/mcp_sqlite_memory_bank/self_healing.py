@@ -342,11 +342,10 @@ class SystemHealthMonitor:
             health_report["warnings"].append("Some optional dependencies are missing")
             health_report["recommendations"].extend(
                 [
-                    f"Install missing packages: {
-                        ', '.join(
-                            health_report['dependencies']['missing_packages'])}",
+                    f"Install missing packages: {', '.join(health_report['dependencies']['missing_packages'])}",
                     "Some features may have reduced functionality",
-                ])
+                ]
+            )
 
         # Analyze database
         if health_report["database"]["issues_found"]:
@@ -371,7 +370,8 @@ class SystemHealthMonitor:
         if unavailable_features:
             health_report["warnings"].append(
                 f"Features with limited functionality: {
-                    ', '.join(unavailable_features)}")
+                    ', '.join(unavailable_features)}"
+            )
 
         return health_report
 

@@ -295,9 +295,9 @@ class MemoryBankResources:
                                 {
                                     "table": table_name,
                                     "suggestion": "Consider adding categories or tags for better organization",
-                                    "reason": f"Large table with {
-                                        len(rows)} rows could benefit from categorization",
-                                })
+                                    "reason": f"Large table with {len(rows)} rows could benefit from categorization",
+                                }
+                            )
 
                         # Check for semantic search opportunities
                         if is_semantic_search_available():
@@ -335,7 +335,8 @@ class MemoryBankResources:
                                     "suggestion": "Consider adding more content or consolidating with other tables",
                                     "reason": f"Table has only {
                                         len(rows)} rows - might be underutilized",
-                                })
+                                }
+                            )
 
                         # Sample content for quality analysis
                         if rows:
@@ -373,8 +374,7 @@ class MemoryBankResources:
                     "resource_type": "content_suggestions",
                     "description": "AI-powered suggestions for improving your memory bank",
                     "suggestions": prioritized,
-                    "total_suggestions": sum(
-                        len(v) for v in suggestions.values()),
+                    "total_suggestions": sum(len(v) for v in suggestions.values()),
                     "last_updated": "real-time",
                     "next_actions": [
                         "Review semantic opportunities for high-value tables",

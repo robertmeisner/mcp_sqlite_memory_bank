@@ -1301,9 +1301,8 @@ def main():
         os.environ["DB_PATH"] = args.db_path
 
     print(
-        f"Starting MCP SQLite Memory Bank server in HTTP mode on {
-            args.host}:{
-            args.port}")
+        f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}"
+    )
     print(f"Database path: {DB_PATH}")
     print("Available at: http://localhost:8000/docs")
 

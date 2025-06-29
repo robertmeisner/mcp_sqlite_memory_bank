@@ -345,11 +345,9 @@ def export_graph_data_impl(
             for edge in graph_data["edges"]:
                 rel_type = edge["relationshipType"].upper()
                 cypher_statements.append(
-                    f"MATCH (a {
-                        id: '{
-                            edge['source']}'} ), (b {
-                        id: '{
-                            edge['target']}'} ) " f"CREATE (a)-[:{rel_type}]->(b)")
+                    f"MATCH (a {{id: '{edge['source']}'}}), (b {{id: '{edge['target']}'}})"
+                    f"CREATE (a)-[:{rel_type}]->(b)"
+                )
 
             export_data = {
                 "format": "cypher",

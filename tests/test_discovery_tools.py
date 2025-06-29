@@ -86,71 +86,85 @@ async def client_with_sample_data(temp_db):
         )
 
         # Add sample data
-        sample_users = [{"username": "alice",
-                         "email": "alice@example.com",
-                         "profile": "Senior developer with expertise in Python and AI",
-                         },
-                        {"username": "bob",
-                         "email": "bob@example.com",
-                         "profile": "Product manager focused on user experience and market analysis",
-                         },
-                        {"username": "charlie",
-                         "email": "charlie@example.com",
-                         "profile": "Data scientist specializing in machine learning and analytics",
-                         },
-                        ]
+        sample_users = [
+            {
+                "username": "alice",
+                "email": "alice@example.com",
+                "profile": "Senior developer with expertise in Python and AI",
+            },
+            {
+                "username": "bob",
+                "email": "bob@example.com",
+                "profile": "Product manager focused on user experience and market analysis",
+            },
+            {
+                "username": "charlie",
+                "email": "charlie@example.com",
+                "profile": "Data scientist specializing in machine learning and analytics",
+            },
+        ]
 
         for user in sample_users:
             await client.call_tool("create_row", {"table_name": "users", "data": user})
 
-        sample_projects = [{"name": "AI Assistant",
-                            "description": "Intelligent chatbot for customer support using natural language processing",
-                            "owner_id": 1,
-                            "status": "active",
-                            },
-                           {"name": "Data Pipeline",
-                            "description": "Automated data processing pipeline for real-time analytics",
-                            "owner_id": 3,
-                            "status": "development",
-                            },
-                           {"name": "User Dashboard",
-                            "description": "Interactive dashboard for user engagement metrics and insights",
-                            "owner_id": 2,
-                            "status": "planning",
-                            },
-                           ]
+        sample_projects = [
+            {
+                "name": "AI Assistant",
+                "description": "Intelligent chatbot for customer support using natural language processing",
+                "owner_id": 1,
+                "status": "active",
+            },
+            {
+                "name": "Data Pipeline",
+                "description": "Automated data processing pipeline for real-time analytics",
+                "owner_id": 3,
+                "status": "development",
+            },
+            {
+                "name": "User Dashboard",
+                "description": "Interactive dashboard for user engagement metrics and insights",
+                "owner_id": 2,
+                "status": "planning",
+            },
+        ]
 
         for project in sample_projects:
             await client.call_tool(
                 "create_row", {"table_name": "projects", "data": project}
             )
 
-        sample_knowledge = [{"title": "Machine Learning Best Practices",
-                             "content": "Deep dive into ML model development, training strategies, hyperparameter tuning, and deployment considerations for production systems",
-                             "category": "technical",
-                             "importance": 9,
-                             },
-                            {"title": "API Design Principles",
-                             "content": "RESTful API design patterns, versioning strategies, authentication methods, and documentation best practices for scalable web services",
-                             "category": "architecture",
-                             "importance": 8,
-                             },
-                            {"title": "Database Optimization",
-                             "content": "SQL query optimization techniques, indexing strategies, connection pooling, and performance monitoring for high-traffic applications",
-                             "category": "performance",
-                             "importance": 7,
-                             },
-                            {"title": "Team Meeting Notes",
-                             "content": "Weekly standup discussions, project updates, blockers, and action items for the development team",
-                             "category": "management",
-                             "importance": 5,
-                             },
-                            {"title": "Security Guidelines",
-                             "content": "Comprehensive security checklist including input validation, authentication, authorization, encryption, and vulnerability assessment",
-                             "category": "security",
-                             "importance": 10,
-                             },
-                            ]
+        sample_knowledge = [
+            {
+                "title": "Machine Learning Best Practices",
+                "content": "Deep dive into ML model development, training strategies, hyperparameter tuning, and deployment considerations for production systems",
+                "category": "technical",
+                "importance": 9,
+            },
+            {
+                "title": "API Design Principles",
+                "content": "RESTful API design patterns, versioning strategies, authentication methods, and documentation best practices for scalable web services",
+                "category": "architecture",
+                "importance": 8,
+            },
+            {
+                "title": "Database Optimization",
+                "content": "SQL query optimization techniques, indexing strategies, connection pooling, and performance monitoring for high-traffic applications",
+                "category": "performance",
+                "importance": 7,
+            },
+            {
+                "title": "Team Meeting Notes",
+                "content": "Weekly standup discussions, project updates, blockers, and action items for the development team",
+                "category": "management",
+                "importance": 5,
+            },
+            {
+                "title": "Security Guidelines",
+                "content": "Comprehensive security checklist including input validation, authentication, authorization, encryption, and vulnerability assessment",
+                "category": "security",
+                "importance": 10,
+            },
+        ]
 
         for knowledge in sample_knowledge:
             await client.call_tool(

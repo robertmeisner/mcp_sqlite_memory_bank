@@ -102,8 +102,10 @@ Focus on high-level strategic insights about the memory bank's utility and organ
                 Dict[str, Any], db.search_content(query, None, max_results or 10)
             )
             if not result.get("success"):
-                return f"Error: Could not search for '{query}'. " \
-                       f"{result.get('error', 'Unknown error')}"
+                return (
+                    f"Error: Could not search for '{query}'. "
+                    f"{result.get('error', 'Unknown error')}"
+                )
 
             search_results = result.get("results", [])
             if not search_results:

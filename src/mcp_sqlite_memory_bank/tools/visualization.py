@@ -5,6 +5,7 @@ This module provides tools for generating visual representations of stored data,
 including knowledge graphs and relationship diagrams.
 """
 
+import html
 import json
 import sqlite3
 import os
@@ -392,9 +393,40 @@ class KnowledgeGraphAnalyzer:
             foreign_keys = cursor.fetchall()
 
             for fk in foreign_keys:
-                # Create edges based on foreign key relationships
-                # This is a simplified implementation
-                pass
+                # Extract foreign key details
+                from_column = fk[3]  # Column in the current table
+                to_table = fk[2]  # Referenced table
+                to_column = fk[4]  # Column in the referenced table
+
+                # Find the source and target nodes
+                from_node = next(
+                    (
+                        node
+                        for node in nodes
+                        if node["table"] == table_name
+                        and node.get("column") == from_column
+                    ),
+                    None,
+                )
+                to_node = next(
+                    (
+                        node
+                        for node in nodes
+                        if node["table"] == to_table and node.get("column") == to_column
+                    ),
+                    None,
+                )
+
+                if from_node and to_node:
+                    # Create an edge
+                    edges.append(
+                        {
+                            "from": from_node["id"],
+                            "to": to_node["id"],
+                            "type": "foreign_key",
+                            "title": f"{table_name}.{from_column} -> {to_table}.{to_column}",
+                        }
+                    )
 
         return edges
 
@@ -402,32 +434,50 @@ class KnowledgeGraphAnalyzer:
         """Find relationships based on naming patterns and common values."""
         edges = []
 
-        # Group nodes by table for cross-table analysis
-        tables = {}
+        # Group nodes by table and content signature for efficient comparison
+        grouped_nodes = {}
         for node in nodes:
             table_name = node["table"]
-            if table_name not in tables:
-                tables[table_name] = []
-            tables[table_name].append(node)
+            content_signature = self._generate_content_signature(node)
+            key = (table_name, content_signature)
+            if key not in grouped_nodes:
+                grouped_nodes[key] = []
+            grouped_nodes[key].append(node)
 
-        # Find nodes with similar content or shared categories
-        for i, node1 in enumerate(nodes):
-            for j, node2 in enumerate(nodes[i + 1:], i + 1):
-                if node1["table"] != node2["table"]:
-                    # Check for shared categories or similar content
-                    similarity = self._calculate_simple_similarity(node1, node2)
-                    if similarity > 0.3:  # Threshold for creating an edge
-                        edges.append(
-                            {
-                                "from": node1["id"],
-                                "to": node2["id"],
-                                "type": "content_similarity",
-                                "weight": similarity,
-                                "title": f"Content similarity: {similarity:.2f}",
-                            }
-                        )
+        # Compare nodes within the same group (much more efficient)
+        for group in grouped_nodes.values():
+            for i, node1 in enumerate(group):
+                for node2 in group[i + 1:]:
+                    if node1["table"] != node2["table"]:
+                        # Check for shared categories or similar content
+                        similarity = self._calculate_simple_similarity(node1, node2)
+                        if similarity > 0.3:  # Threshold for creating an edge
+                            edges.append(
+                                {
+                                    "from": node1["id"],
+                                    "to": node2["id"],
+                                    "type": "content_similarity",
+                                    "weight": similarity,
+                                    "title": f"Content similarity: {similarity:.2f}",
+                                }
+                            )
 
         return edges
+
+    def _generate_content_signature(self, node: Dict) -> str:
+        """Generate a content signature for efficient grouping."""
+        # Create a signature based on key content characteristics
+        label = node.get("label", "").lower()
+        description = node.get("description", "").lower()
+
+        # Extract key words and create a signature
+        key_words = []
+        for text in [label, description]:
+            words = text.split()[:5]  # Take first 5 words
+            key_words.extend(words)
+
+        # Sort and join to create consistent signature
+        return "_".join(sorted(set(key_words)))
 
     def _find_temporal_relationships(self, nodes: List[Dict]) -> List[Dict]:
         """Find relationships based on temporal patterns."""
@@ -553,8 +603,9 @@ class KnowledgeGraphAnalyzer:
 def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
     """Generate HTML content for knowledge graph visualization."""
 
-    nodes_json = json.dumps(graph_data["nodes"], indent=2)
-    edges_json = json.dumps(graph_data["edges"], indent=2)
+    # Properly escape JSON to prevent XSS attacks
+    nodes_json = html.escape(json.dumps(graph_data["nodes"], indent=2))
+    edges_json = html.escape(json.dumps(graph_data["edges"], indent=2))
 
     html_template = f"""<!DOCTYPE html>
 <html lang="en">

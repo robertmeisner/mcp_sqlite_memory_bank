@@ -777,7 +777,8 @@ class SQLiteMemoryDatabase:
                     conn.commit()
                     logging.info(
                         f"Generated embeddings for batch "
-                        f"{i // batch_size + 1}, processed {processed} rows")
+                        f"{i // batch_size + 1}, processed {processed} rows"
+                    )
 
                 return {
                     "success": True,
@@ -829,7 +830,8 @@ class SQLiteMemoryDatabase:
                     # Check if table has embedding column
                     if embedding_column not in [col.name for col in table.columns]:
                         logging.warning(
-                            f"Table '{table_name}' does not have embedding column '{embedding_column}'")
+                            f"Table '{table_name}' does not have embedding column '{embedding_column}'"
+                        )
                         continue
 
                     # Get all rows with embeddings

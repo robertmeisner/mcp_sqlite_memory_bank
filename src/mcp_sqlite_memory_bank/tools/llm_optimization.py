@@ -50,8 +50,9 @@ def intelligent_duplicate_analysis(
 
             sample_result = conn.execute(
                 text(
-                    f"SELECT id, {
-                        ', '.join(content_columns)} FROM `{table_name}` LIMIT 20"))
+                    f"SELECT id, {', '.join(content_columns)} FROM `{table_name}` LIMIT 20"
+                )
+            )
             sample_data = [
                 dict(zip(["id"] + content_columns, row))
                 for row in sample_result.fetchall()

@@ -426,7 +426,10 @@ def _collect_graph_data(
     with database.engine.connect() as conn:
         # Get all tables
         tables_result = conn.execute(
-            text("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"))
+            text(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            )
+        )
         all_tables = [row[0] for row in tables_result.fetchall()]
 
         if filter_tables:
@@ -1311,39 +1314,48 @@ def create_3d_knowledge_graph(
             import random
             import math
 
-            sample_nodes = [{"title": "User Authentication",
-                             "category": "security",
-                             "content": "JWT-based authentication system with refresh tokens and role-based access control",
-                             },
-                            {"title": "Database Architecture",
-                             "category": "architecture",
-                             "content": "SQLite with memory bank pattern for agent-friendly data storage and retrieval",
-                             },
-                            {"title": "API Design Patterns",
-                             "category": "api",
-                             "content": "RESTful API design with explicit endpoints and comprehensive error handling",
-                             },
-                            {"title": "Frontend Framework",
-                             "category": "frontend",
-                             "content": "React-based UI with TypeScript for type safety and modern development practices",
-                             },
-                            {"title": "Testing Strategy",
-                             "category": "tools",
-                             "content": "Comprehensive test suite with unit tests, integration tests, and end-to-end testing",
-                             },
-                            {"title": "Performance Optimization",
-                             "category": "performance",
-                             "content": "Database indexing, query optimization, and caching strategies for scalable applications",
-                             },
-                            {"title": "Deployment Pipeline",
-                             "category": "tools",
-                             "content": "CI/CD pipeline with automated testing, security scanning, and deployment automation",
-                             },
-                            {"title": "Monitoring & Logging",
-                             "category": "performance",
-                             "content": "Application monitoring, error tracking, and structured logging for production systems",
-                             },
-                            ]
+            sample_nodes = [
+                {
+                    "title": "User Authentication",
+                    "category": "security",
+                    "content": "JWT-based authentication system with refresh tokens and role-based access control",
+                },
+                {
+                    "title": "Database Architecture",
+                    "category": "architecture",
+                    "content": "SQLite with memory bank pattern for agent-friendly data storage and retrieval",
+                },
+                {
+                    "title": "API Design Patterns",
+                    "category": "api",
+                    "content": "RESTful API design with explicit endpoints and comprehensive error handling",
+                },
+                {
+                    "title": "Frontend Framework",
+                    "category": "frontend",
+                    "content": "React-based UI with TypeScript for type safety and modern development practices",
+                },
+                {
+                    "title": "Testing Strategy",
+                    "category": "tools",
+                    "content": "Comprehensive test suite with unit tests, integration tests, and end-to-end testing",
+                },
+                {
+                    "title": "Performance Optimization",
+                    "category": "performance",
+                    "content": "Database indexing, query optimization, and caching strategies for scalable applications",
+                },
+                {
+                    "title": "Deployment Pipeline",
+                    "category": "tools",
+                    "content": "CI/CD pipeline with automated testing, security scanning, and deployment automation",
+                },
+                {
+                    "title": "Monitoring & Logging",
+                    "category": "performance",
+                    "content": "Application monitoring, error tracking, and structured logging for production systems",
+                },
+            ]
 
             for i, node in enumerate(sample_nodes):
                 # Generate 3D coordinates in a sphere

@@ -155,8 +155,8 @@ def analyze_memory_patterns() -> ToolResponse:
         ]
         if large_tables:
             recommendations.append(
-                f"Large tables detected: {
-                    ', '.join(large_tables)}. Consider organizing with categories or tags.")
+                f"Large tables detected: {', '.join(large_tables)}. Consider organizing with categories or tags."
+            )
 
         # Empty or sparse tables
         sparse_tables = [
@@ -167,7 +167,8 @@ def analyze_memory_patterns() -> ToolResponse:
         if sparse_tables:
             recommendations.append(
                 f"Sparse tables found: {
-                    ', '.join(sparse_tables)}. Consider consolidating or adding more content.")
+                    ', '.join(sparse_tables)}. Consider consolidating or adding more content."
+            )
 
         # Schema improvements
         tables_without_timestamps = [

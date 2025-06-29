@@ -545,8 +545,7 @@ def batch_delete_memories(
                 "failed": failed_count,
                 "total_conditions": len(where_conditions),
                 "results": results,
-                "message": f"Processed {
-                    len(where_conditions)} deletion conditions: {deleted_count} records deleted, {failed_count} operations failed",
+                "message": f"Processed {len(where_conditions)} deletion conditions: {deleted_count} records deleted, {failed_count} operations failed",
             },
         )
 

@@ -33,11 +33,7 @@ def extract_result(resp: Sequence[T]) -> Dict[str, Any]:
         except json.JSONDecodeError as e:
             return {
                 "success": False,
-                "error": f"Invalid JSON response in TextContent: {
-                    getattr(
-                        r,
-                        'text')[
-                        :100]}...",
+                "error": f"Invalid JSON response in TextContent: {getattr(r, 'text')[:100]}...",
                 "parse_error": str(e),
             }
 
@@ -199,22 +195,28 @@ class TestDataGenerator:
     @staticmethod
     def semantic_test_data() -> list:
         """Generate data specifically for semantic search testing."""
-        return [{"title": "Machine Learning Fundamentals",
-                 "content": "Introduction to supervised and unsupervised learning algorithms, including neural networks and deep learning approaches.",
-                 },
-                {"title": "Database Design Principles",
-                 "content": "Normalization, indexing, and query optimization techniques for relational database management systems.",
-                 },
-                {"title": "Web Development Best Practices",
-                 "content": "Modern web frameworks, API design patterns, and frontend-backend integration strategies.",
-                 },
-                {"title": "Cloud Computing Architecture",
-                 "content": "Scalable infrastructure design, microservices patterns, and distributed system principles.",
-                 },
-                {"title": "Cybersecurity Fundamentals",
-                 "content": "Encryption protocols, authentication mechanisms, and secure software development practices.",
-                 },
-                ]
+        return [
+            {
+                "title": "Machine Learning Fundamentals",
+                "content": "Introduction to supervised and unsupervised learning algorithms, including neural networks and deep learning approaches.",
+            },
+            {
+                "title": "Database Design Principles",
+                "content": "Normalization, indexing, and query optimization techniques for relational database management systems.",
+            },
+            {
+                "title": "Web Development Best Practices",
+                "content": "Modern web frameworks, API design patterns, and frontend-backend integration strategies.",
+            },
+            {
+                "title": "Cloud Computing Architecture",
+                "content": "Scalable infrastructure design, microservices patterns, and distributed system principles.",
+            },
+            {
+                "title": "Cybersecurity Fundamentals",
+                "content": "Encryption protocols, authentication mechanisms, and secure software development practices.",
+            },
+        ]
 
     @staticmethod
     def large_text_data(size_kb: int = 10) -> str:
@@ -337,7 +339,8 @@ class PerformanceMonitor:
         """Assert that an operation completed within the expected time."""
         duration = self.metrics.get(operation, float("inf"))
         assert (
-            duration <= max_duration), f"Operation '{operation}' took {
+            duration <= max_duration
+        ), f"Operation '{operation}' took {
             duration:.3f}s, expected <= {
             max_duration:.3f}s"
 
