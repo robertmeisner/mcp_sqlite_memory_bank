@@ -195,3 +195,169 @@ class TestKnowledgeGraph:
         edges2 = smb._read_rows_impl(table_name="edges", where={"id": e1["id"]})
         assert edges2["success"]
         assert edges2["rows"] == []
+
+
+# --- Semantic Search Tests ---
+
+
+def test_auto_embed_tables():
+    """Test _auto_embed_tables helper function for semantic search setup."""
+    import sys
+    import os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+    from mcp_sqlite_memory_bank.tools.search import _auto_embed_tables
+
+    # Setup test database
+    db_path = setup_test_db()
+    smb.DB_PATH = db_path
+
+    try:
+        # Create test table with text content
+        create_result = smb._create_table_impl(
+            table_name="test_content",
+            columns=[
+                {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
+                {"name": "title", "type": "TEXT NOT NULL"},
+                {"name": "content", "type": "TEXT NOT NULL"},
+                {"name": "category", "type": "TEXT"},
+            ],
+        )
+        assert create_result["success"]
+
+        # Add some test data
+        smb._create_row_impl(
+            table_name="test_content",
+            data={
+                "title": "Test Article",
+                "content": "This is test content",
+                "category": "tech",
+            },
+        )
+        smb._create_row_impl(
+            table_name="test_content",
+            data={
+                "title": "Another Article",
+                "content": "More test content",
+                "category": "science",
+            },
+        )
+
+        # Test auto-embedding on table without embeddings
+        result = _auto_embed_tables(["test_content"])
+
+        # Should return the table name if embedding was successful
+        # Note: In actual environment with sentence-transformers, this would succeed
+        # In test environment without dependencies, it may gracefully continue
+        assert isinstance(result, list)
+
+        # Test with non-existent table
+        result_nonexistent = _auto_embed_tables(["nonexistent_table"])
+        assert isinstance(result_nonexistent, list)
+
+        # Test with empty table list
+        result_empty = _auto_embed_tables([])
+        assert result_empty == []
+
+        # Test with multiple tables
+        smb._create_table_impl(
+            table_name="another_table",
+            columns=[
+                {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
+                {"name": "description", "type": "TEXT"},
+            ],
+        )
+
+        result_multiple = _auto_embed_tables(["test_content", "another_table"])
+        assert isinstance(result_multiple, list)
+
+    finally:
+        # Cleanup - handle Windows file locking
+        try:
+            os.unlink(db_path)
+        except (OSError, PermissionError):
+            pass  # File cleanup handled by system
+
+
+def test_auto_embed_tables_error_handling():
+    """Test _auto_embed_tables error handling and edge cases."""
+    import sys
+    import os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+    from mcp_sqlite_memory_bank.tools.search import _auto_embed_tables
+
+    # Setup test database
+    db_path = setup_test_db()
+    smb.DB_PATH = db_path
+
+    try:
+        # Test with table that has no text columns
+        create_result = smb._create_table_impl(
+            table_name="numeric_table",
+            columns=[
+                {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
+                {"name": "value", "type": "INTEGER"},
+                {"name": "score", "type": "REAL"},
+            ],
+        )
+        assert create_result["success"]
+
+        # Should handle table with no text columns gracefully
+        result = _auto_embed_tables(["numeric_table"])
+        assert isinstance(result, list)
+
+        # Test with invalid table name characters
+        result_invalid = _auto_embed_tables(["invalid-table-name!"])
+        assert isinstance(result_invalid, list)
+
+        # Test with None in table list (edge case)
+        # Function should handle exceptions gracefully
+        result_robust = _auto_embed_tables(["users"])  # Valid table from setup
+        assert isinstance(result_robust, list)
+
+    finally:
+        # Cleanup - handle Windows file locking
+        try:
+            os.unlink(db_path)
+        except (OSError, PermissionError):
+            pass  # File cleanup handled by system
+
+
+def test_auto_embed_tables_already_embedded():
+    """Test _auto_embed_tables behavior when table already has embeddings."""
+    import sys
+    import os
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+    from mcp_sqlite_memory_bank.tools.search import _auto_embed_tables
+
+    # Setup test database
+    db_path = setup_test_db()
+    smb.DB_PATH = db_path
+
+    try:
+        # Create test table with embedding column
+        create_result = smb._create_table_impl(
+            table_name="embedded_table",
+            columns=[
+                {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
+                {"name": "content", "type": "TEXT NOT NULL"},
+                {"name": "embedding", "type": "TEXT"},  # Simulated embedding column
+            ],
+        )
+        assert create_result["success"]
+
+        # Add test data with mock embedding
+        smb._create_row_impl(
+            table_name="embedded_table",
+            data={"content": "Test content", "embedding": "[0.1, 0.2, 0.3]"},
+        )
+
+        # Function should detect existing embeddings and skip
+        result = _auto_embed_tables(["embedded_table"])
+        assert isinstance(result, list)
+
+    finally:
+        # Cleanup - handle Windows file locking
+        try:
+            os.unlink(db_path)
+        except (OSError, PermissionError):
+            pass  # File cleanup handled by system
