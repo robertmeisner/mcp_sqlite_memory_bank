@@ -247,9 +247,7 @@ class TestAssertions:
     @staticmethod
     def assert_success_response(response: Dict[str, Any], message: str = ""):
         """Assert that a response indicates success."""
-        assert (
-            response.get("success") is True
-        ), f"Expected success but got: {response}. {message}"
+        assert response.get("success") is True, f"Expected success but got: {response}. {message}"
 
     @staticmethod
     def assert_error_response(
@@ -258,12 +256,8 @@ class TestAssertions:
         message: str = "",
     ):
         """Assert that a response indicates an error."""
-        assert (
-            response.get("success") is False
-        ), f"Expected error but got success: {response}. {message}"
-        assert (
-            "error" in response
-        ), f"Error response missing 'error' field: {response}. {message}"
+        assert response.get("success") is False, f"Expected error but got success: {response}. {message}"
+        assert "error" in response, f"Error response missing 'error' field: {response}. {message}"
 
         if expected_error:
             assert (
@@ -275,38 +269,26 @@ class TestAssertions:
         """Assert that a table exists in the list_tables response."""
         TestAssertions.assert_success_response(client_response)
         tables = client_response.get("tables", [])
-        assert (
-            table_name in tables
-        ), f"Table '{table_name}' not found in tables list: {tables}"
+        assert table_name in tables, f"Table '{table_name}' not found in tables list: {tables}"
 
     @staticmethod
     def assert_row_count(client_response: Dict[str, Any], expected_count: int):
         """Assert that a read_rows response contains the expected number of rows."""
         TestAssertions.assert_success_response(client_response)
         rows = client_response.get("rows", [])
-        assert (
-            len(rows) == expected_count
-        ), f"Expected {expected_count} rows but got {len(rows)}: {rows}"
+        assert len(rows) == expected_count, f"Expected {expected_count} rows but got {len(rows)}: {rows}"
 
     @staticmethod
-    def assert_semantic_search_results(
-        response: Dict[str, Any], min_results: int = 1, min_similarity: float = 0.0
-    ):
+    def assert_semantic_search_results(response: Dict[str, Any], min_results: int = 1, min_similarity: float = 0.0):
         """Assert semantic search response format and quality."""
         TestAssertions.assert_success_response(response)
         results = response.get("results", [])
-        assert (
-            len(results) >= min_results
-        ), f"Expected at least {min_results} results but got {len(results)}"
+        assert len(results) >= min_results, f"Expected at least {min_results} results but got {len(results)}"
 
         for i, result in enumerate(results):
-            assert (
-                "similarity_score" in result
-            ), f"Result {i} missing similarity_score: {result}"
+            assert "similarity_score" in result, f"Result {i} missing similarity_score: {result}"
             similarity = result["similarity_score"]
-            assert (
-                similarity >= min_similarity
-            ), f"Result {i} similarity {similarity} below threshold {min_similarity}: {result}"
+            assert similarity >= min_similarity, f"Result {i} similarity {similarity} below threshold {min_similarity}: {result}"
 
 
 class PerformanceMonitor:
@@ -338,9 +320,7 @@ class PerformanceMonitor:
     def assert_performance(self, operation: str, max_duration: float):
         """Assert that an operation completed within the expected time."""
         duration = self.metrics.get(operation, float("inf"))
-        assert (
-            duration <= max_duration
-        ), f"Operation '{operation}' took {duration:.3f}s, expected <= {max_duration:.3f}s"
+        assert duration <= max_duration, f"Operation '{operation}' took {duration:.3f}s, expected <= {max_duration:.3f}s"
 
     def get_summary(self) -> Dict[str, float]:
         """Get performance summary for all measured operations."""
@@ -357,12 +337,8 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "performance: mark test as a performance test")
     config.addinivalue_line("markers", "integration: mark test as an integration test")
     config.addinivalue_line("markers", "unit: mark test as a unit test")
-    config.addinivalue_line(
-        "markers", "semantic: mark test as requiring semantic search functionality"
-    )
-    config.addinivalue_line(
-        "markers", "edge_case: mark test as testing edge cases or boundary conditions"
-    )
+    config.addinivalue_line("markers", "semantic: mark test as requiring semantic search functionality")
+    config.addinivalue_line("markers", "edge_case: mark test as testing edge cases or boundary conditions")
     config.addinivalue_line("markers", "mock: mark test as using mocked dependencies")
     config.addinivalue_line("markers", "slow: mark test as potentially slow-running")
 

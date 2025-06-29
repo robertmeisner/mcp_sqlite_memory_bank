@@ -72,9 +72,7 @@ def generate_knowledge_graph(
         analyzer = KnowledgeGraphAnalyzer(db_path)
 
         # Generate the graph
-        graph_data = analyzer.generate_graph_data(
-            include_temporal=include_temporal, min_connections=min_connections
-        )
+        graph_data = analyzer.generate_graph_data(include_temporal=include_temporal, min_connections=min_connections)
 
         # Create timestamped filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -146,9 +144,7 @@ class KnowledgeGraphAnalyzer:
         if hasattr(self, "connection"):
             self.connection.close()
 
-    def generate_graph_data(
-        self, include_temporal: bool = True, min_connections: int = 1
-    ) -> Dict[str, Union[List[Dict[str, Any]], Dict[str, Any]]]:
+    def generate_graph_data(self, include_temporal: bool = True, min_connections: int = 1) -> Dict[str, Union[List[Dict[str, Any]], Dict[str, Any]]]:
         """Generate nodes and edges for the knowledge graph."""
 
         nodes = []
@@ -262,9 +258,7 @@ class KnowledgeGraphAnalyzer:
         record_id = row_data.get("id", row_data.get("rowid", "?"))
         return f"{table_name}#{record_id}"
 
-    def _generate_node_description(
-        self, table_name: str, row_data: Dict[str, Any]
-    ) -> str:
+    def _generate_node_description(self, table_name: str, row_data: Dict[str, Any]) -> str:
         """Generate a detailed description for a node tooltip."""
         lines = [f"Table: {table_name}"]
 
@@ -292,9 +286,7 @@ class KnowledgeGraphAnalyzer:
 
         return "\\n".join(lines)
 
-    def _get_node_style(
-        self, table_name: str, row_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _get_node_style(self, table_name: str, row_data: Dict[str, Any]) -> Dict[str, Any]:
         """Get enhanced styling for nodes based on table type and content."""
         # Define color schemes for different table types
         table_styles = {
@@ -342,9 +334,7 @@ class KnowledgeGraphAnalyzer:
         }
 
         # Get base style for table type or use default
-        base_style = table_styles.get(
-            table_name, {"color": "#64748b", "shape": "dot", "size": 20}
-        )
+        base_style = table_styles.get(table_name, {"color": "#64748b", "shape": "dot", "size": 20})
 
         # Enhance size based on content richness
         content_score = 0
@@ -357,11 +347,7 @@ class KnowledgeGraphAnalyzer:
         enhanced_size = int(base_style["size"] * size_multiplier)
 
         # Determine border color based on data importance
-        border_color = (
-            "#2563eb"
-            if any(key in ["id", "decision_name", "title"] for key in row_data.keys())
-            else "#64748b"
-        )
+        border_color = "#2563eb" if any(key in ["id", "decision_name", "title"] for key in row_data.keys()) else "#64748b"
 
         return {
             "color": {
@@ -380,9 +366,7 @@ class KnowledgeGraphAnalyzer:
             },
         }
 
-    def _find_foreign_key_relationships(
-        self, nodes: List[Dict], tables: List[str]
-    ) -> List[Dict]:
+    def _find_foreign_key_relationships(self, nodes: List[Dict], tables: List[str]) -> List[Dict]:
         """Find relationships based on foreign key patterns."""
         edges = []
 
@@ -400,20 +384,11 @@ class KnowledgeGraphAnalyzer:
 
                 # Find the source and target nodes
                 from_node = next(
-                    (
-                        node
-                        for node in nodes
-                        if node["table"] == table_name
-                        and node.get("column") == from_column
-                    ),
+                    (node for node in nodes if node["table"] == table_name and node.get("column") == from_column),
                     None,
                 )
                 to_node = next(
-                    (
-                        node
-                        for node in nodes
-                        if node["table"] == to_table and node.get("column") == to_column
-                    ),
+                    (node for node in nodes if node["table"] == to_table and node.get("column") == to_column),
                     None,
                 )
 
@@ -447,7 +422,7 @@ class KnowledgeGraphAnalyzer:
         # Compare nodes within the same group (much more efficient)
         for group in grouped_nodes.values():
             for i, node1 in enumerate(group):
-                for node2 in group[i + 1:]:
+                for node2 in group[i + 1 :]:
                     if node1["table"] != node2["table"]:
                         # Check for shared categories or similar content
                         similarity = self._calculate_simple_similarity(node1, node2)
@@ -570,9 +545,7 @@ class KnowledgeGraphAnalyzer:
 
         return None
 
-    def _filter_by_connections(
-        self, nodes: List[Dict], edges: List[Dict], min_connections: int
-    ) -> Tuple[List[Dict], List[Dict]]:
+    def _filter_by_connections(self, nodes: List[Dict], edges: List[Dict], min_connections: int) -> Tuple[List[Dict], List[Dict]]:
         """Filter nodes that don't meet minimum connection requirements."""
         # Count connections per node
         connection_counts = {}
@@ -581,21 +554,13 @@ class KnowledgeGraphAnalyzer:
             connection_counts[edge["to"]] = connection_counts.get(edge["to"], 0) + 1
 
         # Filter nodes
-        filtered_nodes = [
-            node
-            for node in nodes
-            if connection_counts.get(node["id"], 0) >= min_connections
-        ]
+        filtered_nodes = [node for node in nodes if connection_counts.get(node["id"], 0) >= min_connections]
 
         # Get filtered node IDs
         filtered_node_ids = {node["id"] for node in filtered_nodes}
 
         # Filter edges to only include edges between filtered nodes
-        filtered_edges = [
-            edge
-            for edge in edges
-            if edge["from"] in filtered_node_ids and edge["to"] in filtered_node_ids
-        ]
+        filtered_edges = [edge for edge in edges if edge["from"] in filtered_node_ids and edge["to"] in filtered_node_ids]
 
         return filtered_nodes, filtered_edges
 

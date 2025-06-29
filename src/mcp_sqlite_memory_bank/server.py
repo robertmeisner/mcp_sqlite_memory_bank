@@ -145,9 +145,7 @@ def create_table(table_name: str, columns: List[Dict[str, str]]) -> ToolResponse
         - Creates table if it doesn't exist (idempotent)
         - Raises appropriate errors for invalid input
     """
-    return cast(
-        CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns)
-    )
+    return cast(CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns))
 
 
 @mcp.tool
@@ -259,9 +257,7 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
         - Validates both old and new table names
         - Confirms old table exists and new name doesn't conflict
     """
-    return cast(
-        RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name)
-    )
+    return cast(RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name))
 
 
 @mcp.tool
@@ -292,9 +288,7 @@ def create_row(table_name: str, data: Dict[str, Any]) -> ToolResponse:
 
 @mcp.tool
 @catch_errors
-def upsert_memory(
-    table_name: str, data: Dict[str, Any], match_columns: List[str]
-) -> ToolResponse:
+def upsert_memory(table_name: str, data: Dict[str, Any], match_columns: List[str]) -> ToolResponse:
     """
     🔄 **SMART MEMORY UPSERT** - Prevent duplicates and maintain data consistency!
 
@@ -354,9 +348,7 @@ def read_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolRe
 
 @mcp.tool
 @catch_errors
-def update_rows(
-    table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None
-) -> ToolResponse:
+def update_rows(table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None) -> ToolResponse:
     """
     Update rows in any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.
 
@@ -379,16 +371,12 @@ def update_rows(
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it updates all rows!)
     """
-    return cast(
-        UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where)
-    )
+    return cast(UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where))
 
 
 @mcp.tool
 @catch_errors
-def delete_rows(
-    table_name: str, where: Optional[Dict[str, Any]] = None
-) -> ToolResponse:
+def delete_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
     """
     Delete rows from any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.
 
@@ -410,9 +398,7 @@ def delete_rows(
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it deletes all rows!)
     """
-    return cast(
-        DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where)
-    )
+    return cast(DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where))
 
 
 @mcp.tool
@@ -643,9 +629,7 @@ def auto_semantic_search(
         - Supports fuzzy matching and concept discovery
         - Perfect for agents - just search and it works!
     """
-    return auto_semantic_search_impl(
-        query, tables, similarity_threshold, limit, model_name
-    )
+    return auto_semantic_search_impl(query, tables, similarity_threshold, limit, model_name)
 
 
 @mcp.tool
@@ -692,9 +676,7 @@ def auto_smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return auto_smart_search_impl(
-        query, tables, semantic_weight, text_weight, limit, model_name
-    )
+    return auto_smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
 
 
 @mcp.tool
@@ -828,9 +810,7 @@ def smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return _smart_search_impl(
-        query, tables, semantic_weight, text_weight, limit, model_name
-    )
+    return _smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
 
 
 @mcp.tool
@@ -872,9 +852,7 @@ def find_related(
         - Can reveal patterns and themes across your knowledge base
         - Enables serendipitous discovery of relevant information
     """
-    return _find_related_impl(
-        table_name, row_id, similarity_threshold, limit, model_name
-    )
+    return _find_related_impl(table_name, row_id, similarity_threshold, limit, model_name)
 
 
 # --- Visualization Tools for SQLite Memory Bank ---
@@ -916,9 +894,7 @@ def generate_knowledge_graph(
         - **CLICKABLE OUTPUT**: Generates file:// links for instant browser opening
         - **ZERO DEPENDENCIES**: Works with any memory bank schema without configuration
     """
-    return generate_knowledge_graph_impl(
-        output_path, include_temporal, min_connections, open_in_browser
-    )
+    return generate_knowledge_graph_impl(output_path, include_temporal, min_connections, open_in_browser)
 
 
 # =============================================================================
@@ -1017,9 +993,7 @@ def create_advanced_d3_dashboard(
         - **Responsive Design**: Mobile and desktop optimized
         - **Professional Styling**: Enterprise-grade UI/UX design
     """
-    return d3_visualization.create_advanced_d3_dashboard(
-        output_path, dashboard_type, include_metrics, real_time_updates, custom_widgets
-    )
+    return d3_visualization.create_advanced_d3_dashboard(output_path, dashboard_type, include_metrics, real_time_updates, custom_widgets)
 
 
 @mcp.tool()
@@ -1050,9 +1024,7 @@ def export_graph_data(
         - **GEXF**: Gephi format for network analysis
         - **Cytoscape**: Format for biological network analysis
     """
-    return d3_visualization.export_graph_data(
-        output_path, format, include_metadata, compress_output
-    )
+    return d3_visualization.export_graph_data(output_path, format, include_metadata, compress_output)
 
 
 # --- Advanced Discovery Tools for SQLite Memory Bank ---
@@ -1110,9 +1082,7 @@ def intelligent_discovery(
 
 @mcp.tool
 @catch_errors
-def discovery_templates(
-    template_type: str = "first_time_exploration", customize_for: Optional[str] = None
-) -> ToolResponse:
+def discovery_templates(template_type: str = "first_time_exploration", customize_for: Optional[str] = None) -> ToolResponse:
     """
     📋 **DISCOVERY TEMPLATES** - Pre-built exploration workflows for common scenarios!
 
@@ -1197,9 +1167,7 @@ def discover_relationships(
         - **ACTIONABLE INSIGHTS**: Suggests how to leverage discovered relationships
         - **PERFECT FOR EXPLORATION**: Reveals hidden data organization patterns
     """
-    return discover_relationships_impl(
-        table_name, relationship_types, similarity_threshold
-    )
+    return discover_relationships_impl(table_name, relationship_types, similarity_threshold)
 
 
 # Export the FastMCP app for use in other modules and server runners
@@ -1282,15 +1250,11 @@ def main():
     import uvicorn
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Run MCP SQLite Memory Bank Server in HTTP mode"
-    )
+    parser = argparse.ArgumentParser(description="Run MCP SQLite Memory Bank Server in HTTP mode")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
     parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
     parser.add_argument("--db-path", help="Path to SQLite database file")
-    parser.add_argument(
-        "--reload", action="store_true", help="Enable auto-reload for development"
-    )
+    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
 
     args = parser.parse_args()
 
@@ -1300,9 +1264,7 @@ def main():
         DB_PATH = args.db_path
         os.environ["DB_PATH"] = args.db_path
 
-    print(
-        f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}"
-    )
+    print(f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}")
     print(f"Database path: {DB_PATH}")
     print("Available at: http://localhost:8000/docs")
 
@@ -1408,9 +1370,7 @@ def batch_create_memories(
 
 @mcp.tool
 @catch_errors
-def batch_delete_memories(
-    table_name: str, where_conditions: List[Dict[str, Any]], match_all: bool = False
-) -> ToolResponse:
+def batch_delete_memories(table_name: str, where_conditions: List[Dict[str, Any]], match_all: bool = False) -> ToolResponse:
     """
     🗑️ **BATCH MEMORY DELETION** - Efficiently delete multiple memories at once!
 
@@ -1485,16 +1445,12 @@ def find_duplicates(
         - **PERFORMANCE OPTIMIZED**: Sample size option for large datasets
         - **COST SAVINGS**: Can reduce storage costs by 60% for large deployments
     """
-    return optimization.find_duplicates(
-        table_name, content_columns, similarity_threshold, sample_size
-    )
+    return optimization.find_duplicates(table_name, content_columns, similarity_threshold, sample_size)
 
 
 @mcp.tool
 @catch_errors
-def optimize_memory_bank(
-    table_name: str, optimization_strategy: str = "comprehensive", dry_run: bool = True
-) -> ToolResponse:
+def optimize_memory_bank(table_name: str, optimization_strategy: str = "comprehensive", dry_run: bool = True) -> ToolResponse:
     """
     ⚡ **MEMORY BANK OPTIMIZATION** - Optimize storage and performance!
 
@@ -1561,9 +1517,7 @@ def archive_old_memories(
         - **ENTERPRISE SCALE**: Handles large datasets with transaction safety
         - **STORAGE OPTIMIZATION**: Reduces active memory bank size for better performance
     """
-    return optimization.archive_old_memories(
-        table_name, archive_days, archive_table_suffix, delete_after_archive
-    )
+    return optimization.archive_old_memories(table_name, archive_days, archive_table_suffix, delete_after_archive)
 
 
 # =============================================================================
@@ -1573,9 +1527,7 @@ def archive_old_memories(
 
 @mcp.tool
 @catch_errors
-def intelligent_duplicate_analysis(
-    table_name: str, content_columns: List[str], analysis_depth: str = "semantic"
-) -> ToolResponse:
+def intelligent_duplicate_analysis(table_name: str, content_columns: List[str], analysis_depth: str = "semantic") -> ToolResponse:
     """
     🧠 **LLM-ASSISTED DUPLICATE DETECTION** - AI-powered semantic duplicate analysis!
 
@@ -1602,16 +1554,12 @@ def intelligent_duplicate_analysis(
         - **MCP SAMPLING**: Uses human-in-the-loop AI for nuanced analysis
         - **COST OPTIMIZATION**: Prevents storage waste from conceptual duplicates
     """
-    return llm_optimization.intelligent_duplicate_analysis(
-        table_name, content_columns, analysis_depth
-    )
+    return llm_optimization.intelligent_duplicate_analysis(table_name, content_columns, analysis_depth)
 
 
 @mcp.tool
 @catch_errors
-def intelligent_optimization_strategy(
-    table_name: str, optimization_goals: Optional[List[str]] = None
-) -> ToolResponse:
+def intelligent_optimization_strategy(table_name: str, optimization_goals: Optional[List[str]] = None) -> ToolResponse:
     """
     🎯 **LLM-GUIDED OPTIMIZATION STRATEGY** - AI-powered optimization planning!
 
@@ -1632,9 +1580,7 @@ def intelligent_optimization_strategy(
         - **ACTIONABLE PLANS**: Step-by-step implementation guidance
         - **ENTERPRISE READY**: Scalable strategies for production environments
     """
-    return llm_optimization.intelligent_optimization_strategy(
-        table_name, optimization_goals
-    )
+    return llm_optimization.intelligent_optimization_strategy(table_name, optimization_goals)
 
 
 @mcp.tool
@@ -1665,9 +1611,7 @@ def smart_archiving_policy(
         - **COST OPTIMIZATION**: Balances retention needs with storage costs
         - **BUSINESS ALIGNED**: Archiving strategies aligned with operational needs
     """
-    return llm_optimization.smart_archiving_policy(
-        table_name, business_context, retention_requirements
-    )
+    return llm_optimization.smart_archiving_policy(table_name, business_context, retention_requirements)
 
 
 # =============================================================================

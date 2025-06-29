@@ -93,9 +93,7 @@ def create_interactive_d3_graph(
         file_path = output_dir / filename
 
         # Collect graph data
-        graph_data = _collect_graph_data(
-            database, filter_tables, include_semantic_links, min_connections
-        )
+        graph_data = _collect_graph_data(database, filter_tables, include_semantic_links, min_connections)
 
         if not graph_data["nodes"]:
             return cast(
@@ -138,9 +136,7 @@ def create_interactive_d3_graph(
             "nodes": len(graph_data["nodes"]),
             "edges": len(graph_data["links"]),
             "tables": len(set(node["table"] for node in graph_data["nodes"])),
-            "semantic_links": sum(
-                1 for link in graph_data["links"] if link.get("type") == "semantic"
-            ),
+            "semantic_links": sum(1 for link in graph_data["links"] if link.get("type") == "semantic"),
             "file_size_kb": round(file_path.stat().st_size / 1024, 2),
         }
 
@@ -228,9 +224,7 @@ def create_advanced_d3_dashboard(
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Collect comprehensive data for dashboard
-        dashboard_data = _collect_dashboard_data(
-            database, dashboard_type, include_metrics
-        )
+        dashboard_data = _collect_dashboard_data(database, dashboard_type, include_metrics)
 
         # Generate dashboard HTML with multiple widgets
         dashboard_html = _generate_dashboard_html(
@@ -361,9 +355,7 @@ def export_graph_data(
                     "success": False,
                     "error": f"Unsupported export format: {format}",
                     "category": "EXPORT_ERROR",
-                    "details": {
-                        "supported_formats": ["json", "graphml", "gexf", "cytoscape"]
-                    },
+                    "details": {"supported_formats": ["json", "graphml", "gexf", "cytoscape"]},
                 },
             )
 
@@ -425,11 +417,7 @@ def _collect_graph_data(
 
     with database.engine.connect() as conn:
         # Get all tables
-        tables_result = conn.execute(
-            text(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-            )
-        )
+        tables_result = conn.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"))
         all_tables = [row[0] for row in tables_result.fetchall()]
 
         if filter_tables:
@@ -468,9 +456,7 @@ def _collect_graph_data(
             )
 
             # Create row nodes for important content
-            text_columns = [
-                col for col in columns if col not in ["id", "timestamp", "embedding"]
-            ]
+            text_columns = [col for col in columns if col not in ["id", "timestamp", "embedding"]]
             if text_columns and row_count > 0:
                 # Get important rows (recent or with good content)
                 content_query = f"SELECT id, {', '.join(text_columns[:3])} FROM `{table_name}` ORDER BY id DESC LIMIT 5"
@@ -517,25 +503,12 @@ def _collect_graph_data(
     if min_connections > 1:
         connection_counts = {}
         for link in links:
-            connection_counts[link["source"]] = (
-                connection_counts.get(link["source"], 0) + 1
-            )
-            connection_counts[link["target"]] = (
-                connection_counts.get(link["target"], 0) + 1
-            )
+            connection_counts[link["source"]] = connection_counts.get(link["source"], 0) + 1
+            connection_counts[link["target"]] = connection_counts.get(link["target"], 0) + 1
 
-        filtered_nodes = [
-            node
-            for node in nodes
-            if connection_counts.get(node["id"], 0) >= min_connections
-        ]
+        filtered_nodes = [node for node in nodes if connection_counts.get(node["id"], 0) >= min_connections]
         filtered_node_ids = set(node["id"] for node in filtered_nodes)
-        filtered_links = [
-            link
-            for link in links
-            if link["source"] in filtered_node_ids
-            and link["target"] in filtered_node_ids
-        ]
+        filtered_links = [link for link in links if link["source"] in filtered_node_ids and link["target"] in filtered_node_ids]
 
         nodes = filtered_nodes
         links = filtered_links
@@ -560,7 +533,7 @@ def _find_semantic_relationships(nodes: List[Dict], conn) -> List[Dict]:
     content_nodes = [node for node in nodes if node["type"] == "row"]
 
     for i, node1 in enumerate(content_nodes):
-        for node2 in content_nodes[i + 1:]:
+        for node2 in content_nodes[i + 1 :]:
             # Simple text similarity check
             content1 = " ".join(str(v) for v in node1.get("content", {}).values() if v)
             content2 = " ".join(str(v) for v in node2.get("content", {}).values() if v)
@@ -570,9 +543,7 @@ def _find_semantic_relationships(nodes: List[Dict], conn) -> List[Dict]:
             words2 = set(content2.lower().split())
 
             if words1 and words2:
-                similarity = len(words1.intersection(words2)) / len(
-                    words1.union(words2)
-                )
+                similarity = len(words1.intersection(words2)) / len(words1.union(words2))
 
                 if similarity > 0.3:  # Threshold for semantic relationship
                     semantic_links.append(
@@ -1171,23 +1142,29 @@ def _generate_d3_html(
 </body>
 </html>
 """.format(
-        background_color=colors['background'],
-        text_color=colors['text'],
-        accent_color=colors['accent'],
-        table_nodes_color=colors['table_nodes'],
-        row_nodes_color=colors['row_nodes'],
-        semantic_links_color=colors['semantic_links'],
-        contains_links_color=colors['contains_links'],
-        export_buttons='<div class="control-group">' + ''.join([f'<button class="btn" onclick="exportAs(\'{fmt}\')">{fmt.upper()}</button>' for fmt in export_formats]) + '</div>' if export_formats else '',
-        nodes_count=len(graph_data['nodes']),
-        links_count=len(graph_data['links']),
-        tables_count=len(set(node['table'] for node in graph_data['nodes'])),
-        timestamp=datetime.now().strftime('%Y-%m-%d %H:%M'),
+        background_color=colors["background"],
+        text_color=colors["text"],
+        accent_color=colors["accent"],
+        table_nodes_color=colors["table_nodes"],
+        row_nodes_color=colors["row_nodes"],
+        semantic_links_color=colors["semantic_links"],
+        contains_links_color=colors["contains_links"],
+        export_buttons=(
+            '<div class="control-group">'
+            + "".join([f'<button class="btn" onclick="exportAs(\'{fmt}\')">{fmt.upper()}</button>' for fmt in export_formats])
+            + "</div>"
+            if export_formats
+            else ""
+        ),
+        nodes_count=len(graph_data["nodes"]),
+        links_count=len(graph_data["links"]),
+        tables_count=len(set(node["table"] for node in graph_data["nodes"])),
+        timestamp=datetime.now().strftime("%Y-%m-%d %H:%M"),
         graph_data_json=json.dumps(graph_data, indent=2),
         layout_algorithm=layout,
         color_scheme_name=color_scheme,
         node_size_strategy=node_size_by,
-        colors_json=json.dumps(colors)
+        colors_json=json.dumps(colors),
     )
 
     return html_content
@@ -1305,15 +1282,10 @@ def create_3d_knowledge_graph(
                                     {
                                         "id": f"{table}_{row[0]}",
                                         "title": str(row[1]) or f"Item {row[0]}",
-                                        "content": str(row[2])
-                                        or "No description available",
+                                        "content": str(row[2]) or "No description available",
                                         "source_table": table,
                                         "timestamp": row[-2] if len(row) > 3 else None,
-                                        "embedding": (
-                                            row[-1]
-                                            if len(row) > 5 and row[-1]
-                                            else None
-                                        ),
+                                        "embedding": (row[-1] if len(row) > 5 and row[-1] else None),
                                     }
                                 )
                     except Exception:
@@ -1421,9 +1393,7 @@ def create_3d_knowledge_graph(
         file_path = os.path.join(output_dir, filename)
 
         # Generate 3D HTML visualization
-        html_content = _generate_3d_html_visualization(
-            nodes_data, edges_data, color_scheme, camera_position, animation_enabled
-        )
+        html_content = _generate_3d_html_visualization(nodes_data, edges_data, color_scheme, camera_position, animation_enabled)
 
         # Write to file
         with open(file_path, "w", encoding="utf-8") as f:
@@ -1476,9 +1446,7 @@ def create_3d_knowledge_graph(
         )
 
 
-def _generate_3d_html_visualization(
-    nodes_data, edges_data, color_scheme, camera_position, animation_enabled
-):
+def _generate_3d_html_visualization(nodes_data, edges_data, color_scheme, camera_position, animation_enabled):
     """Generate Three.js-based 3D HTML visualization."""
 
     # Color schemes for 3D
@@ -2833,9 +2801,7 @@ def _generate_3d_html_visualization(
     return html_template
 
 
-def _collect_dashboard_data(
-    database, dashboard_type: str, include_metrics: bool
-) -> Dict[str, Any]:
+def _collect_dashboard_data(database, dashboard_type: str, include_metrics: bool) -> Dict[str, Any]:
     """Collect comprehensive data for dashboard visualization."""
     # Implementation for dashboard data collection
     return {
@@ -2860,9 +2826,7 @@ def _generate_dashboard_assets(output_dir: Path, dashboard_type: str) -> None:
     """Generate supporting CSS and JS assets for dashboard."""
 
 
-def _generate_exports(
-    file_path: Path, graph_data: Dict, formats: List[str]
-) -> List[str]:
+def _generate_exports(file_path: Path, graph_data: Dict, formats: List[str]) -> List[str]:
     """Generate additional export formats."""
     export_paths = []
     # Implementation for generating exports
@@ -3121,7 +3085,7 @@ def _calculate_semantic_connections(nodes_data: List[Dict]) -> List[Dict]:
         connections_added = 0
         max_connections = min(4, len(nodes_data) // 10)  # Adaptive connection limit
 
-        for j, node_b in enumerate(nodes_data[i + 1:], i + 1):
+        for j, node_b in enumerate(nodes_data[i + 1 :], i + 1):
             if connections_added >= max_connections:
                 break
 

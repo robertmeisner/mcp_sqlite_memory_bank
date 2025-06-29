@@ -111,17 +111,13 @@ def intelligent_discovery(
         # Step 2: Content analysis based on goal
         if discovery_goal in ["understand_content", "find_patterns", "assess_quality"]:
             discovery_session["steps_completed"].append("content_analysis")
-            content_analysis = _analyze_content_for_discovery(
-                db, tables, focus_area, depth
-            )
+            content_analysis = _analyze_content_for_discovery(db, tables, focus_area, depth)
             overview.update(content_analysis)
 
         # Step 3: Schema analysis for structure exploration
         if discovery_goal in ["explore_structure", "understand_content"]:
             discovery_session["steps_completed"].append("schema_analysis")
-            schema_analysis = _analyze_schema_for_discovery(
-                db, tables, focus_area, depth
-            )
+            schema_analysis = _analyze_schema_for_discovery(db, tables, focus_area, depth)
             overview.update(schema_analysis)
 
         # Step 4: Quality assessment
@@ -137,9 +133,7 @@ def intelligent_discovery(
             overview.update(search_analysis)
 
         # Step 6: Generate insights and recommendations
-        insights, recommendations, next_steps = _generate_discovery_insights(
-            discovery_goal, overview, focus_area, depth
-        )
+        insights, recommendations, next_steps = _generate_discovery_insights(discovery_goal, overview, focus_area, depth)
 
         discovery_session["insights"] = insights
         discovery_session["recommendations"] = recommendations
@@ -163,9 +157,7 @@ def intelligent_discovery(
                 },
                 "next_steps": next_steps,
                 "discovery_session": discovery_session,
-                "quick_actions": _generate_quick_actions(
-                    discovery_goal, overview, focus_area
-                ),
+                "quick_actions": _generate_quick_actions(discovery_goal, overview, focus_area),
             },
         )
 
@@ -187,9 +179,7 @@ def intelligent_discovery(
 
 
 @catch_errors
-def discovery_templates(
-    template_type: str = "first_time_exploration", customize_for: Optional[str] = None
-) -> ToolResponse:
+def discovery_templates(template_type: str = "first_time_exploration", customize_for: Optional[str] = None) -> ToolResponse:
     """
     📋 **DISCOVERY TEMPLATES** - Pre-built exploration workflows for common scenarios!
 
@@ -606,65 +596,41 @@ def discover_relationships(
                 fk_relationships = _discover_foreign_keys(db, target_table, all_tables)
                 table_relationships["foreign_key_refs"] = fk_relationships
                 if fk_relationships:
-                    insights.append(
-                        f"Table '{target_table}' has structural relationships with {len(fk_relationships)} other tables"
-                    )
+                    insights.append(f"Table '{target_table}' has structural relationships with {len(fk_relationships)} other tables")
 
             # Discover semantic similarity relationships
-            if (
-                "semantic_similarity" in relationship_types
-                and is_semantic_search_available()
-            ):
-                semantic_relationships = _discover_semantic_relationships(
-                    db, target_table, all_tables, similarity_threshold
-                )
+            if "semantic_similarity" in relationship_types and is_semantic_search_available():
+                semantic_relationships = _discover_semantic_relationships(db, target_table, all_tables, similarity_threshold)
                 table_relationships["semantic_similar"] = semantic_relationships
                 if semantic_relationships:
-                    insights.append(
-                        f"Table '{target_table}' has semantic similarity with {len(semantic_relationships)} tables"
-                    )
+                    insights.append(f"Table '{target_table}' has semantic similarity with {len(semantic_relationships)} tables")
 
             # Discover temporal patterns
             if "temporal_patterns" in relationship_types:
-                temporal_relationships = _discover_temporal_relationships(
-                    db, target_table, all_tables
-                )
+                temporal_relationships = _discover_temporal_relationships(db, target_table, all_tables)
                 table_relationships["temporal_related"] = temporal_relationships
                 if temporal_relationships:
-                    insights.append(
-                        f"Table '{target_table}' shows temporal patterns with {len(temporal_relationships)} tables"
-                    )
+                    insights.append(f"Table '{target_table}' shows temporal patterns with {len(temporal_relationships)} tables")
 
             # Discover naming pattern relationships
             if "naming_patterns" in relationship_types:
-                naming_relationships = _discover_naming_relationships(
-                    target_table, all_tables
-                )
+                naming_relationships = _discover_naming_relationships(target_table, all_tables)
                 table_relationships["naming_related"] = naming_relationships
                 if naming_relationships:
-                    insights.append(
-                        f"Table '{target_table}' has naming pattern relationships with {len(naming_relationships)} tables"
-                    )
+                    insights.append(f"Table '{target_table}' has naming pattern relationships with {len(naming_relationships)} tables")
 
             relationships[target_table] = table_relationships
 
         # Generate relationship insights
         total_relationships = sum(
-            len(rel["foreign_key_refs"])
-            + len(rel["semantic_similar"])
-            + len(rel["temporal_related"])
-            + len(rel["naming_related"])
+            len(rel["foreign_key_refs"]) + len(rel["semantic_similar"]) + len(rel["temporal_related"]) + len(rel["naming_related"])
             for rel in relationships.values()
         )
 
         if total_relationships == 0:
-            insights.append(
-                "No strong relationships discovered. Consider adding more content or setting up semantic search."
-            )
+            insights.append("No strong relationships discovered. Consider adding more content or setting up semantic search.")
         else:
-            insights.append(
-                f"Discovered {total_relationships} total relationships across {len(relationships)} tables"
-            )
+            insights.append(f"Discovered {total_relationships} total relationships across {len(relationships)} tables")
 
         return cast(
             ToolResponse,
@@ -675,13 +641,9 @@ def discover_relationships(
                 "relationship_summary": {
                     "total_relationships": total_relationships,
                     "tables_analyzed": len(relationships),
-                    "strongest_connections": _identify_strongest_connections(
-                        relationships
-                    ),
+                    "strongest_connections": _identify_strongest_connections(relationships),
                 },
-                "recommendations": _generate_relationship_recommendations(
-                    relationships, insights
-                ),
+                "recommendations": _generate_relationship_recommendations(relationships, insights),
             },
         )
 
@@ -704,9 +666,7 @@ def discover_relationships(
 # Helper functions for discovery orchestration
 
 
-def _analyze_content_for_discovery(
-    db, tables: List[str], focus_area: Optional[str], depth: str
-) -> Dict[str, Any]:
+def _analyze_content_for_discovery(db, tables: List[str], focus_area: Optional[str], depth: str) -> Dict[str, Any]:
     """Analyze content patterns and distribution."""
     content_analysis = {
         "total_rows": 0,
@@ -738,9 +698,7 @@ def _analyze_content_for_discovery(
                             if isinstance(value, str):
                                 total_content_length += len(value)
 
-                    avg_content_length = (
-                        total_content_length / sample_size if sample_size > 0 else 0
-                    )
+                    avg_content_length = total_content_length / sample_size if sample_size > 0 else 0
 
                     if avg_content_length > 200:
                         content_analysis["text_rich_tables"].append(table_name)
@@ -755,9 +713,7 @@ def _analyze_content_for_discovery(
     return content_analysis
 
 
-def _analyze_schema_for_discovery(
-    db, tables: List[str], focus_area: Optional[str], depth: str
-) -> Dict[str, Any]:
+def _analyze_schema_for_discovery(db, tables: List[str], focus_area: Optional[str], depth: str) -> Dict[str, Any]:
     """Analyze schema structure and organization."""
     schema_analysis = {
         "total_columns": 0,
@@ -776,16 +732,12 @@ def _analyze_schema_for_discovery(
                 schema_analysis["total_columns"] += len(columns)
 
                 # Find text columns
-                text_columns = [
-                    col for col in columns if "TEXT" in col.get("type", "").upper()
-                ]
+                text_columns = [col for col in columns if "TEXT" in col.get("type", "").upper()]
                 schema_analysis["text_columns_by_table"][table_name] = len(text_columns)
 
                 # Check for well-structured tables
                 has_id = any(col.get("name") == "id" for col in columns)
-                has_timestamp = any(
-                    "timestamp" in col.get("name", "").lower() for col in columns
-                )
+                has_timestamp = any("timestamp" in col.get("name", "").lower() for col in columns)
                 has_text_content = len(text_columns) > 0
 
                 if has_id and has_timestamp and has_text_content:
@@ -793,13 +745,9 @@ def _analyze_schema_for_discovery(
 
                 # Identify schema issues
                 if len(columns) < 2:
-                    schema_analysis["schema_issues"].append(
-                        f"Table '{table_name}' has very few columns"
-                    )
+                    schema_analysis["schema_issues"].append(f"Table '{table_name}' has very few columns")
                 if not has_id:
-                    schema_analysis["schema_issues"].append(
-                        f"Table '{table_name}' lacks ID column"
-                    )
+                    schema_analysis["schema_issues"].append(f"Table '{table_name}' lacks ID column")
 
         except Exception:
             continue
@@ -807,9 +755,7 @@ def _analyze_schema_for_discovery(
     return schema_analysis
 
 
-def _assess_content_quality(
-    db, tables: List[str], focus_area: Optional[str], depth: str
-) -> Dict[str, Any]:
+def _assess_content_quality(db, tables: List[str], focus_area: Optional[str], depth: str) -> Dict[str, Any]:
     """Assess overall content quality."""
     quality_analysis = {
         "quality_scores": {},
@@ -830,9 +776,7 @@ def _assess_content_quality(
 
                 if not rows:
                     quality_analysis["quality_scores"][table_name] = 0.0
-                    quality_analysis["improvement_opportunities"].append(
-                        f"Table '{table_name}' is empty"
-                    )
+                    quality_analysis["improvement_opportunities"].append(f"Table '{table_name}' is empty")
                     quality_analysis["quality_distribution"]["low"] += 1
                     continue
 
@@ -842,12 +786,8 @@ def _assess_content_quality(
 
                 for row in rows[:sample_size]:
                     row_score = 0
-                    non_null_fields = sum(
-                        1 for v in row.values() if v is not None and str(v).strip()
-                    )
-                    total_content_length = sum(
-                        len(str(v)) for v in row.values() if v is not None
-                    )
+                    non_null_fields = sum(1 for v in row.values() if v is not None and str(v).strip())
+                    total_content_length = sum(len(str(v)) for v in row.values() if v is not None)
 
                     # Score based on completeness and content richness
                     if non_null_fields > 2:
@@ -859,9 +799,7 @@ def _assess_content_quality(
 
                     content_scores.append(min(10, row_score))
 
-                table_quality = (
-                    sum(content_scores) / len(content_scores) if content_scores else 0
-                )
+                table_quality = sum(content_scores) / len(content_scores) if content_scores else 0
                 quality_analysis["quality_scores"][table_name] = round(table_quality, 1)
 
                 # Categorize quality
@@ -871,9 +809,7 @@ def _assess_content_quality(
                     quality_analysis["quality_distribution"]["medium"] += 1
                 else:
                     quality_analysis["quality_distribution"]["low"] += 1
-                    quality_analysis["improvement_opportunities"].append(
-                        f"Table '{table_name}' has low content quality (score: {table_quality:.1f})"
-                    )
+                    quality_analysis["improvement_opportunities"].append(f"Table '{table_name}' has low content quality (score: {table_quality:.1f})")
 
                 total_score += table_quality
                 table_count += 1
@@ -881,16 +817,12 @@ def _assess_content_quality(
         except Exception:
             continue
 
-    quality_analysis["overall_quality"] = (
-        round(total_score / table_count, 1) if table_count > 0 else 0.0
-    )
+    quality_analysis["overall_quality"] = round(total_score / table_count, 1) if table_count > 0 else 0.0
 
     return quality_analysis
 
 
-def _analyze_search_readiness(
-    db, tables: List[str], focus_area: Optional[str]
-) -> Dict[str, Any]:
+def _analyze_search_readiness(db, tables: List[str], focus_area: Optional[str]) -> Dict[str, Any]:
     """Analyze readiness for effective searching."""
     search_analysis = {
         "semantic_ready_tables": [],
@@ -907,9 +839,7 @@ def _analyze_search_readiness(
             schema_result = db.describe_table(table_name)
             if schema_result.get("success"):
                 columns = schema_result.get("columns", [])
-                text_columns = [
-                    col for col in columns if "TEXT" in col.get("type", "").upper()
-                ]
+                text_columns = [col for col in columns if "TEXT" in col.get("type", "").upper()]
 
                 if text_columns:
                     search_analysis["text_searchable_tables"].append(table_name)
@@ -922,13 +852,9 @@ def _analyze_search_readiness(
                             search_analysis["embedding_coverage"][table_name] = coverage
 
                             if coverage > 80:
-                                search_analysis["semantic_ready_tables"].append(
-                                    table_name
-                                )
+                                search_analysis["semantic_ready_tables"].append(table_name)
                             elif len(text_columns) > 0:
-                                search_analysis["search_optimization_needed"].append(
-                                    table_name
-                                )
+                                search_analysis["search_optimization_needed"].append(table_name)
 
         except Exception:
             continue
@@ -936,9 +862,7 @@ def _analyze_search_readiness(
     return search_analysis
 
 
-def _generate_discovery_insights(
-    discovery_goal: str, overview: Dict[str, Any], focus_area: Optional[str], depth: str
-) -> tuple:
+def _generate_discovery_insights(discovery_goal: str, overview: Dict[str, Any], focus_area: Optional[str], depth: str) -> tuple:
     """Generate insights and recommendations based on discovery results."""
     insights = []
     recommendations = []
@@ -949,21 +873,13 @@ def _generate_discovery_insights(
 
     # Goal-specific insights
     if discovery_goal == "understand_content":
-        insights.append(
-            f"Memory bank contains {total_tables} tables with {total_rows} total rows"
-        )
+        insights.append(f"Memory bank contains {total_tables} tables with {total_rows} total rows")
 
         high_value_tables = overview.get("high_value_tables", [])
         if high_value_tables:
-            insights.append(
-                f"High-value content found in: {', '.join(high_value_tables[:3])}"
-            )
-            recommendations.append(
-                f"Focus search efforts on high-value tables: {', '.join(high_value_tables)}"
-            )
-            next_steps.append(
-                f"Use auto_smart_search() to explore content in {high_value_tables[0]}"
-            )
+            insights.append(f"High-value content found in: {', '.join(high_value_tables[:3])}")
+            recommendations.append(f"Focus search efforts on high-value tables: {', '.join(high_value_tables)}")
+            next_steps.append(f"Use auto_smart_search() to explore content in {high_value_tables[0]}")
 
         sparse_tables = overview.get("sparse_tables", [])
         if sparse_tables:
@@ -973,9 +889,7 @@ def _generate_discovery_insights(
     elif discovery_goal == "find_patterns":
         text_rich_tables = overview.get("text_rich_tables", [])
         if text_rich_tables:
-            insights.append(
-                f"Text-rich content found in {len(text_rich_tables)} tables"
-            )
+            insights.append(f"Text-rich content found in {len(text_rich_tables)} tables")
             next_steps.append("Use semantic search to find content patterns")
 
         quality_scores = overview.get("quality_scores", {})
@@ -1009,20 +923,14 @@ def _generate_discovery_insights(
             next_steps.append("Use auto_semantic_search() for conceptual queries")
 
         if optimization_needed:
-            insights.append(
-                f"Search optimization needed for {len(optimization_needed)} tables"
-            )
-            next_steps.append(
-                f"Set up embeddings for: {', '.join(optimization_needed[:2])}"
-            )
+            insights.append(f"Search optimization needed for {len(optimization_needed)} tables")
+            next_steps.append(f"Set up embeddings for: {', '.join(optimization_needed[:2])}")
 
     # Universal recommendations
     if overview.get("semantic_search_available"):
         recommendations.append("Use auto_smart_search() for best search results")
     else:
-        recommendations.append(
-            "Install sentence-transformers for semantic search capabilities"
-        )
+        recommendations.append("Install sentence-transformers for semantic search capabilities")
 
     if not next_steps:
         next_steps.append("Use explore_tables() for detailed content examination")
@@ -1031,9 +939,7 @@ def _generate_discovery_insights(
     return insights, recommendations, next_steps
 
 
-def _generate_quick_actions(
-    discovery_goal: str, overview: Dict[str, Any], focus_area: Optional[str]
-) -> List[Dict[str, Any]]:
+def _generate_quick_actions(discovery_goal: str, overview: Dict[str, Any], focus_area: Optional[str]) -> List[Dict[str, Any]]:
     """Generate quick action suggestions."""
     actions = []
 
@@ -1076,9 +982,7 @@ def _store_discovery_pattern(db, discovery_session: Dict[str, Any]) -> None:
     try:
         # Check if discovery_patterns table exists
         tables_result = db.list_tables()
-        if tables_result.get("success") and "discovery_patterns" in tables_result.get(
-            "tables", []
-        ):
+        if tables_result.get("success") and "discovery_patterns" in tables_result.get("tables", []):
             # Store the discovery session
             db.insert_row(
                 "discovery_patterns",
@@ -1087,9 +991,7 @@ def _store_discovery_pattern(db, discovery_session: Dict[str, Any]) -> None:
                     "goal": discovery_session.get("goal"),
                     "focus_area": discovery_session.get("focus_area"),
                     "depth": discovery_session.get("depth"),
-                    "steps_completed": str(
-                        discovery_session.get("steps_completed", [])
-                    ),
+                    "steps_completed": str(discovery_session.get("steps_completed", [])),
                     "success": True,
                     "timestamp": discovery_session.get("timestamp"),
                 },
@@ -1155,20 +1057,13 @@ def _discover_foreign_keys(db, target_table: str, all_tables: List[str]) -> List
                         col_name = col.get("name", "")
                         # Look for naming patterns that suggest foreign keys
                         if col_name.endswith("_id") or col_name.endswith("Id"):
-                            potential_ref = col_name.replace("_id", "").replace(
-                                "Id", ""
-                            )
-                            if (
-                                potential_ref == target_table
-                                or f"{potential_ref}s" == target_table
-                            ):
+                            potential_ref = col_name.replace("_id", "").replace("Id", "")
+                            if potential_ref == target_table or f"{potential_ref}s" == target_table:
                                 relationships.append(f"{other_table}.{col_name}")
 
                         # Look for exact column name matches (potential shared keys)
                         if col_name in target_col_names and col_name != "id":
-                            relationships.append(
-                                f"{other_table}.{col_name} (shared key)"
-                            )
+                            relationships.append(f"{other_table}.{col_name} (shared key)")
 
             except Exception:
                 continue
@@ -1179,9 +1074,7 @@ def _discover_foreign_keys(db, target_table: str, all_tables: List[str]) -> List
     return relationships
 
 
-def _discover_semantic_relationships(
-    db, target_table: str, all_tables: List[str], threshold: float
-) -> List[Dict[str, Any]]:
+def _discover_semantic_relationships(db, target_table: str, all_tables: List[str], threshold: float) -> List[Dict[str, Any]]:
     """Discover semantic similarity relationships."""
     relationships = []
 
@@ -1196,9 +1089,7 @@ def _discover_semantic_relationships(
 
         # Create a sample query from target table content
         sample_row = target_rows["rows"][0]
-        sample_text = " ".join(str(v) for v in sample_row.values() if v is not None)[
-            :200
-        ]
+        sample_text = " ".join(str(v) for v in sample_row.values() if v is not None)[:200]
 
         if len(sample_text.strip()) < 10:
             return relationships
@@ -1222,9 +1113,7 @@ def _discover_semantic_relationships(
 
                 if search_result.get("success") and search_result.get("results"):
                     results = search_result["results"]
-                    avg_similarity = sum(
-                        r.get("similarity_score", 0) for r in results
-                    ) / len(results)
+                    avg_similarity = sum(r.get("similarity_score", 0) for r in results) / len(results)
 
                     if avg_similarity >= threshold:
                         relationships.append(
@@ -1244,9 +1133,7 @@ def _discover_semantic_relationships(
     return relationships
 
 
-def _discover_temporal_relationships(
-    db, target_table: str, all_tables: List[str]
-) -> List[str]:
+def _discover_temporal_relationships(db, target_table: str, all_tables: List[str]) -> List[str]:
     """Discover temporal pattern relationships."""
     relationships = []
 
@@ -1258,9 +1145,7 @@ def _discover_temporal_relationships(
 
         target_columns = target_schema.get("columns", [])
         target_has_timestamp = any(
-            "timestamp" in col.get("name", "").lower()
-            or "date" in col.get("name", "").lower()
-            or "time" in col.get("name", "").lower()
+            "timestamp" in col.get("name", "").lower() or "date" in col.get("name", "").lower() or "time" in col.get("name", "").lower()
             for col in target_columns
         )
 
@@ -1277,9 +1162,7 @@ def _discover_temporal_relationships(
                 if other_schema.get("success"):
                     other_columns = other_schema.get("columns", [])
                     other_has_timestamp = any(
-                        "timestamp" in col.get("name", "").lower()
-                        or "date" in col.get("name", "").lower()
-                        or "time" in col.get("name", "").lower()
+                        "timestamp" in col.get("name", "").lower() or "date" in col.get("name", "").lower() or "time" in col.get("name", "").lower()
                         for col in other_columns
                     )
 
@@ -1295,9 +1178,7 @@ def _discover_temporal_relationships(
     return relationships
 
 
-def _discover_naming_relationships(
-    target_table: str, all_tables: List[str]
-) -> List[str]:
+def _discover_naming_relationships(target_table: str, all_tables: List[str]) -> List[str]:
     """Discover relationships based on naming conventions."""
     relationships = []
 
@@ -1311,9 +1192,7 @@ def _discover_naming_relationships(
         other_lower = other_table.lower()
 
         # Check for plural/singular relationships
-        if (target_lower.endswith("s") and other_lower == target_lower[:-1]) or (
-            other_lower.endswith("s") and target_lower == other_lower[:-1]
-        ):
+        if (target_lower.endswith("s") and other_lower == target_lower[:-1]) or (other_lower.endswith("s") and target_lower == other_lower[:-1]):
             relationships.append(other_table)
             continue
 
@@ -1374,9 +1253,7 @@ def _identify_strongest_connections(
     return connections[:5]
 
 
-def _generate_relationship_recommendations(
-    relationships: Dict[str, Any], insights: List[str]
-) -> List[str]:
+def _generate_relationship_recommendations(relationships: Dict[str, Any], insights: List[str]) -> List[str]:
     """Generate actionable recommendations based on discovered relationships."""
     recommendations = []
 
@@ -1393,9 +1270,7 @@ def _generate_relationship_recommendations(
             highly_connected.append(table)
 
     if highly_connected:
-        recommendations.append(
-            f"Focus queries on highly connected tables: {', '.join(highly_connected[:3])}"
-        )
+        recommendations.append(f"Focus queries on highly connected tables: {', '.join(highly_connected[:3])}")
 
     # Find tables with semantic relationships
     semantic_tables = []
@@ -1404,9 +1279,7 @@ def _generate_relationship_recommendations(
             semantic_tables.append(table)
 
     if semantic_tables:
-        recommendations.append(
-            f"Use semantic search across related tables: {', '.join(semantic_tables[:3])}"
-        )
+        recommendations.append(f"Use semantic search across related tables: {', '.join(semantic_tables[:3])}")
 
     # Find tables with temporal relationships
     temporal_tables = []
@@ -1415,13 +1288,9 @@ def _generate_relationship_recommendations(
             temporal_tables.append(table)
 
     if temporal_tables:
-        recommendations.append(
-            f"Consider temporal analysis for time-related tables: {', '.join(temporal_tables[:3])}"
-        )
+        recommendations.append(f"Consider temporal analysis for time-related tables: {', '.join(temporal_tables[:3])}")
 
     if not recommendations:
-        recommendations.append(
-            "Consider adding more structured relationships or content to improve discoverability"
-        )
+        recommendations.append("Consider adding more structured relationships or content to improve discoverability")
 
     return recommendations

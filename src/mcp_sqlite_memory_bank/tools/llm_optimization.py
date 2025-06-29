@@ -48,15 +48,8 @@ def intelligent_duplicate_analysis(
         with db.engine.connect() as conn:
             from sqlalchemy import text
 
-            sample_result = conn.execute(
-                text(
-                    f"SELECT id, {', '.join(content_columns)} FROM `{table_name}` LIMIT 20"
-                )
-            )
-            sample_data = [
-                dict(zip(["id"] + content_columns, row))
-                for row in sample_result.fetchall()
-            ]
+            sample_result = conn.execute(text(f"SELECT id, {', '.join(content_columns)} FROM `{table_name}` LIMIT 20"))
+            sample_data = [dict(zip(["id"] + content_columns, row)) for row in sample_result.fetchall()]
 
         if not sample_data:
             return cast(
@@ -70,11 +63,7 @@ def intelligent_duplicate_analysis(
 
         # Prepare data for LLM analysis
         data_summary = "\\n".join(
-            [
-                f"ID {row['id']}: "
-                + " | ".join([str(row[col]) for col in content_columns if row.get(col)])
-                for row in sample_data[:10]
-            ]
+            [f"ID {row['id']}: " + " | ".join([str(row[col]) for col in content_columns if row.get(col)]) for row in sample_data[:10]]
         )
 
         # This would use MCP sampling (requires client support)
@@ -130,9 +119,7 @@ Provide recommendations for each type of duplicate found.
 
 def intelligent_optimization_strategy(
     table_name: str,
-    optimization_goals: Optional[
-        List[str]
-    ] = None,  # ["storage", "performance", "cost", "maintenance"]
+    optimization_goals: Optional[List[str]] = None,  # ["storage", "performance", "cost", "maintenance"]
 ) -> ToolResponse:
     """
     🎯 **LLM-GUIDED OPTIMIZATION STRATEGY** - AI-powered optimization planning!
@@ -168,9 +155,7 @@ def intelligent_optimization_strategy(
 
             # Get sample data characteristics
             if total_rows > 0:
-                sample_result = conn.execute(
-                    text(f"SELECT * FROM `{table_name}` LIMIT 5")
-                )
+                sample_result = conn.execute(text(f"SELECT * FROM `{table_name}` LIMIT 5"))
                 sample_rows = sample_result.fetchall()
                 sample_data = [dict(zip(columns, row)) for row in sample_rows]
             else:
@@ -305,15 +290,10 @@ def smart_archiving_policy(
             """
                 )
             )
-            temporal_data = [
-                dict(zip(["date", "records", "earliest", "latest"], row))
-                for row in temporal_result.fetchall()
-            ]
+            temporal_data = [dict(zip(["date", "records", "earliest", "latest"], row)) for row in temporal_result.fetchall()]
 
             # Get content sample for relevance analysis
-            content_columns = [
-                col for col in columns if col not in ["id", "timestamp", "embedding"]
-            ]
+            content_columns = [col for col in columns if col not in ["id", "timestamp", "embedding"]]
             if content_columns:
                 content_result = conn.execute(
                     text(
@@ -325,10 +305,7 @@ def smart_archiving_policy(
                 """
                     )
                 )
-                content_sample = [
-                    dict(zip(["timestamp"] + content_columns[:3], row))
-                    for row in content_result.fetchall()
-                ]
+                content_sample = [dict(zip(["timestamp"] + content_columns[:3], row)) for row in content_result.fetchall()]
             else:
                 content_sample = []
 

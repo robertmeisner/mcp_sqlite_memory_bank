@@ -42,9 +42,7 @@ def catch_errors(f: T) -> T:
             logging.error(f"{f.__name__} database error: {e}")
             return cast(
                 ToolResponse,
-                DatabaseError(
-                    f"Database error in {f.__name__}: {e}", {"sqlite_error": str(e)}
-                ).to_dict(),
+                DatabaseError(f"Database error in {f.__name__}: {e}", {"sqlite_error": str(e)}).to_dict(),
             )
         except Exception as e:
             logging.error(f"Unexpected error in {f.__name__}: {e}")
@@ -67,8 +65,7 @@ def validate_identifier(name: str, context: str = "identifier") -> None:
     """
     if not bool(re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name)):
         raise ValidationError(
-            f"Invalid {context}: {name}. Must start with letter/underscore and "
-            f"contain only letters, numbers, underscores.",
+            f"Invalid {context}: {name}. Must start with letter/underscore and " f"contain only letters, numbers, underscores.",
             {"invalid_name": name},
         )
 
@@ -82,9 +79,7 @@ def validate_column_definition(column: Dict[str, Any]) -> None:
         column: Dictionary with column definition (must have 'name' and 'type' keys)
     """
     if not isinstance(column, dict):
-        raise ValidationError(
-            "Column definition must be a dictionary", {"received": str(type(column))}
-        )
+        raise ValidationError("Column definition must be a dictionary", {"received": str(type(column))})
     if "name" not in column or "type" not in column:
         raise ValidationError(
             "Column definition must have 'name' and 'type' keys",
@@ -110,9 +105,7 @@ def get_table_columns(conn: sqlite3.Connection, table_name: str) -> List[str]:
     cur.execute(f"PRAGMA table_info({table_name})")
     columns = [row[1] for row in cur.fetchall()]
     if not columns:
-        raise SchemaError(
-            f"Table does not exist: {table_name}", {"table_name": table_name}
-        )
+        raise SchemaError(f"Table does not exist: {table_name}", {"table_name": table_name})
     return columns
 
 
@@ -164,18 +157,12 @@ def validate_table_exists(conn: sqlite3.Connection, table_name: str) -> None:
         table_name: Name of table to check
     """
     cur = conn.cursor()
-    cur.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
-    )
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
     if not cur.fetchone():
-        raise SchemaError(
-            f"Table does not exist: {table_name}", {"table_name": table_name}
-        )
+        raise SchemaError(f"Table does not exist: {table_name}", {"table_name": table_name})
 
 
-def build_where_clause(
-    where: Dict[str, Any], valid_columns: List[str]
-) -> Union[Tuple[str, List[Any]], Dict[str, Any]]:
+def build_where_clause(where: Dict[str, Any], valid_columns: List[str]) -> Union[Tuple[str, List[Any]], Dict[str, Any]]:
     """
     Build a WHERE clause from a dictionary of column-value pairs.
 
@@ -343,9 +330,7 @@ def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
     return suggestions
 
 
-def enhanced_catch_errors(
-    include_traceback: bool = False, auto_recovery: bool = True
-) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+def enhanced_catch_errors(include_traceback: bool = False, auto_recovery: bool = True) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
     """
     Enhanced error decorator with debugging context and auto-recovery suggestions.
 
@@ -381,9 +366,7 @@ def enhanced_catch_errors(
 
                 # Determine error category
                 if isinstance(e, MemoryBankError):
-                    category = (
-                        e.category.name if hasattr(e, "category") else "MEMORY_BANK"
-                    )
+                    category = e.category.name if hasattr(e, "category") else "MEMORY_BANK"
                     return cast(
                         ToolResponse,
                         {

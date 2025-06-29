@@ -51,9 +51,7 @@ def find_duplicates(
             query = text(f"SELECT {columns_str} FROM `{table_name}`")
 
             if sample_size:
-                query = text(
-                    f"SELECT {columns_str} FROM `{table_name}` LIMIT {sample_size}"
-                )
+                query = text(f"SELECT {columns_str} FROM `{table_name}` LIMIT {sample_size}")
 
             result = conn.execute(query)
             rows = [dict(row._mapping) for row in result.fetchall()]
@@ -94,11 +92,7 @@ def find_duplicates(
                         "content_hash": content_hash,
                         "duplicate_count": len(group_rows),
                         "rows": group_rows,
-                        "suggested_action": (
-                            "keep_newest"
-                            if "timestamp" in group_rows[0]
-                            else "manual_review"
-                        ),
+                        "suggested_action": ("keep_newest" if "timestamp" in group_rows[0] else "manual_review"),
                     }
                 )
 
@@ -121,9 +115,7 @@ def find_duplicates(
                 "success": True,
                 "duplicates": duplicate_groups,
                 "stats": stats,
-                "cleanup_recommendations": _generate_cleanup_recommendations(
-                    duplicate_groups
-                ),
+                "cleanup_recommendations": _generate_cleanup_recommendations(duplicate_groups),
             },
         )
 
@@ -140,9 +132,7 @@ def find_duplicates(
 
 
 @catch_errors
-def optimize_memory_bank(
-    table_name: str, optimization_strategy: str = "comprehensive", dry_run: bool = True
-) -> ToolResponse:
+def optimize_memory_bank(table_name: str, optimization_strategy: str = "comprehensive", dry_run: bool = True) -> ToolResponse:
     """
     ⚡ **MEMORY BANK OPTIMIZATION** - Optimize storage and performance!
 
@@ -178,25 +168,17 @@ def optimize_memory_bank(
             total_rows = count_row[0] if count_row else 0
 
             # Step 2: Find duplicates (using text columns)
-            text_columns = [
-                col for col in columns if col not in ["id", "timestamp", "embedding"]
-            ]
+            text_columns = [col for col in columns if col not in ["id", "timestamp", "embedding"]]
             if text_columns:
                 duplicates_result = find_duplicates(table_name, text_columns)
                 if duplicates_result.get("success"):
-                    duplicate_count = duplicates_result.get("stats", {}).get(
-                        "total_duplicates", 0
-                    )
+                    duplicate_count = duplicates_result.get("stats", {}).get("total_duplicates", 0)
                     if duplicate_count > 0:
                         optimizations_performed.append(
                             {
                                 "type": "duplicate_removal",
                                 "description": f"Found {duplicate_count} duplicate rows",
-                                "action": (
-                                    "Remove duplicates, keep most recent"
-                                    if not dry_run
-                                    else "Would remove duplicates"
-                                ),
+                                "action": ("Remove duplicates, keep most recent" if not dry_run else "Would remove duplicates"),
                                 "rows_affected": duplicate_count,
                             }
                         )
@@ -204,17 +186,11 @@ def optimize_memory_bank(
 
             # Step 3: Identify old/stale entries
             if "timestamp" in columns:
-                cutoff_days = (
-                    365
-                    if optimization_strategy == "conservative"
-                    else 180 if optimization_strategy == "comprehensive" else 90
-                )
+                cutoff_days = 365 if optimization_strategy == "conservative" else 180 if optimization_strategy == "comprehensive" else 90
                 cutoff_date = (datetime.now() - timedelta(days=cutoff_days)).isoformat()
 
                 old_count_result = conn.execute(
-                    text(
-                        f"SELECT COUNT(*) FROM `{table_name}` WHERE timestamp < :cutoff_date"
-                    ),
+                    text(f"SELECT COUNT(*) FROM `{table_name}` WHERE timestamp < :cutoff_date"),
                     {"cutoff_date": cutoff_date},
                 )
                 old_count_row = old_count_result.fetchone()
@@ -225,40 +201,24 @@ def optimize_memory_bank(
                         {
                             "type": "archive_old_entries",
                             "description": f"Found {old_rows} entries older than {cutoff_days} days",
-                            "action": (
-                                "Archive old entries"
-                                if not dry_run
-                                else f"Would archive {old_rows} old entries"
-                            ),
+                            "action": ("Archive old entries" if not dry_run else f"Would archive {old_rows} old entries"),
                             "rows_affected": old_rows,
                         }
                     )
-                    potential_savings["rows_removed"] += int(
-                        old_rows * 0.5
-                    )  # Archive, don't delete
+                    potential_savings["rows_removed"] += int(old_rows * 0.5)  # Archive, don't delete
 
             # Step 4: Analyze embedding storage efficiency
             if "embedding" in columns:
-                embedding_count_result = conn.execute(
-                    text(
-                        f"SELECT COUNT(*) FROM `{table_name}` WHERE embedding IS NOT NULL"
-                    )
-                )
+                embedding_count_result = conn.execute(text(f"SELECT COUNT(*) FROM `{table_name}` WHERE embedding IS NOT NULL"))
                 embedding_count_row = embedding_count_result.fetchone()
                 embedding_rows = embedding_count_row[0] if embedding_count_row else 0
 
                 # Estimate embedding storage size
                 if embedding_rows > 0:
-                    sample_embedding_result = conn.execute(
-                        text(
-                            f"SELECT LENGTH(embedding) FROM `{table_name}` WHERE embedding IS NOT NULL LIMIT 1"
-                        )
-                    )
+                    sample_embedding_result = conn.execute(text(f"SELECT LENGTH(embedding) FROM `{table_name}` WHERE embedding IS NOT NULL LIMIT 1"))
                     sample_size = sample_embedding_result.fetchone()
                     if sample_size:
-                        total_embedding_size_mb = (embedding_rows * sample_size[0]) / (
-                            1024 * 1024
-                        )
+                        total_embedding_size_mb = (embedding_rows * sample_size[0]) / (1024 * 1024)
                         optimizations_performed.append(
                             {
                                 "type": "embedding_analysis",
@@ -296,16 +256,10 @@ def optimize_memory_bank(
         if potential_savings["rows_removed"] > 0:
             # Estimate storage savings (rough calculation)
             avg_row_size_kb = 2  # Conservative estimate
-            potential_savings["storage_saved_mb"] = int(
-                (potential_savings["rows_removed"] * avg_row_size_kb) / 1024
-            )
+            potential_savings["storage_saved_mb"] = int((potential_savings["rows_removed"] * avg_row_size_kb) / 1024)
             potential_savings["performance_improvement"] = min(
                 50,
-                (
-                    int((potential_savings["rows_removed"] / total_rows) * 100)
-                    if total_rows > 0
-                    else 0
-                ),
+                (int((potential_savings["rows_removed"] / total_rows) * 100) if total_rows > 0 else 0),
             )
 
         return cast(
@@ -320,9 +274,7 @@ def optimize_memory_bank(
                     "columns": len(columns),
                     "optimization_strategy": optimization_strategy,
                 },
-                "recommendations": _generate_optimization_recommendations(
-                    optimizations_performed, optimization_strategy
-                ),
+                "recommendations": _generate_optimization_recommendations(optimizations_performed, optimization_strategy),
             },
         )
 
@@ -392,9 +344,7 @@ def archive_old_memories(
 
             # Find records to archive
             count_result = conn.execute(
-                text(
-                    f"SELECT COUNT(*) FROM `{table_name}` WHERE timestamp < :cutoff_date"
-                ),
+                text(f"SELECT COUNT(*) FROM `{table_name}` WHERE timestamp < :cutoff_date"),
                 {"cutoff_date": cutoff_date},
             )
             count_row = count_result.fetchone()
@@ -423,9 +373,7 @@ def archive_old_memories(
 
                 # Optionally delete from source table
                 if delete_after_archive:
-                    delete_sql = (
-                        f"DELETE FROM `{table_name}` WHERE timestamp < :cutoff_date"
-                    )
+                    delete_sql = f"DELETE FROM `{table_name}` WHERE timestamp < :cutoff_date"
                     conn.execute(text(delete_sql), {"cutoff_date": cutoff_date})
 
                 trans.commit()
@@ -446,11 +394,7 @@ def archive_old_memories(
                 "recommendations": [
                     f"Archived {records_to_archive} records older than {archive_days} days",
                     f"Archive table '{archive_table_name}' created/updated",
-                    (
-                        "Consider setting up automated archiving for ongoing maintenance"
-                        if records_to_archive > 100
-                        else None
-                    ),
+                    ("Consider setting up automated archiving for ongoing maintenance" if records_to_archive > 100 else None),
                 ],
             },
         )
@@ -482,9 +426,7 @@ def _generate_cleanup_recommendations(
         return recommendations
 
     total_duplicates = sum(len(group["rows"]) - 1 for group in duplicate_groups)
-    recommendations.append(
-        f"🔍 Found {len(duplicate_groups)} duplicate groups with {total_duplicates} redundant records"
-    )
+    recommendations.append(f"🔍 Found {len(duplicate_groups)} duplicate groups with {total_duplicates} redundant records")
 
     # Group recommendations by suggested action
     actions = defaultdict(int)
@@ -493,23 +435,17 @@ def _generate_cleanup_recommendations(
 
     for action, count in actions.items():
         if action == "keep_newest":
-            recommendations.append(
-                f"📅 {count} duplicates can be auto-removed (keeping newest versions)"
-            )
+            recommendations.append(f"📅 {count} duplicates can be auto-removed (keeping newest versions)")
         elif action == "manual_review":
             recommendations.append(f"👁️ {count} duplicates require manual review")
 
     if total_duplicates > 50:
-        recommendations.append(
-            "⚠️ High duplicate count suggests need for automated deduplication process"
-        )
+        recommendations.append("⚠️ High duplicate count suggests need for automated deduplication process")
 
     return recommendations
 
 
-def _generate_optimization_recommendations(
-    optimizations: List[Dict[str, Any]], strategy: str
-) -> List[str]:
+def _generate_optimization_recommendations(optimizations: List[Dict[str, Any]], strategy: str) -> List[str]:
     """Generate optimization recommendations based on analysis results."""
     recommendations = []
 
@@ -522,23 +458,15 @@ def _generate_optimization_recommendations(
     has_old_data = any(opt["type"] == "archive_old_entries" for opt in optimizations)
 
     if has_duplicates:
-        recommendations.append(
-            "🔄 Run optimize_memory_bank() with dry_run=False to remove duplicates"
-        )
+        recommendations.append("🔄 Run optimize_memory_bank() with dry_run=False to remove duplicates")
 
     if has_old_data:
-        recommendations.append(
-            "📦 Consider using archive_old_memories() to move historical data"
-        )
+        recommendations.append("📦 Consider using archive_old_memories() to move historical data")
 
     if strategy == "conservative":
-        recommendations.append(
-            "💡 Try 'comprehensive' strategy for more aggressive optimization"
-        )
+        recommendations.append("💡 Try 'comprehensive' strategy for more aggressive optimization")
 
-    recommendations.append(
-        "🔧 Schedule regular optimization (monthly) for enterprise deployments"
-    )
+    recommendations.append("🔧 Schedule regular optimization (monthly) for enterprise deployments")
 
     return recommendations
 
