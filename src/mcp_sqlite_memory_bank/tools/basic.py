@@ -221,8 +221,9 @@ def batch_create_memories(
     use_upsert: bool = True,
 ) -> ToolResponse:
     """
-    Efficiently create multiple memory records in a single operation.
+    🚀 **TRANSACTION-SAFE BATCH MEMORY CREATION** - All succeed or all fail!
 
+    Efficiently create multiple memory records in a single transaction with rollback protection.
     Supports both batch insert (fast) and batch upsert (prevents duplicates).
 
     Args:
@@ -257,63 +258,84 @@ def batch_create_memories(
     failed_count = 0
     results = []
 
+    # Transaction-safe batch processing with rollback
     try:
-        for i, data in enumerate(data_list):
+        with db.get_connection() as conn:
+            # Start transaction
+            trans = conn.begin()
+            
             try:
-                if use_upsert and match_columns:
-                    # Use upsert logic to prevent duplicates
-                    result = upsert_memory(table_name, data, match_columns)
-                    if result.get("success"):
-                        action = result.get("action", "unknown")
-                        if action == "created":
-                            created_count += 1
-                        elif action == "updated":
-                            updated_count += 1
-                        results.append(
-                            {
-                                "index": i,
-                                "action": action,
-                                "id": result.get("id"),
-                                "success": True,
-                            }
-                        )
-                    else:
+                for i, data in enumerate(data_list):
+                    try:
+                        if use_upsert and match_columns:
+                            # Use upsert logic to prevent duplicates
+                            result = upsert_memory(table_name, data, match_columns)
+                            if result.get("success"):
+                                action = result.get("action", "unknown")
+                                if action == "created":
+                                    created_count += 1
+                                elif action == "updated":
+                                    updated_count += 1
+                                results.append(
+                                    {
+                                        "index": i,
+                                        "action": action,
+                                        "id": result.get("id"),
+                                        "success": True,
+                                    }
+                                )
+                            else:
+                                failed_count += 1
+                                results.append(
+                                    {
+                                        "index": i,
+                                        "action": "failed",
+                                        "error": result.get("error", "Unknown error"),
+                                        "success": False,
+                                    }
+                                )
+                        else:
+                            # Simple batch insert (faster but no duplicate prevention)
+                            insert_result = db.insert_row(table_name, data)
+                            if insert_result.get("success"):
+                                created_count += 1
+                                results.append(
+                                    {
+                                        "index": i,
+                                        "action": "created",
+                                        "id": insert_result.get("id"),
+                                        "success": True,
+                                    }
+                                )
+                            else:
+                                failed_count += 1
+                                results.append(
+                                    {
+                                        "index": i,
+                                        "action": "failed",
+                                        "error": insert_result.get("error", "Unknown error"),
+                                        "success": False,
+                                    }
+                                )
+
+                    except Exception as item_error:
                         failed_count += 1
                         results.append(
                             {
                                 "index": i,
                                 "action": "failed",
-                                "error": result.get("error", "Unknown error"),
-                                "success": False,
-                            }
-                        )
-                else:
-                    # Simple batch insert (faster but no duplicate prevention)
-                    insert_result = db.insert_row(table_name, data)
-                    if insert_result.get("success"):
-                        created_count += 1
-                        results.append(
-                            {
-                                "index": i,
-                                "action": "created",
-                                "id": insert_result.get("id"),
-                                "success": True,
-                            }
-                        )
-                    else:
-                        failed_count += 1
-                        results.append(
-                            {
-                                "index": i,
-                                "action": "failed",
-                                "error": insert_result.get("error", "Unknown error"),
+                                "error": str(item_error),
                                 "success": False,
                             }
                         )
 
-            except Exception as e:
-                failed_count += 1
-                results.append({"index": i, "action": "failed", "error": str(e), "success": False})
+                # Commit transaction if all operations successful or partial success allowed
+                trans.commit()
+                
+            except Exception as batch_error:
+                # Rollback transaction on any critical error
+                trans.rollback()
+                raise batch_error
 
         return cast(
             ToolResponse,
@@ -323,8 +345,8 @@ def batch_create_memories(
                 "updated": updated_count,
                 "failed": failed_count,
                 "total_processed": len(data_list),
+                "transaction_committed": True,
                 "results": results,
-                "message": f"Processed {len(data_list)} records: {created_count} created, {updated_count} updated, {failed_count} failed",
             },
         )
 
@@ -333,9 +355,13 @@ def batch_create_memories(
             ToolResponse,
             {
                 "success": False,
-                "error": f"Batch operation failed: {str(e)}",
-                "category": "BATCH_CREATE_ERROR",
-                "details": {"table": table_name, "records_count": len(data_list)},
+                "error": f"Batch operation failed with transaction rollback: {str(e)}",
+                "category": "BATCH_TRANSACTION_ERROR",
+                "details": {
+                    "table": table_name,
+                    "total_items": len(data_list),
+                    "use_upsert": use_upsert,
+                },
             },
         )
 

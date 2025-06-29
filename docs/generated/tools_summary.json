@@ -1,0 +1,144 @@
+{
+  "total_tools": 27,
+  "tools_by_module": {
+    "server": 27
+  },
+  "generated_at": "2025-06-29T13:11:39.400802",
+  "tools": [
+    {
+      "name": "create_table",
+      "module": "server",
+      "description": "Create a new table in the SQLite memory bank."
+    },
+    {
+      "name": "list_tables",
+      "module": "server",
+      "description": "List all tables in the SQLite memory bank."
+    },
+    {
+      "name": "describe_table",
+      "module": "server",
+      "description": "Get detailed schema information for a table."
+    },
+    {
+      "name": "drop_table",
+      "module": "server",
+      "description": "Drop (delete) a table from the SQLite memory bank."
+    },
+    {
+      "name": "rename_table",
+      "module": "server",
+      "description": "Rename a table in the SQLite memory bank."
+    },
+    {
+      "name": "create_row",
+      "module": "server",
+      "description": "Insert a new row into any table in the SQLite Memory Bank for Copilot/AI agents."
+    },
+    {
+      "name": "upsert_memory",
+      "module": "server",
+      "description": "\ud83d\udd04 **SMART MEMORY UPSERT** - Prevent duplicates and maintain data consistency!"
+    },
+    {
+      "name": "read_rows",
+      "module": "server",
+      "description": "Read rows from any table in the SQLite memory bank, with optional filtering."
+    },
+    {
+      "name": "update_rows",
+      "module": "server",
+      "description": "Update rows in any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause."
+    },
+    {
+      "name": "delete_rows",
+      "module": "server",
+      "description": "Delete rows from any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE claus..."
+    },
+    {
+      "name": "run_select_query",
+      "module": "server",
+      "description": "Run a safe SELECT query on a table in the SQLite memory bank."
+    },
+    {
+      "name": "list_all_columns",
+      "module": "server",
+      "description": "List all columns for all tables in the SQLite memory bank."
+    },
+    {
+      "name": "search_content",
+      "module": "server",
+      "description": "Perform full-text search across table content using natural language queries."
+    },
+    {
+      "name": "explore_tables",
+      "module": "server",
+      "description": "Explore and discover table structures and content for better searchability."
+    },
+    {
+      "name": "add_embeddings",
+      "module": "server",
+      "description": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!"
+    },
+    {
+      "name": "auto_semantic_search",
+      "module": "server",
+      "description": "\ud83d\ude80 **ZERO-SETUP SEMANTIC SEARCH** - Just search, embeddings are handled automatically!"
+    },
+    {
+      "name": "auto_smart_search",
+      "module": "server",
+      "description": "\ud83d\ude80 **ZERO-SETUP HYBRID SEARCH** - Best of both worlds with automatic embedding!"
+    },
+    {
+      "name": "embedding_stats",
+      "module": "server",
+      "description": "Get statistics about semantic search readiness for a table."
+    },
+    {
+      "name": "semantic_search",
+      "module": "server",
+      "description": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!"
+    },
+    {
+      "name": "smart_search",
+      "module": "server",
+      "description": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!"
+    },
+    {
+      "name": "find_related",
+      "module": "server",
+      "description": "Find content related to a specific row by semantic similarity."
+    },
+    {
+      "name": "generate_knowledge_graph",
+      "module": "server",
+      "description": "\ud83c\udfaf **KNOWLEDGE GRAPH GENERATOR** - Visualize your memory as an interactive graph!"
+    },
+    {
+      "name": "intelligent_discovery",
+      "module": "server",
+      "description": "\ud83e\udde0 **INTELLIGENT DISCOVERY** - AI-guided exploration of your memory bank!"
+    },
+    {
+      "name": "discovery_templates",
+      "module": "server",
+      "description": "\ud83d\udccb **DISCOVERY TEMPLATES** - Pre-built exploration workflows for common scenarios!"
+    },
+    {
+      "name": "discover_relationships",
+      "module": "server",
+      "description": "\ud83d\udd17 **RELATIONSHIP DISCOVERY** - Find hidden connections in your data!"
+    },
+    {
+      "name": "batch_create_memories",
+      "module": "server",
+      "description": "\ud83d\ude80 **BATCH MEMORY CREATION** - Efficiently add multiple memories at once!"
+    },
+    {
+      "name": "batch_delete_memories",
+      "module": "server",
+      "description": "\ud83d\uddd1\ufe0f **BATCH MEMORY DELETION** - Efficiently delete multiple memories at once!"
+    }
+  ]
+}

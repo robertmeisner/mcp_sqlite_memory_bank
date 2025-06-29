@@ -5,10 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.6.3] - 3D Visualization Fix (2025-06-29)
 
-### Added
-- Upcoming features will be documented here
+### Fixed
+- **3D Knowledge Graph Visualization**: Fixed critical "Show Connections" feature
+  - Edge objects now properly store userData.edgeData for filtering
+  - Relationship lines and labels now display correctly in connection mode
+  - Complete connected subgraph visualization with color-coded edges
+  - Yellow edges for direct connections, white edges for inter-connections
+
+### Cleanup
+- Removed temporary test files and POC scripts from root directory
+- Cleaned up knowledge_graphs test directories
+- Removed development artifacts and __pycache__ directories
 
 ---
 

@@ -148,3 +148,6 @@ minimal_*.py
 !tests/*_test.py
 !examples/test_*.py
 !examples/*_test.py
+
+# Exclude generated knowledge graph visualizations
+/knowledge_graphs/
