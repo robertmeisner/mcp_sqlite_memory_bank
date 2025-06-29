@@ -4,7 +4,7 @@
     "title": "SQLite Memory Bank MCP API",
     "description": "MCP tools for intelligent memory management",
     "version": "1.4.3",
-    "generated": "2025-06-29T13:11:39.398768"
+    "generated": "2025-06-29T22:04:25.976408"
   },
   "servers": [
     {
@@ -997,7 +997,7 @@
     "/tools/generate_knowledge_graph": {
       "post": {
         "summary": "\ud83c\udfaf **KNOWLEDGE GRAPH GENERATOR** - Visualize your memory as an interactive graph!",
-        "description": "\ud83c\udfaf **KNOWLEDGE GRAPH GENERATOR** - Visualize your memory as an interactive graph!\n\nCreates an interactive HTML visualization showing relationships between your stored data.\nPerfect for discovering hidden connections and understanding your knowledge structure.\n\nArgs:\n    output_path (str): Directory to save the graph (default: \"knowledge_graphs\")\n    include_temporal (bool): Include time-based relationships (default: True)\n    min_connections (int): Minimum connections to include a node (default: 1)\n    open_in_browser (bool): Attempt to open the graph in default browser (default: False)\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"file_path\": str, \"stats\": dict}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> generate_knowledge_graph()\n    {\"success\": True, \"file_path\": \"knowledge_graphs/knowledge_graph_20250628_183319.html\", \n     \"stats\": {\"nodes\": 24, \"edges\": 15, \"tables\": 5}}\n\nFastMCP Tool Info:\n    - **INTERACTIVE VISUALIZATION**: Creates professional HTML graphs using vis.js\n    - **RELATIONSHIP DISCOVERY**: Finds connections via foreign keys, naming patterns, temporal data\n    - **SEMANTIC CONNECTIONS**: Uses embeddings for content-based relationships if available\n    - **CLICKABLE OUTPUT**: Generates file:// links for instant browser opening\n    - **ZERO DEPENDENCIES**: Works with any memory bank schema without configuration",
+        "description": "\ud83c\udfaf **KNOWLEDGE GRAPH GENERATOR** - Visualize your memory as an interactive graph!\n\nCreates an interactive HTML visualization showing relationships between your stored data.\nPerfect for discovering hidden connections and understanding your knowledge structure.\n\nArgs:\n    output_path (str): Directory to save the graph (default: \"knowledge_graphs\")\n    include_temporal (bool): Include time-based relationships (default: True)\n    min_connections (int): Minimum connections to include a node (default: 1)\n    open_in_browser (bool): Attempt to open the graph in default browser (default: False)\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"file_path\": str, \"stats\": dict}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> generate_knowledge_graph()\n    {\"success\": True, \"file_path\": \"knowledge_graphs/knowledge_graph_20250628_183319.html\",\n     \"stats\": {\"nodes\": 24, \"edges\": 15, \"tables\": 5}}\n\nFastMCP Tool Info:\n    - **INTERACTIVE VISUALIZATION**: Creates professional HTML graphs using vis.js\n    - **RELATIONSHIP DISCOVERY**: Finds connections via foreign keys, naming patterns, temporal data\n    - **SEMANTIC CONNECTIONS**: Uses embeddings for content-based relationships if available\n    - **CLICKABLE OUTPUT**: Generates file:// links for instant browser opening\n    - **ZERO DEPENDENCIES**: Works with any memory bank schema without configuration",
         "operationId": "generate_knowledge_graph",
         "tags": [
           "server"
@@ -1027,6 +1027,180 @@
                   "include_temporal",
                   "min_connections",
                   "open_in_browser"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/create_interactive_d3_graph": {
+      "post": {
+        "summary": "\ud83c\udfa8 **PREMIUM D3.JS KNOWLEDGE GRAPH** - Interactive enterprise visualization!",
+        "description": "\ud83c\udfa8 **PREMIUM D3.JS KNOWLEDGE GRAPH** - Interactive enterprise visualization!\n\nCreates a professional, interactive D3.js knowledge graph with advanced features.\nPerfect for enterprise presentations and data exploration sessions.\n\nArgs:\n    output_path: Directory to save the graph (default: \"knowledge_graphs/d3_interactive\")\n    include_semantic_links: Use semantic similarity for intelligent edge connections\n    filter_tables: Specific tables to include (default: all tables)\n    min_connections: Minimum connections to include a node (default: 1)\n    layout_algorithm: Graph layout - \"force\", \"hierarchical\", \"circular\"\n    color_scheme: Visual theme - \"professional\", \"vibrant\", \"minimal\"\n    node_size_by: Node sizing strategy - \"connections\", \"content_length\", \"static\"\n    open_in_browser: Automatically open in default browser\n    export_formats: Export options - [\"png\", \"svg\", \"json\"]\n\nReturns:\n    ToolResponse: {\"success\": True, \"file_path\": str, \"stats\": dict, \"interactive_features\": list}\n\nExamples:\n    >>> create_interactive_d3_graph(layout_algorithm=\"force\", color_scheme=\"professional\")\n    {\"success\": True, \"file_path\": \"knowledge_graphs/d3_interactive/graph_20250628_203000.html\",\n     \"stats\": {\"nodes\": 45, \"edges\": 78, \"tables\": 6}}\n\nPremium Features:\n    - **Real-time Filtering**: Dynamic node/edge filtering with search\n    - **Semantic Relationships**: AI-powered intelligent edge connections\n    - **Professional Styling**: Enterprise-grade visual design\n    - **Export Capabilities**: PNG, SVG, JSON export for presentations\n    - **Responsive Design**: Works on desktop, tablet, mobile\n    - **Performance Optimized**: Handles large datasets efficiently",
+        "operationId": "create_interactive_d3_graph",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "output_path": {
+                    "type": "string"
+                  },
+                  "include_semantic_links": {
+                    "type": "boolean"
+                  },
+                  "filter_tables": {
+                    "type": "string"
+                  },
+                  "min_connections": {
+                    "type": "integer"
+                  },
+                  "layout_algorithm": {
+                    "type": "string"
+                  },
+                  "color_scheme": {
+                    "type": "string"
+                  },
+                  "node_size_by": {
+                    "type": "string"
+                  },
+                  "open_in_browser": {
+                    "type": "boolean"
+                  },
+                  "export_formats": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "include_semantic_links",
+                  "min_connections",
+                  "layout_algorithm",
+                  "color_scheme",
+                  "node_size_by",
+                  "open_in_browser"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/create_advanced_d3_dashboard": {
+      "post": {
+        "summary": "\ud83d\ude80 **ENTERPRISE D3.JS DASHBOARD** - Premium visualization dashboard!",
+        "description": "\ud83d\ude80 **ENTERPRISE D3.JS DASHBOARD** - Premium visualization dashboard!\n\nCreates a comprehensive D3.js dashboard with multiple interactive visualizations.\nPerfect for enterprise reporting and executive presentations.\n\nArgs:\n    output_path: Directory for dashboard files\n    dashboard_type: Dashboard style - \"enterprise\", \"analytics\", \"research\"\n    include_metrics: Add performance metrics and KPI widgets\n    real_time_updates: Enable WebSocket for live data updates\n    custom_widgets: Additional widget types to include\n\nReturns:\n    ToolResponse: {\"success\": True, \"dashboard_url\": str, \"widgets\": list, \"features\": list}\n\nEnterprise Dashboard Features:\n    - **Multiple Visualizations**: Force graph, timeline, metrics, heatmaps\n    - **Interactive Filtering**: Cross-widget filtering and drill-down\n    - **Real-time Updates**: Live data refresh capabilities\n    - **Export Suite**: PDF reports, image exports, data downloads\n    - **Responsive Design**: Mobile and desktop optimized\n    - **Professional Styling**: Enterprise-grade UI/UX design",
+        "operationId": "create_advanced_d3_dashboard",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "output_path": {
+                    "type": "string"
+                  },
+                  "dashboard_type": {
+                    "type": "string"
+                  },
+                  "include_metrics": {
+                    "type": "boolean"
+                  },
+                  "real_time_updates": {
+                    "type": "boolean"
+                  },
+                  "custom_widgets": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "dashboard_type",
+                  "include_metrics",
+                  "real_time_updates"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/export_graph_data": {
+      "post": {
+        "summary": "\ud83d\udcca **GRAPH DATA EXPORT** - Professional data format conversion!",
+        "description": "\ud83d\udcca **GRAPH DATA EXPORT** - Professional data format conversion!\n\nExports graph data in various professional formats for use with external tools.\nSupports industry-standard graph formats for research and analysis.\n\nArgs:\n    output_path: Directory for exported files\n    format: Export format - \"json\", \"graphml\", \"gexf\", \"cytoscape\"\n    include_metadata: Include node/edge metadata and statistics\n    compress_output: Compress large exports (ZIP format)\n\nReturns:\n    ToolResponse: {\"success\": True, \"export_path\": str, \"format\": str, \"file_size\": int}\n\nSupported Formats:\n    - **JSON**: Standard web format with full metadata\n    - **GraphML**: XML-based format for academic tools\n    - **GEXF**: Gephi format for network analysis\n    - **Cytoscape**: Format for biological network analysis",
+        "operationId": "export_graph_data",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "output_path": {
+                    "type": "string"
+                  },
+                  "format": {
+                    "type": "string"
+                  },
+                  "include_metadata": {
+                    "type": "boolean"
+                  },
+                  "compress_output": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "format",
+                  "include_metadata",
+                  "compress_output"
                 ]
               }
             }
@@ -1266,6 +1440,356 @@
                   "table_name",
                   "where_conditions",
                   "match_all"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/find_duplicates": {
+      "post": {
+        "summary": "\ud83d\udd0d **DUPLICATE DETECTION** - Find duplicate and near-duplicate content!",
+        "description": "\ud83d\udd0d **DUPLICATE DETECTION** - Find duplicate and near-duplicate content!\n\nIdentifies duplicate memories using content hash comparison and semantic similarity.\nEssential for maintaining clean memory banks and reducing storage costs.\n\nArgs:\n    table_name (str): Table to analyze for duplicates\n    content_columns (List[str]): Columns to compare for duplicate detection\n    similarity_threshold (float): Similarity threshold for near-duplicates (0.0-1.0, default: 0.95)\n    sample_size (Optional[int]): Limit analysis to sample size for performance (default: analyze all)\n\nReturns:\n    ToolResponse: {\"success\": True, \"duplicates\": List[...], \"stats\": Dict}\n\nExamples:\n    >>> find_duplicates('project_knowledge', ['title', 'content'])\n    {\"success\": True, \"duplicates\": [\n        {\"content_hash\": \"abc123\", \"duplicate_count\": 3, \"rows\": [...], \"suggested_action\": \"keep_newest\"}\n    ], \"stats\": {\"total_rows\": 100, \"duplicate_groups\": 2, \"potential_savings_percent\": 15.0}}\n\nFastMCP Tool Info:\n    - **ENTERPRISE ESSENTIAL**: Prevents storage costs from spiraling out of control\n    - **SMART DETECTION**: Uses content hashing for exact duplicates\n    - **ACTIONABLE RESULTS**: Provides cleanup recommendations and suggested actions\n    - **PERFORMANCE OPTIMIZED**: Sample size option for large datasets\n    - **COST SAVINGS**: Can reduce storage costs by 60% for large deployments",
+        "operationId": "find_duplicates",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "content_columns": {
+                    "type": "string"
+                  },
+                  "similarity_threshold": {
+                    "type": "string"
+                  },
+                  "sample_size": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "content_columns",
+                  "similarity_threshold"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/optimize_memory_bank": {
+      "post": {
+        "summary": "\u26a1 **MEMORY BANK OPTIMIZATION** - Optimize storage and performance!",
+        "description": "\u26a1 **MEMORY BANK OPTIMIZATION** - Optimize storage and performance!\n\nPerforms comprehensive memory bank optimization including deduplication,\narchiving, and index optimization for enterprise-scale performance.\n\nArgs:\n    table_name (str): Table to optimize\n    optimization_strategy (str): Strategy - \"conservative\", \"aggressive\", \"comprehensive\"\n    dry_run (bool): If True, only analyze without making changes (default: True)\n\nReturns:\n    ToolResponse: {\"success\": True, \"optimizations\": List[...], \"savings\": Dict}\n\nExamples:\n    >>> optimize_memory_bank('user_memories', 'comprehensive', dry_run=True)\n    {\"success\": True, \"optimizations\": [\n        {\"type\": \"duplicate_removal\", \"rows_affected\": 50},\n        {\"type\": \"archive_old_entries\", \"rows_affected\": 200}\n    ], \"potential_savings\": {\"rows_removed\": 250, \"storage_saved_mb\": 15.6}}\n\nFastMCP Tool Info:\n    - **ENTERPRISE PERFORMANCE**: Optimizes for large-scale deployments\n    - **SAFE BY DEFAULT**: dry_run=True prevents accidental data loss\n    - **COMPREHENSIVE ANALYSIS**: Checks duplicates, old data, storage efficiency\n    - **ACTIONABLE INSIGHTS**: Provides specific optimization recommendations\n    - **COST CONTROL**: Prevents storage costs from spiraling out of control",
+        "operationId": "optimize_memory_bank",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "optimization_strategy": {
+                    "type": "string"
+                  },
+                  "dry_run": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "optimization_strategy",
+                  "dry_run"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/archive_old_memories": {
+      "post": {
+        "summary": "\ud83d\udce6 **MEMORY ARCHIVING** - Archive old memories to reduce active storage!",
+        "description": "\ud83d\udce6 **MEMORY ARCHIVING** - Archive old memories to reduce active storage!\n\nMoves old memories to archive tables to keep active memory bank lean while\npreserving historical data for compliance and analysis.\n\nArgs:\n    table_name (str): Source table to archive from\n    archive_days (int): Archive memories older than this many days (default: 365)\n    archive_table_suffix (str): Suffix for archive table name (default: \"_archive\")\n    delete_after_archive (bool): Delete from source after archiving (default: False)\n\nReturns:\n    ToolResponse: {\"success\": True, \"archived\": int, \"archive_table\": str}\n\nExamples:\n    >>> archive_old_memories('project_logs', archive_days=180, delete_after_archive=False)\n    {\"success\": True, \"archived\": 1500, \"archive_table\": \"project_logs_archive\",\n     \"recommendations\": [\"Archived 1500 records older than 180 days\"]}\n\nFastMCP Tool Info:\n    - **COMPLIANCE READY**: Preserves historical data while optimizing active storage\n    - **SAFE ARCHIVING**: Creates archive tables before moving data\n    - **FLEXIBLE RETENTION**: Configurable archive periods for different use cases\n    - **ENTERPRISE SCALE**: Handles large datasets with transaction safety\n    - **STORAGE OPTIMIZATION**: Reduces active memory bank size for better performance",
+        "operationId": "archive_old_memories",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "archive_days": {
+                    "type": "integer"
+                  },
+                  "archive_table_suffix": {
+                    "type": "string"
+                  },
+                  "delete_after_archive": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "archive_days",
+                  "archive_table_suffix",
+                  "delete_after_archive"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/intelligent_duplicate_analysis": {
+      "post": {
+        "summary": "\ud83e\udde0 **LLM-ASSISTED DUPLICATE DETECTION** - AI-powered semantic duplicate analysis!",
+        "description": "\ud83e\udde0 **LLM-ASSISTED DUPLICATE DETECTION** - AI-powered semantic duplicate analysis!\n\nUses MCP sampling to let an LLM analyze potential duplicates with semantic understanding,\ngoing beyond simple text similarity to understand conceptual duplicates.\n\nArgs:\n    table_name (str): Table to analyze for duplicates\n    content_columns (List[str]): Columns to analyze for duplicate content\n    analysis_depth (str): Level of analysis - \"basic\", \"semantic\", \"contextual\"\n\nReturns:\n    ToolResponse: AI analysis of duplicates with recommended actions\n\nExamples:\n    >>> intelligent_duplicate_analysis('project_knowledge', ['title', 'content'], 'semantic')\n    # LLM identifies \"API Design\" and \"REST API Architecture\" as conceptual duplicates\n    # even though text similarity is low\n\nFastMCP Tool Info:\n    - **AI INTELLIGENCE**: LLM analyzes content semantically, not just textually\n    - **CONTEXT AWARENESS**: Understands conceptual duplicates beyond exact matches\n    - **ACTIONABLE INSIGHTS**: Provides specific recommendations for each duplicate group\n    - **MCP SAMPLING**: Uses human-in-the-loop AI for nuanced analysis\n    - **COST OPTIMIZATION**: Prevents storage waste from conceptual duplicates",
+        "operationId": "intelligent_duplicate_analysis",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "content_columns": {
+                    "type": "string"
+                  },
+                  "analysis_depth": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "content_columns",
+                  "analysis_depth"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/intelligent_optimization_strategy": {
+      "post": {
+        "summary": "\ud83c\udfaf **LLM-GUIDED OPTIMIZATION STRATEGY** - AI-powered optimization planning!",
+        "description": "\ud83c\udfaf **LLM-GUIDED OPTIMIZATION STRATEGY** - AI-powered optimization planning!\n\nUses MCP sampling to analyze table characteristics and recommend a customized\noptimization strategy based on data patterns, usage, and business goals.\n\nArgs:\n    table_name (str): Table to analyze and optimize\n    optimization_goals (Optional[List[str]]): Primary goals - [\"storage\", \"performance\", \"cost\", \"maintenance\"]\n\nReturns:\n    ToolResponse: AI-generated optimization strategy with specific recommendations\n\nFastMCP Tool Info:\n    - **INTELLIGENT ANALYSIS**: LLM analyzes data patterns and usage characteristics\n    - **CUSTOMIZED STRATEGIES**: Tailored recommendations based on specific table needs\n    - **GOAL-ORIENTED**: Optimization plans aligned with business objectives\n    - **ACTIONABLE PLANS**: Step-by-step implementation guidance\n    - **ENTERPRISE READY**: Scalable strategies for production environments",
+        "operationId": "intelligent_optimization_strategy",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "optimization_goals": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/smart_archiving_policy": {
+      "post": {
+        "summary": "\ud83d\udccb **INTELLIGENT ARCHIVING POLICY** - AI-powered retention strategy!",
+        "description": "\ud83d\udccb **INTELLIGENT ARCHIVING POLICY** - AI-powered retention strategy!\n\nUses MCP sampling to analyze content relevance, usage patterns, and business\nrequirements to generate intelligent archiving policies.\n\nArgs:\n    table_name (str): Table to create archiving policy for\n    business_context (Optional[str]): Description of business use case\n    retention_requirements (Optional[Dict[str, Any]]): Compliance or business retention needs\n\nReturns:\n    ToolResponse: AI-generated archiving policy with automated schedules\n\nFastMCP Tool Info:\n    - **CONTENT-AWARE**: Analyzes actual content relevance and business value\n    - **COMPLIANCE READY**: Considers legal and regulatory retention requirements\n    - **AUTOMATED POLICIES**: Generates smart archiving rules and schedules\n    - **COST OPTIMIZATION**: Balances retention needs with storage costs\n    - **BUSINESS ALIGNED**: Archiving strategies aligned with operational needs",
+        "operationId": "smart_archiving_policy",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "business_context": {
+                    "type": "string"
+                  },
+                  "retention_requirements": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "table_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/create_3d_knowledge_graph": {
+      "post": {
+        "summary": "\ud83c\udf10 **THREE.JS 3D KNOWLEDGE GRAPH** - Immersive 3D data visualization!",
+        "description": "\ud83c\udf10 **THREE.JS 3D KNOWLEDGE GRAPH** - Immersive 3D data visualization!\n\nCreates a stunning 3D knowledge graph using Three.js and WebGL for immersive\ndata exploration with real-time lighting, shadows, and camera controls.\n\nArgs:\n    output_path (Optional[str]): Directory to save the 3D graph (default: \"knowledge_graphs/3d\")\n    table_name (str): Source table for nodes and relationships\n    include_semantic_links (bool): Generate semantic relationship edges\n    color_scheme (str): Visual theme - \"professional\", \"vibrant\", \"neon\", \"cosmic\"\n    camera_position (str): Camera type - \"perspective\", \"orthographic\"\n    animation_enabled (bool): Enable rotating animations and particle effects\n    export_formats (Optional[List[str]]): Export options - [\"screenshot\", \"gltf\", \"obj\"]\n\nReturns:\n    ToolResponse: {\"success\": True, \"file_path\": str, \"stats\": dict, \"3d_features\": list}\n\nExamples:\n    >>> create_3d_knowledge_graph(color_scheme=\"cosmic\", animation_enabled=True)\n    {\"success\": True, \"file_path\": \"knowledge_graphs/3d/graph_3d_20250629.html\",\n     \"stats\": {\"nodes\": 8, \"edges\": 12, \"dimensions\": 3}}\n\nPremium 3D Features:\n    - **WebGL Rendering**: Hardware-accelerated 3D graphics\n    - **Real-time Lighting**: Dynamic shadows and reflections\n    - **Interactive Camera**: Orbit, pan, zoom controls\n    - **Animated Particles**: Flowing connection effects\n    - **VR Ready**: WebXR support for immersive viewing\n    - **Export Options**: Screenshot, 3D model formats",
+        "operationId": "create_3d_knowledge_graph",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "output_path": {
+                    "type": "string"
+                  },
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "include_semantic_links": {
+                    "type": "boolean"
+                  },
+                  "color_scheme": {
+                    "type": "string"
+                  },
+                  "camera_position": {
+                    "type": "string"
+                  },
+                  "animation_enabled": {
+                    "type": "boolean"
+                  },
+                  "export_formats": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "include_semantic_links",
+                  "color_scheme",
+                  "camera_position",
+                  "animation_enabled"
                 ]
               }
             }
