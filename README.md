@@ -84,29 +84,38 @@ Restart your IDE and try asking your AI assistant:
 ## Features
 
 - **Dynamic Table Management:** Create, list, describe, rename, and drop tables at runtime
-- **CRUD Operations:** Insert, read, update, and delete rows in any table
-- **Safe SQL:** Run parameterized SELECT queries with input validation
-- **Semantic Search:** Natural language search using sentence-transformers for intelligent content discovery
+- **Advanced CRUD Operations:** Insert, read, update, delete with intelligent batch processing and change tracking
+- **Safe SQL:** Run parameterized SELECT queries with comprehensive input validation
+- **Semantic Search Engine:** Natural language search using sentence-transformers for intelligent content discovery
+- **Zero-Setup Search:** Auto-embedding generation with `auto_semantic_search` and `auto_smart_search`
+- **Batch Operations Suite:** Efficient bulk create, update, and delete operations with partial success handling
+- **Advanced Optimization:** Duplicate detection, memory bank optimization, and intelligent archiving
+- **LLM-Assisted Analysis:** AI-powered duplicate detection, optimization strategies, and archiving policies
+- **Discovery & Intelligence:** AI-guided exploration, relationship discovery, and pre-built workflow templates
+- **3D Visualization:** Stunning Three.js/WebGL knowledge graphs with real-time lighting and VR support
+- **Interactive Dashboards:** Professional D3.js visualizations with enterprise-grade features
 - **MCP Resources:** Access memory content through standardized MCP resource URIs
 - **MCP Prompts:** Built-in intelligent prompts for common memory analysis workflows
 - **Tool Categorization:** Organized tool discovery with detailed usage examples for enhanced LLM integration
-- **Knowledge Graph Tools:** Built-in support for node/edge schemas and property graphs
+- **Knowledge Graph Tools:** Built-in support for node/edge schemas and immersive 3D property graphs
 - **Agent/LLM Integration:** Explicit, tool-based APIs for easy discovery and automation
+- **Enterprise Scale:** Production-ready with comprehensive optimization and analytics capabilities
 - **Open Source:** MIT licensed, fully tested, and ready for community use
 
 ---
 
 ## MCP Compliance & Enhanced Integration
 
-SQLite Memory Bank v1.4.0+ provides full Model Context Protocol (MCP) compliance with advanced features for enhanced LLM and agent integration:
+SQLite Memory Bank v1.6.4+ provides full Model Context Protocol (MCP) compliance with advanced features for enhanced LLM and agent integration:
 
-### 🔧 MCP Tools (23 Available)
+### 🔧 MCP Tools (30+ Available)
 Organized into logical categories for easy discovery:
 - **Schema Management** (6 tools): Table creation, modification, and inspection
-- **Data Operations** (8 tools): CRUD operations with validation and batch processing
-- **Search & Discovery** (2 tools): Content search and exploration
+- **Data Operations** (11 tools): CRUD operations with validation and advanced batch processing
+- **Search & Discovery** (6 tools): Content search, exploration, and intelligent discovery
 - **Semantic Search** (5 tools): AI-powered natural language content discovery
-- **Analytics** (2 tools): Memory bank insights and statistics
+- **Optimization & Analytics** (8 tools): Memory bank optimization, duplicate detection, and insights
+- **Visualization & Knowledge Graphs** (4 tools): Interactive visualizations and 3D knowledge graphs
 
 ### 📄 MCP Resources (5 Available)
 Real-time access to memory content via standardized URIs:
@@ -149,7 +158,7 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 | `describe_table` | Get schema details | `table_name` (str) | None |
 | `list_all_columns` | List all columns for all tables | None | None |
 
-### Data Operations Tools (8 tools)
+### Data Operations Tools (11 tools)
 
 | Tool | Description | Required Parameters | Optional Parameters |
 |------|-------------|---------------------|---------------------|
@@ -158,16 +167,23 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 | `update_rows` | Update existing rows | `table_name` (str), `data` (dict), `where` (dict) | None |
 | `delete_rows` | Delete rows from table | `table_name` (str), `where` (dict) | None |
 | `run_select_query` | Run safe SELECT query | `table_name` (str) | `columns` (list[str]), `where` (dict), `limit` (int) |
-| `upsert_memory` | Smart update or create memory record | `table_name` (str), `data` (dict), `match_columns` (list[str]) | None |
+| `upsert_memory` | Smart update or create memory record with change tracking | `table_name` (str), `data` (dict), `match_columns` (list[str]) | None |
 | `batch_create_memories` | Efficiently create multiple memory records | `table_name` (str), `data_list` (list[dict]) | `match_columns` (list[str]), `use_upsert` (bool) |
-| `batch_delete_memories` | Delete multiple memory records efficiently | `table_name` (str), `conditions_list` (list[dict]) | `match_mode` (str) |
+| `batch_delete_memories` | Delete multiple memory records efficiently | `table_name` (str), `where_conditions` (list[dict]) | `match_all` (bool) |
+| `find_duplicates` | Find duplicate and near-duplicate content | `table_name` (str), `content_columns` (list[str]) | `similarity_threshold` (float), `sample_size` (int) |
+| `archive_old_memories` | Archive old memories to reduce active storage | `table_name` (str) | `archive_days` (int), `archive_table_suffix` (str), `delete_after_archive` (bool) |
+| `optimize_memory_bank` | Comprehensive memory bank optimization | `table_name` (str) | `optimization_strategy` (str), `dry_run` (bool) |
 
-### Search & Discovery Tools (2 tools)
+### Search & Discovery Tools (6 tools)
 
 | Tool | Description | Required Parameters | Optional Parameters |
 |------|-------------|---------------------|---------------------|
 | `search_content` | Full-text search across table content | `query` (str) | `tables` (list[str]), `limit` (int) |
 | `explore_tables` | Explore and discover table structures | None | `pattern` (str), `include_row_counts` (bool) |
+| `intelligent_discovery` | AI-guided exploration of memory bank | None | `discovery_goal` (str), `focus_area` (str), `depth` (str), `agent_id` (str) |
+| `discovery_templates` | Pre-built exploration workflows | None | `template_type` (str), `customize_for` (str) |
+| `discover_relationships` | Find hidden connections in data | None | `table_name` (str), `relationship_types` (list[str]), `similarity_threshold` (float) |
+| `generate_knowledge_graph` | Create interactive HTML knowledge graphs | None | `output_path` (str), `include_temporal` (bool), `min_connections` (int), `open_in_browser` (bool) |
 
 ### Semantic Search Tools (5 tools)
 
@@ -179,23 +195,52 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 | `smart_search` | Hybrid keyword + semantic search | `query` (str) | `tables` (list[str]), `semantic_weight` (float), `text_weight` (float) |
 | `embedding_stats` | Get statistics about semantic search readiness | `table_name` (str) | `embedding_column` (str) |
 
-### Tool Discovery & Organization (2 tools)
+### Optimization & Analytics Tools (8 tools)
 
 | Tool | Description | Required Parameters | Optional Parameters |
 |------|-------------|---------------------|---------------------|
+| `analyze_memory_patterns` | Comprehensive content distribution analysis | None | `focus_tables` (list[str]), `include_semantic` (bool) |
+| `get_content_health_score` | Overall health scoring with recommendations | None | `tables` (list[str]), `detailed_analysis` (bool) |
+| `intelligent_duplicate_analysis` | LLM-assisted semantic duplicate detection | `table_name` (str), `content_columns` (list[str]) | `analysis_depth` (str) |
+| `intelligent_optimization_strategy` | AI-powered optimization planning | `table_name` (str) | `optimization_goals` (list[str]) |
+| `smart_archiving_policy` | AI-powered retention strategy | `table_name` (str) | `business_context` (str), `retention_requirements` (dict) |
+| `auto_semantic_search` | Zero-setup semantic search with auto-embeddings | `query` (str) | `tables` (list[str]), `similarity_threshold` (float), `limit` (int), `model_name` (str) |
+| `auto_smart_search` | Zero-setup hybrid search with auto-embeddings | `query` (str) | `tables` (list[str]), `semantic_weight` (float), `text_weight` (float), `limit` (int), `model_name` (str) |
 | `list_tool_categories` | List all available tool categories | None | None |
-| `get_tools_by_category` | Get detailed tool information by category | `category` (str) | None |
 
-Each tool validates inputs and returns consistent response formats with success/error indicators and appropriate data payloads.
+### Visualization & Knowledge Graphs Tools (4 tools)
 
-## 🚀 Batch Operations & Smart Memory Management
+| Tool | Description | Required Parameters | Optional Parameters |
+|------|-------------|---------------------|---------------------|
+| `create_3d_knowledge_graph` | Create stunning 3D knowledge graphs with Three.js | None | `output_path` (str), `table_name` (str), `include_semantic_links` (bool), `color_scheme` (str), `camera_position` (str), `animation_enabled` (bool), `export_formats` (list[str]) |
+| `create_interactive_d3_graph` | Professional D3.js interactive knowledge graphs | None | `output_path` (str), `include_semantic_links` (bool), `filter_tables` (list[str]), `layout_algorithm` (str), `color_scheme` (str), `export_formats` (list[str]) |
+| `create_advanced_d3_dashboard` | Enterprise D3.js dashboard with multiple visualizations | None | `output_path` (str), `dashboard_type` (str), `include_metrics` (bool), `real_time_updates` (bool), `custom_widgets` (list[str]) |
+| `export_graph_data` | Export graph data in professional formats | None | `output_path` (str), `format` (str), `include_metadata` (bool), `compress_output` (bool) |
 
-SQLite Memory Bank provides powerful batch operations for efficient memory management:
+## [1.6.4] - 3D Visualization & Comprehensive Features (2025-06-29)
 
-### Smart Memory Updates
-- **`upsert_memory`**: Intelligent update-or-create for preventing duplicates
+**Current Version**: The most advanced SQLite Memory Bank release with 30+ MCP tools, 3D visualization, LLM-assisted optimization, and enterprise-scale features.
+
+### 🚀 Recent Major Features
+- **3D Knowledge Graphs**: Immersive Three.js/WebGL visualizations with real-time lighting
+- **Batch Operations**: Efficient bulk processing with smart duplicate prevention
+- **LLM-Assisted Tools**: AI-powered optimization strategies and duplicate analysis
+- **Advanced Discovery**: Intelligent exploration with relationship detection
+- **Enhanced Upsert**: Detailed change tracking with old vs new value comparisons
+- **Zero-Setup Search**: Automatic embedding generation for immediate semantic search
+- **Enterprise Optimization**: Comprehensive memory bank optimization with archiving
+
+For detailed changes, see [CHANGELOG.md](CHANGELOG.md).
+
+## 🚀 Batch Operations & Advanced Memory Management
+
+SQLite Memory Bank v1.6.4+ provides powerful batch operations and intelligent optimization for efficient memory management:
+
+### Smart Memory Updates & Change Tracking
+- **Enhanced `upsert_memory`**: Intelligent update-or-create with detailed change tracking
+- **Field-Level Changes**: See exactly what changed with old vs new value comparisons
 - **Duplicate Prevention**: Uses match columns to find existing records
-- **Flexible Matching**: Specify which columns to match for finding existing records
+- **Transparency**: Complete visibility into field modifications for debugging
 
 ### Efficient Batch Processing
 - **`batch_create_memories`**: Create multiple records in a single operation
@@ -205,32 +250,106 @@ SQLite Memory Bank provides powerful batch operations for efficient memory manag
 
 ### Flexible Batch Deletion
 - **`batch_delete_memories`**: Delete multiple records with complex conditions
-- **Flexible Matching**: Support for OR (match_any) and AND (match_all) logic
+- **Flexible Matching**: Support for OR logic (match_any) and AND logic (match_all)
 - **Condition Lists**: Delete based on multiple different criteria
 - **Safe Operations**: Validates conditions before deletion
+
+### Advanced Optimization Suite
+- **`find_duplicates`**: Detect exact and near-duplicate content with semantic analysis
+- **`optimize_memory_bank`**: Comprehensive optimization with deduplication and archiving
+- **`archive_old_memories`**: Intelligent archiving with configurable retention policies
+- **Dry Run Support**: Analyze optimizations before applying changes
+
+### LLM-Assisted Optimization
+- **`intelligent_duplicate_analysis`**: AI-powered semantic duplicate detection
+- **`intelligent_optimization_strategy`**: Customized optimization planning based on data patterns
+- **`smart_archiving_policy`**: AI-generated retention strategies aligned with business needs
+
+### Discovery & Relationship Intelligence
+- **`intelligent_discovery`**: AI-guided exploration with goal-oriented workflows
+- **`discovery_templates`**: Pre-built exploration patterns for common scenarios
+- **`discover_relationships`**: Automatic detection of hidden data connections
+- **Zero-Setup Search**: `auto_semantic_search` and `auto_smart_search` with automatic embedding generation
 
 ### Usage Examples
 
 ```python
-# Smart memory upsert - prevents duplicates
-upsert_memory('technical_decisions', {
+# Enhanced upsert with change tracking
+upsert_result = upsert_memory('technical_decisions', {
     'decision_name': 'API Design',
-    'chosen_approach': 'REST APIs',
-    'rationale': 'Better discoverability for LLMs'
+    'chosen_approach': 'REST APIs with GraphQL',
+    'rationale': 'Better performance and flexibility'
 }, match_columns=['decision_name'])
+# Returns: {"updated_fields": {"chosen_approach": {"old": "REST APIs", "new": "REST APIs with GraphQL"}}}
 
 # Batch create with duplicate prevention
 batch_create_memories('project_insights', [
-    {'category': 'performance', 'insight': 'Database indexing'},
-    {'category': 'security', 'insight': 'Input validation'},
-    {'category': 'architecture', 'insight': 'Microservice patterns'}
+    {'category': 'performance', 'insight': 'Database indexing strategies'},
+    {'category': 'security', 'insight': 'Input validation patterns'},
+    {'category': 'architecture', 'insight': 'Microservice communication patterns'}
 ], match_columns=['category', 'insight'], use_upsert=True)
 
-# Batch delete with flexible conditions
-batch_delete_memories('old_notes', [
-    {'status': 'archived'},
-    {'created_date': '2023-01-01', 'priority': 'low'}
-], match_mode='match_any')  # Delete if ANY condition matches
+# Intelligent duplicate detection
+find_duplicates('project_knowledge', ['title', 'content'], 
+               similarity_threshold=0.85)
+
+# AI-powered optimization strategy
+intelligent_optimization_strategy('user_data', 
+                                optimization_goals=['performance', 'storage'])
+
+# Zero-setup semantic search
+auto_smart_search('machine learning algorithms and AI patterns',
+                 semantic_weight=0.7, text_weight=0.3)
+```
+
+## 🎨 Advanced Visualization & Knowledge Graphs
+
+SQLite Memory Bank includes powerful visualization capabilities for exploring and presenting your data:
+
+### 3D Knowledge Graphs
+- **Three.js/WebGL Rendering**: Hardware-accelerated 3D graphics with real-time lighting
+- **Interactive Camera Controls**: Orbit, pan, zoom with smooth animations
+- **Multiple Themes**: Professional, vibrant, neon, and cosmic color schemes
+- **Export Capabilities**: Screenshots, 3D model formats (GLTF, OBJ)
+- **VR Ready**: WebXR support for immersive viewing experiences
+
+### Interactive D3.js Visualizations
+- **Professional Knowledge Graphs**: Enterprise-grade interactive visualizations
+- **Multiple Layout Algorithms**: Force-directed, hierarchical, circular layouts
+- **Real-time Filtering**: Dynamic node/edge filtering with search capabilities
+- **Semantic Relationships**: AI-powered intelligent edge connections
+- **Export Suite**: PNG, SVG, JSON export for presentations
+
+### Enterprise Dashboards
+- **Multi-Widget Dashboards**: Force graphs, timelines, metrics, heatmaps
+- **Real-time Updates**: Live data refresh capabilities via WebSocket
+- **Cross-widget Filtering**: Interactive drill-down and data exploration
+- **Professional Styling**: Enterprise-grade UI/UX design
+- **Mobile Responsive**: Optimized for desktop, tablet, and mobile
+
+### Usage Examples
+
+```python
+# Create stunning 3D knowledge graph
+create_3d_knowledge_graph(
+    color_scheme="cosmic",
+    animation_enabled=True,
+    include_semantic_links=True
+)
+
+# Professional interactive D3.js graph
+create_interactive_d3_graph(
+    layout_algorithm="force",
+    color_scheme="professional",
+    export_formats=["png", "svg"]
+)
+
+# Enterprise dashboard with multiple visualizations
+create_advanced_d3_dashboard(
+    dashboard_type="enterprise",
+    include_metrics=True,
+    real_time_updates=True
+)
 ```
 
 ---
@@ -617,23 +736,74 @@ context_prompt = await client.get_prompt("memory-bank-context", {
 ### Semantic Search Examples
 
 ```python
-# Enable semantic search on existing table
+# 🌟 ZERO-SETUP SEMANTIC SEARCH (RECOMMENDED)
+# Automatic semantic search - handles embedding generation automatically
+results = auto_semantic_search("machine learning algorithms", 
+                               similarity_threshold=0.4, 
+                               limit=5)
+
+# 🌟 ZERO-SETUP HYBRID SEARCH (RECOMMENDED)
+# Automatic hybrid search - combines semantic + keyword automatically
+hybrid_results = auto_smart_search("API design patterns",
+                                  semantic_weight=0.7,
+                                  text_weight=0.3)
+
+# Advanced: Manual embedding setup (for power users)
 add_embeddings("technical_decisions", ["decision_name", "rationale"])
 
-# Natural language search
+# Advanced: Manual semantic search (requires pre-setup)
 results = semantic_search("machine learning algorithms", 
                          similarity_threshold=0.4, 
                          limit=5)
 
-# Find related content
+# Find related content from specific text
 related = find_related("technical_decisions", 
                       row_id=123, 
                       similarity_threshold=0.5)
 
-# Hybrid search (keyword + semantic)
-hybrid_results = smart_search("API design patterns",
-                             semantic_weight=0.7,
-                             text_weight=0.3)
+# Check semantic search readiness
+stats = embedding_stats("technical_decisions")
+```
+
+### Discovery & Intelligence Examples
+
+```python
+# 🧠 AI-GUIDED EXPLORATION (RECOMMENDED)
+# Intelligent discovery with goal-oriented workflows
+intelligent_discovery(
+    discovery_goal="understand_content",
+    depth="moderate",
+    focus_area="technical_decisions"
+)
+
+# Pre-built exploration templates
+discovery_templates("first_time_exploration")
+
+# Automatic relationship discovery
+discover_relationships(
+    table_name="users",
+    relationship_types=["foreign_keys", "semantic_similarity", "temporal_patterns"]
+)
+
+# LLM-assisted duplicate analysis
+intelligent_duplicate_analysis(
+    table_name="project_knowledge",
+    content_columns=["title", "content"],
+    analysis_depth="semantic"
+)
+
+# AI-powered optimization strategy
+intelligent_optimization_strategy(
+    table_name="user_data",
+    optimization_goals=["performance", "storage"]
+)
+
+# Smart archiving policy generation
+smart_archiving_policy(
+    table_name="project_logs",
+    business_context="Development project logs",
+    retention_requirements={"legal_hold": "2_years", "active_period": "6_months"}
+)
 ```
 
 ### Tool Organization Discovery
@@ -641,9 +811,9 @@ hybrid_results = smart_search("API design patterns",
 ```python
 # Discover tool categories
 categories = list_tool_categories()
-# Returns: {"schema_management": 6, "data_operations": 5, ...}
+# Returns: {"schema_management": 6, "data_operations": 11, "optimization": 8, ...}
 
-# Get detailed tool information
+# Get detailed tool information by category
 schema_tools = get_tools_by_category("schema_management")
 # Returns detailed info with usage examples for each tool
 ```
@@ -684,6 +854,34 @@ uvx mcp-sqlite-memory-bank --help
 uvx cache remove mcp-sqlite-memory-bank
 uvx mcp-sqlite-memory-bank
 ```
+
+### Semantic Search & Advanced Features Issues
+
+**Semantic search not working / "Dependencies missing" errors:**
+- The auto-tools (`auto_semantic_search`, `auto_smart_search`) handle dependencies automatically
+- If manual tools fail, dependencies may be missing: `pip install sentence-transformers torch numpy`
+- Check embedding generation: `embedding_stats('table_name')` to verify semantic readiness
+
+**3D Knowledge Graph not rendering:**
+- Ensure output directory exists and is writable
+- Check browser JavaScript console for WebGL errors
+- Modern browser required (Chrome 80+, Firefox 75+, Safari 14+)
+- Hardware acceleration should be enabled for best performance
+
+**Batch operations timing out:**
+- Use smaller batch sizes for `batch_create_memories` (recommend 100-500 records)
+- Enable `dry_run=True` for `optimize_memory_bank` to test before applying
+- Check available memory for large duplicate detection operations
+
+**LLM-assisted tools not working:**
+- These tools require MCP sampling capability in your client
+- Ensure your IDE/client supports advanced MCP features
+- Check network connectivity for AI-powered analysis features
+
+**Discovery tools returning empty results:**
+- Ensure tables have sufficient data for pattern analysis
+- Check that `intelligent_discovery` has appropriate permissions
+- Verify relationship discovery has data with actual connections
 
 ---
 
