@@ -489,8 +489,7 @@ class TestConcurrency:
 
         print("\nConcurrent Write Performance:")
         print(
-            f"  Completed {total_operations} concurrent writes in {
-                duration:.2f} seconds"
+            f"  Completed {total_operations} concurrent writes in {duration:.2f} seconds"
         )
         print(f"  Performance: {ops_per_second:.2f} ops/second")
 

@@ -632,8 +632,7 @@ def discover_relationships(
                 table_relationships["temporal_related"] = temporal_relationships
                 if temporal_relationships:
                     insights.append(
-                        f"Table '{target_table}' shows temporal patterns with {
-                            len(temporal_relationships)} tables"
+                        f"Table '{target_table}' shows temporal patterns with {len(temporal_relationships)} tables"
                     )
 
             # Discover naming pattern relationships

@@ -631,7 +631,7 @@ def _generate_d3_html(
     colors = color_schemes.get(color_scheme, color_schemes["professional"])
 
     # Generate the complete HTML
-    html_content = f"""
+    html_content = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -648,8 +648,8 @@ def _generate_d3_html(
         
         body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: {colors['background']};
-            color: {colors['text']};
+            background: {background_color};
+            color: {text_color};
             overflow: hidden;
         }}
         
@@ -684,7 +684,7 @@ def _generate_d3_html(
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
-            color: {colors['text']};
+            color: {text_color};
         }}
         
         .control-group input, .control-group select {{
@@ -696,7 +696,7 @@ def _generate_d3_html(
         }}
         
         .btn {{
-            background: {colors['accent']};
+            background: {accent_color};
             color: white;
             border: none;
             padding: 10px 15px;
@@ -708,7 +708,7 @@ def _generate_d3_html(
         }}
         
         .btn:hover {{
-            background: {colors['table_nodes']};
+            background: {table_nodes_color};
         }}
         
         .btn-secondary {{
@@ -744,7 +744,7 @@ def _generate_d3_html(
         
         .stats h4 {{
             margin-bottom: 10px;
-            color: {colors['table_nodes']};
+            color: {table_nodes_color};
         }}
         
         .tooltip {{
@@ -854,35 +854,35 @@ def _generate_d3_html(
                     <button class="btn btn-secondary" onclick="fitToScreen()">Fit to Screen</button>
                 </div>
                 
-                {'<div class="control-group">' + ''.join([f'<button class="btn" onclick="exportAs(\'{fmt}\')">{fmt.upper()}</button>' for fmt in export_formats]) + '</div>' if export_formats else ''}
+                {export_buttons}
             </div>
 
             <div class="legend">
                 <h4>Legend</h4>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: {colors['table_nodes']};"></div>
+                    <div class="legend-color" style="background: {table_nodes_color};"></div>
                     <span>Tables</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: {colors['row_nodes']};"></div>
+                    <div class="legend-color" style="background: {row_nodes_color};"></div>
                     <span>Content</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: {colors['semantic_links']};"></div>
+                    <div class="legend-color" style="background: {semantic_links_color};"></div>
                     <span>Semantic Links</span>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: {colors['contains_links']};"></div>
+                    <div class="legend-color" style="background: {contains_links_color};"></div>
                     <span>Structural Links</span>
                 </div>
             </div>
 
             <div class="stats">
                 <h4>Graph Statistics</h4>
-                <p>Nodes: <span id="nodeCount">{len(graph_data['nodes'])}</span></p>
-                <p>Links: <span id="linkCount">{len(graph_data['links'])}</span></p>
-                <p>Tables: <span id="tableCount">{len(set(node['table'] for node in graph_data['nodes']))}</span></p>
-                <p>Generated: <span id="timestamp">{datetime.now().strftime('%Y-%m-%d %H:%M')}</span></p>
+                <p>Nodes: <span id="nodeCount">{nodes_count}</span></p>
+                <p>Links: <span id="linkCount">{links_count}</span></p>
+                <p>Tables: <span id="tableCount">{tables_count}</span></p>
+                <p>Generated: <span id="timestamp">{timestamp}</span></p>
             </div>
         </div>
 
@@ -902,14 +902,14 @@ def _generate_d3_html(
 
     <script>
         // Graph data
-        const graphData = {json.dumps(graph_data, indent=2)};
+        const graphData = {graph_data_json};
 
         // Configuration
         const config = {{
-            layout: "{layout}",
-            colorScheme: "{color_scheme}",
-            nodeSizeBy: "{node_size_by}",
-            colors: {json.dumps(colors)}
+            layout: "{layout_algorithm}",
+            colorScheme: "{color_scheme_name}",
+            nodeSizeBy: "{node_size_strategy}",
+            colors: {colors_json}
         }};
 
         // Initialize D3.js force simulation
@@ -1170,7 +1170,25 @@ def _generate_d3_html(
     </script>
 </body>
 </html>
-"""
+""".format(
+        background_color=colors['background'],
+        text_color=colors['text'],
+        accent_color=colors['accent'],
+        table_nodes_color=colors['table_nodes'],
+        row_nodes_color=colors['row_nodes'],
+        semantic_links_color=colors['semantic_links'],
+        contains_links_color=colors['contains_links'],
+        export_buttons='<div class="control-group">' + ''.join([f'<button class="btn" onclick="exportAs(\'{fmt}\')">{fmt.upper()}</button>' for fmt in export_formats]) + '</div>' if export_formats else '',
+        nodes_count=len(graph_data['nodes']),
+        links_count=len(graph_data['links']),
+        tables_count=len(set(node['table'] for node in graph_data['nodes'])),
+        timestamp=datetime.now().strftime('%Y-%m-%d %H:%M'),
+        graph_data_json=json.dumps(graph_data, indent=2),
+        layout_algorithm=layout,
+        color_scheme_name=color_scheme,
+        node_size_strategy=node_size_by,
+        colors_json=json.dumps(colors)
+    )
 
     return html_content
 
