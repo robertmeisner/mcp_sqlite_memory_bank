@@ -10,31 +10,6 @@ Dynamic, agent-friendly SQLite memory bank as FastMCP server. Explicit, discover
 **Core Components**: server.py (FastMCP tools), types.py (exceptions), utils.py (error handling), examples/ (usage patterns)
 **Design Principles**: Explicit over implicit, type safety, discoverability, consistent error handling, input validation
 
-## PROJECT-SPECIFIC PATTERNS
-
-### **FastMCP Architecture**
-- **server.py**: FastMCP implementation with all tool definitions
-- **types.py**: Custom exception classes and type definitions  
-- **utils.py**: Utility functions with error handling decorators
-- **examples/**: Example scripts showing usage patterns
-
-### **SQLite Memory Bank Usage**
-- **Schema Management**: snake_case, appropriate constraints, consistent naming
-- **Storage Patterns**: Use `create_row('table', {...})` and `upsert_memory()` for deduplication
-- **Retrieval Patterns**: Use `read_rows('table', {'where': 'clause'})` and semantic search for discovery
-- **Error Responses**: Always return `{"success": True, "data": result}` or error dict
-
-### **Testing Patterns**
-- **Test Structure**: `tests/test_api.py` for FastMCP, `tests/test_server.py` for units
-- **Response Testing**: Use `extract_result()` for MCP response parsing
-- **Database Testing**: Temporary DB fixtures with `tempfile.mkstemp(suffix='.db')`
-- **Error Testing**: Test all error conditions and edge cases
-
-### **Error Handling Hierarchy**
-- **Base**: `MemoryBankError` → `ValidationError`, `DatabaseError`, `SchemaError`, `DataError`
-- **Decorator**: `@catch_errors` automatically wraps exceptions
-- **Format**: `{"success": false, "error": "message", "category": "type", "details": {}}`
-
 ## DEVELOPMENT PATTERNS
 
 ### FastMCP Tools
@@ -122,60 +97,31 @@ black src/ tests/ --line-length=88; autopep8 --in-place --aggressive --recursive
 
 ## GIT WORKFLOW (MANDATORY - NO EXCEPTIONS)
 
-### ⚠️ **FORBIDDEN ACTIONS - NO EXCEPTIONS:**
-- ❌ **NEVER commit directly to main branch**
-- ❌ **NEVER push directly to main branch**  
-- ❌ **NEVER deploy without PR approval**
-- ❌ **NEVER bypass workflow "because it's urgent"**
+### Branch Strategy
+- ❌ **FORBIDDEN**: Direct commits/pushes to main branch
+- ✅ **REQUIRED**: Feature branches → Pull Requests → Merge to main
 
-### **Branch Protection Strategy**
-- **`main` branch**: Protected, production-ready code only - **ZERO DIRECT COMMITS**
-- **Feature branches**: ALL development work (`feature/descriptive-name`)
-- **Hotfix branches**: Critical fixes (`hotfix/security-patch`)
-
-### **MANDATORY Development Workflow**
+### Development Workflow
 ```bash
-# Starting new feature
 git checkout main && git pull origin main
 git checkout -b feature/descriptive-name
-
-# Development process
-# Make changes, commit with conventional messages
-git add . && git commit -m "feat: add new functionality"
+# Make changes, commit, push
 git push origin feature/descriptive-name
-
-# Create PR and wait for reviews
 gh pr create --title "Feature: Description" --body "Details"
-# MUST wait for CI/CD checks + code reviews + resolve ALL feedback
-# Only merge after approval + green checks + resolved reviews
+# Wait for CI/CD checks and code reviews
+# Merge only after approval + green checks + resolved reviews
 ```
-
-### **Branch Naming Conventions**
-- **Features**: `feature/semantic-search-enhancement`
-- **Bug fixes**: `fix/type-error-in-database`  
-- **Tests**: `test/performance-benchmarks`
-- **Docs**: `docs/api-documentation-update`
-- **Hotfixes**: `hotfix/security-vulnerability`
 
 ## DEPLOYMENT WORKFLOW
 
-When you say **"DEPLOY!"**, follow these steps in order:
+### Pre-Deployment Checklist (MANDATORY)
+1. **Quality**: Run flake8, mypy, Pylance - fix ALL errors
+2. **Tests**: Full test suite - ALL TESTS MUST PASS  
+3. **Version**: Update pyproject.toml, __init__.py if needed
+4. **Documentation**: Update README.md, docs/, instruction files
 
-### ⚠️ CRITICAL: PRE-DEPLOYMENT COMPLIANCE CHECKLIST
-**NEVER skip these steps - they prevent production failures**
-
-1. **Review CHANGELOG.md**: Verify all changes are documented
-2. **Quality Checks**: Run `flake8`, `mypy`, Pylance - fix all errors
-3. **Test Suite**: Run full test suite - **ALL TESTS MUST PASS**
-4. **Version Bump**: Update version in `pyproject.toml`, `__init__.py` if needed
-5. **Documentation**: Update `README.md`, `docs/`, instruction files
-6. **Clean Working Directory**: `git status` should show clean state
-
-### 🔒 MANDATORY: Professional Git Workflow for Releases
-**Follow this process exactly - NO SHORTCUTS ALLOWED**
-
+### Professional Git Release Process
 ```bash
-# Step 1-5: Setup release branch
 git checkout main && git pull origin main
 git checkout -b release/v1.x.x
 git commit -m "chore: prepare release v1.x.x"
@@ -183,80 +129,20 @@ git push origin release/v1.x.x
 gh pr create --title "Release v1.x.x" --body "Release notes"
 ```
 
-### ⏳ CRITICAL: Wait for CI/CD Checks to Complete
-**🚫 NEVER MERGE WITHOUT GREEN CHECKS 🚫**
+### ⚠️ CRITICAL: CI/CD Compliance
+- **WAIT for ALL checks**: pytest, flake8, mypy, coverage, security
+- **CHECK GitHub comments**: `gh pr view <PR> --comments` for automated reviews
+- **RESOLVE ALL feedback**: Security issues, performance problems, code quality
+- **NEVER merge with failing checks** or unresolved critical issues
 
-**Monitor CI/CD Pipeline** - Wait for ALL automated checks:
-- ✅ **pytest tests**: All tests must pass
-- ✅ **Code quality**: flake8, mypy, pylance checks
-- ✅ **Security scans**: No vulnerabilities detected
-- ✅ **Coverage reports**: Maintain test coverage standards
-
-## MANDATORY GITHUB COMMENTS & CODE REVIEW PROTOCOL
-
-### 🔍 **CRITICAL REQUIREMENT: ALWAYS CHECK BEFORE MERGE**
-**Every PR merge MUST include comprehensive review of all GitHub comments and automated code reviews**
-
-### **GitHub Comments Checking Commands**
+### After Green CI/CD + Resolved Reviews
 ```bash
-# Check PR comments and reviews
-gh pr view <PR_NUMBER> --comments
-
-# Check automated reviews and status
-gh pr status --repo robertmeisner/mcp_sqlite_memory_bank
-```
-
-### **Code Review Analysis Workflow**
-1. **Automated Reviews**: GitHub Copilot bot, security scanners, code quality tools
-2. **Priority Classification**:
-   - **CRITICAL (Must Fix)**: Security vulnerabilities, breaking changes, critical bugs
-   - **HIGH (Recommended)**: Code quality, performance issues, documentation
-   - **MEDIUM (Consider)**: Style improvements, non-critical refactoring
-
-### **Implementation Strategy**
-- Create implementation checklist for each recommendation
-- Implement fixes in release branch before merging
-- Mark all review comments as resolved
-- Re-run CI/CD checks after fixes
-
-### 🔍 MANDATORY: GitHub Comments & Code Review Analysis
-**🚫 NEVER MERGE WITHOUT REVIEWING ALL FEEDBACK 🚫**
-
-```bash
-# Check for automated and manual code reviews
-gh pr view <PR_NUMBER> --comments
-```
-
-**Address ALL feedback**:
-- 🤖 **GitHub Copilot Bot Reviews**: Automated code analysis
-- 👥 **Human Code Reviews**: All reviewer comments and suggestions
-- 🔒 **Security Findings**: Address ANY security vulnerabilities
-- ⚡ **Performance Issues**: Fix performance bottlenecks
-- ✅ **Review Resolution**: Mark all comments as resolved
-
-### 🚀 Deployment After Successful CI/CD AND Review Resolution
-**Only proceed after ALL checks pass AND reviews addressed**
-
-```bash
-# Final deployment steps (only after green CI/CD + resolved reviews)
+# Merge PR (via GitHub interface)
 git checkout main && git pull origin main
 git tag v1.x.x && git push --tags
 python -m build && twine upload dist/*
 gh release create v1.x.x --latest
 ```
-
-### 🚨 DEPLOYMENT FAILURE PROTOCOLS
-**If CI/CD checks fail:**
-1. **STOP**: Do not proceed with deployment
-2. **Analyze**: Review failed check logs carefully
-3. **Fix**: Address root cause in release branch
-4. **Re-run**: Push fix and wait for checks to complete
-5. **Document**: Update CHANGELOG if fix affects functionality
-
-**Emergency Rollback**:
-- Revert to last known good version if production affected
-- Document violation and consequences
-- Update procedures to prevent recurrence
 
 ## EMERGENCY PROTOCOLS
 
