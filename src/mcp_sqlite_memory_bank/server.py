@@ -62,12 +62,13 @@ from .tools.search import (
 from .tools import (
     basic,
     search,
-    analytics,
     optimization,
     llm_optimization,
 )
 import os
 import logging
+import argparse
+import uvicorn
 from typing import Dict, Optional, List, cast, Any
 from fastmcp import FastMCP
 
@@ -760,7 +761,7 @@ def semantic_search(
         - Supports fuzzy matching and concept discovery
         - Much more powerful than keyword-based search for knowledge discovery
     """
-    return _semantic_search_impl(query, tables, similarity_threshold, limit, model_name)
+    return search.semantic_search(query, tables, similarity_threshold, limit, model_name)
 
 
 @mcp.tool
@@ -810,7 +811,7 @@ def smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return _smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
+    return search.smart_search(query, tables, semantic_weight, text_weight, limit, model_name)
 
 
 @mcp.tool
@@ -852,7 +853,7 @@ def find_related(
         - Can reveal patterns and themes across your knowledge base
         - Enables serendipitous discovery of relevant information
     """
-    return _find_related_impl(table_name, row_id, similarity_threshold, limit, model_name)
+    return search.find_related(table_name, row_id, similarity_threshold, limit, model_name)
 
 
 # --- Visualization Tools for SQLite Memory Bank ---
@@ -1247,8 +1248,6 @@ def mcp_server():
 
 def main():
     """Alternative entry point for HTTP server mode (development/testing only)."""
-    import uvicorn
-    import argparse
 
     parser = argparse.ArgumentParser(description="Run MCP SQLite Memory Bank Server in HTTP mode")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
@@ -1290,40 +1289,8 @@ if __name__ == "__main__":
     app.run(transport="stdio")
 
 
-# Compatibility aliases for tests that expect _impl functions
-# Import modules already imported above for tool implementations
-
-# Basic CRUD operation aliases
-_create_row_impl = basic.create_row
-_read_rows_impl = basic.read_rows
-_update_rows_impl = basic.update_rows
-_delete_rows_impl = basic.delete_rows
-_list_tables_impl = basic.list_tables
-_describe_table_impl = basic.describe_table
-_drop_table_impl = basic.drop_table
-_create_table_impl = basic.create_table
-
-# Search operation aliases
-_search_content_impl = search.search_content
-_explore_tables_impl = search.explore_tables
-_add_embeddings_impl = search.add_embeddings
-_semantic_search_impl = search.semantic_search
-_smart_search_impl = search.smart_search
-_find_related_impl = search.find_related
-_auto_semantic_search_impl = search.auto_semantic_search
-_auto_smart_search_impl = search.auto_smart_search
-
-# Analytics operation aliases
-_analyze_memory_patterns_impl = analytics.analyze_memory_patterns
-_get_content_health_score_impl = analytics.get_content_health_score
-
-# Discovery operation aliases
-_intelligent_discovery_impl = intelligent_discovery_impl
-_discovery_templates_impl = discovery_templates_impl
-_discover_relationships_impl = discover_relationships_impl
-
-# Visualization operation aliases
-_generate_knowledge_graph_impl = generate_knowledge_graph_impl
+# Note: Legacy _impl function aliases removed in simplification.
+# Tests should import functions directly from their respective modules.
 
 
 @mcp.tool

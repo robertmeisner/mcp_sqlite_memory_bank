@@ -1,6 +1,6 @@
 # SQLite Memory Bank API Reference
 
-*Generated on 2025-06-29 13:11:39*
+*Generated on 2025-06-29 22:04:25*
 
 This document provides comprehensive API reference for all MCP tools in the SQLite Memory Bank.
 
@@ -8,7 +8,7 @@ This document provides comprehensive API reference for all MCP tools in the SQLi
 
 ### Table of Contents
 
-- **Server** (27 tools)
+- **Server** (37 tools)
   - [create_table](#create-table)
   - [list_tables](#list-tables)
   - [describe_table](#describe-table)
@@ -31,11 +31,21 @@ This document provides comprehensive API reference for all MCP tools in the SQLi
   - [smart_search](#smart-search)
   - [find_related](#find-related)
   - [generate_knowledge_graph](#generate-knowledge-graph)
+  - [create_interactive_d3_graph](#create-interactive-d3-graph)
+  - [create_advanced_d3_dashboard](#create-advanced-d3-dashboard)
+  - [export_graph_data](#export-graph-data)
   - [intelligent_discovery](#intelligent-discovery)
   - [discovery_templates](#discovery-templates)
   - [discover_relationships](#discover-relationships)
   - [batch_create_memories](#batch-create-memories)
   - [batch_delete_memories](#batch-delete-memories)
+  - [find_duplicates](#find-duplicates)
+  - [optimize_memory_bank](#optimize-memory-bank)
+  - [archive_old_memories](#archive-old-memories)
+  - [intelligent_duplicate_analysis](#intelligent-duplicate-analysis)
+  - [intelligent_optimization_strategy](#intelligent-optimization-strategy)
+  - [smart_archiving_policy](#smart-archiving-policy)
+  - [create_3d_knowledge_graph](#create-3d-knowledge-graph)
 
 ## Server Tools
 
@@ -55,7 +65,7 @@ def create_table(table_name: str, columns: List[Dict[Any]]) -> ToolResponse:
 - `table_name` (str): Parameter description
 - `columns` (List[Dict[Any]]): Parameter description
 
-*Source: server.py:114*
+*Source: server.py:124*
 
 ---
 
@@ -69,7 +79,7 @@ List all tables in the SQLite memory bank.
 def list_tables() -> ToolResponse:
 ```
 
-*Source: server.py:144*
+*Source: server.py:154*
 
 ---
 
@@ -87,7 +97,7 @@ def describe_table(table_name: str) -> ToolResponse:
 
 - `table_name` (str): Parameter description
 
-*Source: server.py:166*
+*Source: server.py:176*
 
 ---
 
@@ -105,7 +115,7 @@ def drop_table(table_name: str) -> ToolResponse:
 
 - `table_name` (str): Parameter description
 
-*Source: server.py:206*
+*Source: server.py:216*
 
 ---
 
@@ -124,7 +134,7 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
 - `old_name` (str): Parameter description
 - `new_name` (str): Parameter description
 
-*Source: server.py:231*
+*Source: server.py:241*
 
 ---
 
@@ -143,7 +153,7 @@ def create_row(table_name: str, data: Dict[Any]) -> ToolResponse:
 - `table_name` (str): Parameter description
 - `data` (Dict[Any]): Parameter description
 
-*Source: server.py:256*
+*Source: server.py:266*
 
 ---
 
@@ -163,7 +173,7 @@ def upsert_memory(table_name: str, data: Dict[Any], match_columns: List[str]) ->
 - `data` (Dict[Any]): Parameter description
 - `match_columns` (List[str]): Parameter description
 
-*Source: server.py:282*
+*Source: server.py:292*
 
 ---
 
@@ -182,7 +192,7 @@ def read_rows(table_name: str, where: Optional[Dict[Any]]) -> ToolResponse:
 - `table_name` (str): Parameter description
 - `where` (Optional[Dict[Any]]): Parameter description
 
-*Source: server.py:316*
+*Source: server.py:326*
 
 ---
 
@@ -202,7 +212,7 @@ def update_rows(table_name: str, data: Dict[Any], where: Optional[Dict[Any]]) ->
 - `data` (Dict[Any]): Parameter description
 - `where` (Optional[Dict[Any]]): Parameter description
 
-*Source: server.py:342*
+*Source: server.py:352*
 
 ---
 
@@ -221,7 +231,7 @@ def delete_rows(table_name: str, where: Optional[Dict[Any]]) -> ToolResponse:
 - `table_name` (str): Parameter description
 - `where` (Optional[Dict[Any]]): Parameter description
 
-*Source: server.py:372*
+*Source: server.py:380*
 
 ---
 
@@ -242,7 +252,7 @@ def run_select_query(table_name: str, columns: Optional[List[str]], where: Optio
 - `where` (Optional[Dict[Any]]): Parameter description
 - `limit` (int): Parameter description
 
-*Source: server.py:399*
+*Source: server.py:407*
 
 ---
 
@@ -256,7 +266,7 @@ List all columns for all tables in the SQLite memory bank.
 def list_all_columns() -> ToolResponse:
 ```
 
-*Source: server.py:436*
+*Source: server.py:444*
 
 ---
 
@@ -276,7 +286,7 @@ def search_content(query: str, tables: Optional[List[str]], limit: int) -> ToolR
 - `tables` (Optional[List[str]]): Parameter description
 - `limit` (int): Parameter description
 
-*Source: server.py:465*
+*Source: server.py:473*
 
 ---
 
@@ -295,7 +305,7 @@ def explore_tables(pattern: Optional[str], include_row_counts: bool) -> ToolResp
 - `pattern` (Optional[str]): Parameter description
 - `include_row_counts` (bool): Parameter description
 
-*Source: server.py:501*
+*Source: server.py:509*
 
 ---
 
@@ -316,7 +326,7 @@ def add_embeddings(table_name: str, text_columns: List[str], embedding_column: s
 - `embedding_column` (str): Parameter description
 - `model_name` (str): Parameter description
 
-*Source: server.py:538*
+*Source: server.py:546*
 
 ---
 
@@ -338,7 +348,7 @@ def auto_semantic_search(query: str, tables: Optional[List[str]], similarity_thr
 - `limit` (int): Parameter description
 - `model_name` (str): Parameter description
 
-*Source: server.py:581*
+*Source: server.py:589*
 
 ---
 
@@ -361,7 +371,7 @@ def auto_smart_search(query: str, tables: Optional[List[str]], semantic_weight: 
 - `limit` (int): Parameter description
 - `model_name` (str): Parameter description
 
-*Source: server.py:630*
+*Source: server.py:638*
 
 ---
 
@@ -380,7 +390,7 @@ def embedding_stats(table_name: str, embedding_column: str) -> ToolResponse:
 - `table_name` (str): Parameter description
 - `embedding_column` (str): Parameter description
 
-*Source: server.py:677*
+*Source: server.py:685*
 
 ---
 
@@ -402,7 +412,7 @@ def semantic_search(query: str, tables: Optional[List[str]], similarity_threshol
 - `limit` (int): Parameter description
 - `model_name` (str): Parameter description
 
-*Source: server.py:710*
+*Source: server.py:718*
 
 ---
 
@@ -425,7 +435,7 @@ def smart_search(query: str, tables: Optional[List[str]], semantic_weight: float
 - `limit` (int): Parameter description
 - `model_name` (str): Parameter description
 
-*Source: server.py:761*
+*Source: server.py:769*
 
 ---
 
@@ -447,7 +457,7 @@ def find_related(table_name: str, row_id: int, similarity_threshold: float, limi
 - `limit` (int): Parameter description
 - `model_name` (str): Parameter description
 
-*Source: server.py:811*
+*Source: server.py:819*
 
 ---
 
@@ -468,7 +478,76 @@ def generate_knowledge_graph(output_path: str, include_temporal: bool, min_conne
 - `min_connections` (int): Parameter description
 - `open_in_browser` (bool): Parameter description
 
-*Source: server.py:856*
+*Source: server.py:864*
+
+---
+
+
+### `create_interactive_d3_graph`
+
+🎨 **PREMIUM D3.JS KNOWLEDGE GRAPH** - Interactive enterprise visualization!
+
+**Signature:**
+```python
+def create_interactive_d3_graph(output_path: Optional[str], include_semantic_links: bool, filter_tables: Optional[List[str]], min_connections: int, layout_algorithm: str, color_scheme: str, node_size_by: str, open_in_browser: bool, export_formats: Optional[List[str]]) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `output_path` (Optional[str]): Parameter description
+- `include_semantic_links` (bool): Parameter description
+- `filter_tables` (Optional[List[str]]): Parameter description
+- `min_connections` (int): Parameter description
+- `layout_algorithm` (str): Parameter description
+- `color_scheme` (str): Parameter description
+- `node_size_by` (str): Parameter description
+- `open_in_browser` (bool): Parameter description
+- `export_formats` (Optional[List[str]]): Parameter description
+
+*Source: server.py:908*
+
+---
+
+
+### `create_advanced_d3_dashboard`
+
+🚀 **ENTERPRISE D3.JS DASHBOARD** - Premium visualization dashboard!
+
+**Signature:**
+```python
+def create_advanced_d3_dashboard(output_path: Optional[str], dashboard_type: str, include_metrics: bool, real_time_updates: bool, custom_widgets: Optional[List[str]]) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `output_path` (Optional[str]): Parameter description
+- `dashboard_type` (str): Parameter description
+- `include_metrics` (bool): Parameter description
+- `real_time_updates` (bool): Parameter description
+- `custom_widgets` (Optional[List[str]]): Parameter description
+
+*Source: server.py:966*
+
+---
+
+
+### `export_graph_data`
+
+📊 **GRAPH DATA EXPORT** - Professional data format conversion!
+
+**Signature:**
+```python
+def export_graph_data(output_path: Optional[str], format: str, include_metadata: bool, compress_output: bool) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `output_path` (Optional[str]): Parameter description
+- `format` (str): Parameter description
+- `include_metadata` (bool): Parameter description
+- `compress_output` (bool): Parameter description
+
+*Source: server.py:1001*
 
 ---
 
@@ -489,7 +568,7 @@ def intelligent_discovery(discovery_goal: str, focus_area: Optional[str], depth:
 - `depth` (str): Parameter description
 - `agent_id` (Optional[str]): Parameter description
 
-*Source: server.py:898*
+*Source: server.py:1036*
 
 ---
 
@@ -508,7 +587,7 @@ def discovery_templates(template_type: str, customize_for: Optional[str]) -> Too
 - `template_type` (str): Parameter description
 - `customize_for` (Optional[str]): Parameter description
 
-*Source: server.py:948*
+*Source: server.py:1086*
 
 ---
 
@@ -528,7 +607,7 @@ def discover_relationships(table_name: Optional[str], relationship_types: List[s
 - `relationship_types` (List[str]): Parameter description
 - `similarity_threshold` (float): Parameter description
 
-*Source: server.py:992*
+*Source: server.py:1128*
 
 ---
 
@@ -549,7 +628,7 @@ def batch_create_memories(table_name: str, data_list: List[Dict[Any]], match_col
 - `match_columns` (Optional[List[str]]): Parameter description
 - `use_upsert` (bool): Parameter description
 
-*Source: server.py:1196*
+*Source: server.py:1298*
 
 ---
 
@@ -569,7 +648,152 @@ def batch_delete_memories(table_name: str, where_conditions: List[Dict[Any]], ma
 - `where_conditions` (List[Dict[Any]]): Parameter description
 - `match_all` (bool): Parameter description
 
-*Source: server.py:1238*
+*Source: server.py:1340*
+
+---
+
+
+### `find_duplicates`
+
+🔍 **DUPLICATE DETECTION** - Find duplicate and near-duplicate content!
+
+**Signature:**
+```python
+def find_duplicates(table_name: str, content_columns: List[str], similarity_threshold: float, sample_size: Optional[int]) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `table_name` (str): Parameter description
+- `content_columns` (List[str]): Parameter description
+- `similarity_threshold` (float): Parameter description
+- `sample_size` (Optional[int]): Parameter description
+
+*Source: server.py:1381*
+
+---
+
+
+### `optimize_memory_bank`
+
+⚡ **MEMORY BANK OPTIMIZATION** - Optimize storage and performance!
+
+**Signature:**
+```python
+def optimize_memory_bank(table_name: str, optimization_strategy: str, dry_run: bool) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `table_name` (str): Parameter description
+- `optimization_strategy` (str): Parameter description
+- `dry_run` (bool): Parameter description
+
+*Source: server.py:1420*
+
+---
+
+
+### `archive_old_memories`
+
+📦 **MEMORY ARCHIVING** - Archive old memories to reduce active storage!
+
+**Signature:**
+```python
+def archive_old_memories(table_name: str, archive_days: int, archive_table_suffix: str, delete_after_archive: bool) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `table_name` (str): Parameter description
+- `archive_days` (int): Parameter description
+- `archive_table_suffix` (str): Parameter description
+- `delete_after_archive` (bool): Parameter description
+
+*Source: server.py:1454*
+
+---
+
+
+### `intelligent_duplicate_analysis`
+
+🧠 **LLM-ASSISTED DUPLICATE DETECTION** - AI-powered semantic duplicate analysis!
+
+**Signature:**
+```python
+def intelligent_duplicate_analysis(table_name: str, content_columns: List[str], analysis_depth: str) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `table_name` (str): Parameter description
+- `content_columns` (List[str]): Parameter description
+- `analysis_depth` (str): Parameter description
+
+*Source: server.py:1497*
+
+---
+
+
+### `intelligent_optimization_strategy`
+
+🎯 **LLM-GUIDED OPTIMIZATION STRATEGY** - AI-powered optimization planning!
+
+**Signature:**
+```python
+def intelligent_optimization_strategy(table_name: str, optimization_goals: Optional[List[str]]) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `table_name` (str): Parameter description
+- `optimization_goals` (Optional[List[str]]): Parameter description
+
+*Source: server.py:1529*
+
+---
+
+
+### `smart_archiving_policy`
+
+📋 **INTELLIGENT ARCHIVING POLICY** - AI-powered retention strategy!
+
+**Signature:**
+```python
+def smart_archiving_policy(table_name: str, business_context: Optional[str], retention_requirements: Optional[Dict[Any]]) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `table_name` (str): Parameter description
+- `business_context` (Optional[str]): Parameter description
+- `retention_requirements` (Optional[Dict[Any]]): Parameter description
+
+*Source: server.py:1555*
+
+---
+
+
+### `create_3d_knowledge_graph`
+
+🌐 **THREE.JS 3D KNOWLEDGE GRAPH** - Immersive 3D data visualization!
+
+**Signature:**
+```python
+def create_3d_knowledge_graph(output_path: Optional[str], table_name: str, include_semantic_links: bool, color_scheme: str, camera_position: str, animation_enabled: bool, export_formats: Optional[List[str]]) -> ToolResponse:
+```
+
+**Parameters:**
+
+- `output_path` (Optional[str]): Parameter description
+- `table_name` (str): Parameter description
+- `include_semantic_links` (bool): Parameter description
+- `color_scheme` (str): Parameter description
+- `camera_position` (str): Parameter description
+- `animation_enabled` (bool): Parameter description
+- `export_formats` (Optional[List[str]]): Parameter description
+
+*Source: server.py:1591*
 
 ---
 

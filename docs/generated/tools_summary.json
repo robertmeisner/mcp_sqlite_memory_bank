@@ -1,9 +1,9 @@
 {
-  "total_tools": 27,
+  "total_tools": 37,
   "tools_by_module": {
-    "server": 27
+    "server": 37
   },
-  "generated_at": "2025-06-29T13:11:39.400802",
+  "generated_at": "2025-06-29T22:04:25.981406",
   "tools": [
     {
       "name": "create_table",
@@ -116,6 +116,21 @@
       "description": "\ud83c\udfaf **KNOWLEDGE GRAPH GENERATOR** - Visualize your memory as an interactive graph!"
     },
     {
+      "name": "create_interactive_d3_graph",
+      "module": "server",
+      "description": "\ud83c\udfa8 **PREMIUM D3.JS KNOWLEDGE GRAPH** - Interactive enterprise visualization!"
+    },
+    {
+      "name": "create_advanced_d3_dashboard",
+      "module": "server",
+      "description": "\ud83d\ude80 **ENTERPRISE D3.JS DASHBOARD** - Premium visualization dashboard!"
+    },
+    {
+      "name": "export_graph_data",
+      "module": "server",
+      "description": "\ud83d\udcca **GRAPH DATA EXPORT** - Professional data format conversion!"
+    },
+    {
       "name": "intelligent_discovery",
       "module": "server",
       "description": "\ud83e\udde0 **INTELLIGENT DISCOVERY** - AI-guided exploration of your memory bank!"
@@ -139,6 +154,41 @@
       "name": "batch_delete_memories",
       "module": "server",
       "description": "\ud83d\uddd1\ufe0f **BATCH MEMORY DELETION** - Efficiently delete multiple memories at once!"
+    },
+    {
+      "name": "find_duplicates",
+      "module": "server",
+      "description": "\ud83d\udd0d **DUPLICATE DETECTION** - Find duplicate and near-duplicate content!"
+    },
+    {
+      "name": "optimize_memory_bank",
+      "module": "server",
+      "description": "\u26a1 **MEMORY BANK OPTIMIZATION** - Optimize storage and performance!"
+    },
+    {
+      "name": "archive_old_memories",
+      "module": "server",
+      "description": "\ud83d\udce6 **MEMORY ARCHIVING** - Archive old memories to reduce active storage!"
+    },
+    {
+      "name": "intelligent_duplicate_analysis",
+      "module": "server",
+      "description": "\ud83e\udde0 **LLM-ASSISTED DUPLICATE DETECTION** - AI-powered semantic duplicate analysis!"
+    },
+    {
+      "name": "intelligent_optimization_strategy",
+      "module": "server",
+      "description": "\ud83c\udfaf **LLM-GUIDED OPTIMIZATION STRATEGY** - AI-powered optimization planning!"
+    },
+    {
+      "name": "smart_archiving_policy",
+      "module": "server",
+      "description": "\ud83d\udccb **INTELLIGENT ARCHIVING POLICY** - AI-powered retention strategy!"
+    },
+    {
+      "name": "create_3d_knowledge_graph",
+      "module": "server",
+      "description": "\ud83c\udf10 **THREE.JS 3D KNOWLEDGE GRAPH** - Immersive 3D data visualization!"
     }
   ]
 }
