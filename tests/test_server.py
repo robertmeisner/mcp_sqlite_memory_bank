@@ -69,30 +69,30 @@ def patch_db_path():
 class TestCRUD:
     def test_create_row(self):
         """Test creating a row in the users table."""
-        result = smb._create_row_impl(table_name="users", data={"name": "Alice", "age": 30})
+        result = smb.create_row(table_name="users", data={"name": "Alice", "age": 30})
         assert result["success"]
         assert "id" in result
 
     def test_read_rows(self):
         """Test reading rows from the users table."""
-        smb._create_row_impl(table_name="users", data={"name": "Bob", "age": 25})
-        res = smb._read_rows_impl(table_name="users", where={"name": "Bob"})
+        smb.create_row(table_name="users", data={"name": "Bob", "age": 25})
+        res = smb.read_rows(table_name="users", where={"name": "Bob"})
         assert res["success"]
         assert any(row["name"] == "Bob" for row in res["rows"])
 
     def test_update_rows(self):
         """Test updating a row in the users table."""
-        create = smb._create_row_impl(table_name="users", data={"name": "Carol", "age": 22})
+        create = smb.create_row(table_name="users", data={"name": "Carol", "age": 22})
         user_id = create["id"]
-        upd = smb._update_rows_impl(table_name="users", data={"age": 23}, where={"id": user_id})
+        upd = smb.update_rows(table_name="users", data={"age": 23}, where={"id": user_id})
         assert upd["success"]
         assert upd["rows_affected"] == 1
-        rows = smb._read_rows_impl(table_name="users", where={"id": user_id})["rows"]
+        rows = smb.read_rows(table_name="users", where={"id": user_id})["rows"]
         assert rows[0]["age"] == 23
 
     def test_delete_rows(self):
         """Test deleting a row from the users table."""
-        create = smb._create_row_impl(table_name="users", data={"name": "Dave", "age": 40})
+        create = smb.create_row(table_name="users", data={"name": "Dave", "age": 40})
         user_id = create["id"]
         del_res = smb._delete_rows_impl(table_name="users", where={"id": user_id})
         assert del_res["success"]

@@ -1637,3 +1637,31 @@ def create_3d_knowledge_graph(
         animation_enabled,
         export_formats,
     )
+
+
+# Internal implementation functions for testing
+# These are non-decorated versions that can be called directly in tests
+
+def _create_row_impl(table_name: str, data: Dict[str, Any]) -> ToolResponse:
+    """Internal implementation for create_row that can be called directly in tests."""
+    return cast(ToolResponse, get_database(DB_PATH).insert_row(table_name, data))
+
+
+def _read_rows_impl(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
+    """Internal implementation for read_rows that can be called directly in tests."""
+    return cast(ToolResponse, get_database(DB_PATH).read_rows(table_name, where or {}))
+
+
+def _update_rows_impl(table_name: str, data: Dict[str, Any], where: Optional[Dict[str, Any]] = None) -> ToolResponse:
+    """Internal implementation for update_rows that can be called directly in tests."""
+    return cast(ToolResponse, get_database(DB_PATH).update_rows(table_name, data, where or {}))
+
+
+def _delete_rows_impl(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
+    """Internal implementation for delete_rows that can be called directly in tests."""
+    return cast(ToolResponse, get_database(DB_PATH).delete_rows(table_name, where or {}))
+
+
+def _create_table_impl(table_name: str, columns: List[Dict[str, str]]) -> ToolResponse:
+    """Internal implementation for create_table that can be called directly in tests."""
+    return cast(ToolResponse, get_database(DB_PATH).create_table(table_name, columns))
