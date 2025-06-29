@@ -663,8 +663,7 @@ def discover_relationships(
             )
         else:
             insights.append(
-                f"Discovered {total_relationships} total relationships across {
-                    len(relationships)} tables"
+                f"Discovered {total_relationships} total relationships across {len(relationships)} tables"
             )
 
         return cast(
