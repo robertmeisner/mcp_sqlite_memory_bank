@@ -643,8 +643,7 @@ def discover_relationships(
                 table_relationships["naming_related"] = naming_relationships
                 if naming_relationships:
                     insights.append(
-                        f"Table '{target_table}' has naming pattern relationships with {
-                            len(naming_relationships)} tables"
+                        f"Table '{target_table}' has naming pattern relationships with {len(naming_relationships)} tables"
                     )
 
             relationships[target_table] = table_relationships
