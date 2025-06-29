@@ -340,9 +340,7 @@ class PerformanceMonitor:
         duration = self.metrics.get(operation, float("inf"))
         assert (
             duration <= max_duration
-        ), f"Operation '{operation}' took {
-            duration:.3f}s, expected <= {
-            max_duration:.3f}s"
+        ), f"Operation '{operation}' took {duration:.3f}s, expected <= {max_duration:.3f}s"
 
     def get_summary(self) -> Dict[str, float]:
         """Get performance summary for all measured operations."""

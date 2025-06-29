@@ -333,8 +333,7 @@ class MemoryBankResources:
                                 {
                                     "table": table_name,
                                     "suggestion": "Consider adding more content or consolidating with other tables",
-                                    "reason": f"Table has only {
-                                        len(rows)} rows - might be underutilized",
+                                    "reason": f"Table has only {len(rows)} rows - might be underutilized",
                                 }
                             )
 

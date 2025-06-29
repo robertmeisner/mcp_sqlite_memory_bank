@@ -435,8 +435,7 @@ def auto_smart_search(
             final_result["auto_embedded_tables"] = auto_embedded_tables
             if auto_embedded_tables:
                 final_result["auto_embedding_note"] = (
-                    f"Automatically generated embeddings for {
-                        len(auto_embedded_tables)} table(s)"
+                    f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
                 )
             return cast(ToolResponse, final_result)
         else:

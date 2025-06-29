@@ -369,8 +369,7 @@ class SystemHealthMonitor:
         ]
         if unavailable_features:
             health_report["warnings"].append(
-                f"Features with limited functionality: {
-                    ', '.join(unavailable_features)}"
+                f"Features with limited functionality: {', '.join(unavailable_features)}"
             )
 
         return health_report

@@ -166,8 +166,7 @@ def analyze_memory_patterns() -> ToolResponse:
         ]
         if sparse_tables:
             recommendations.append(
-                f"Sparse tables found: {
-                    ', '.join(sparse_tables)}. Consider consolidating or adding more content."
+                f"Sparse tables found: {', '.join(sparse_tables)}. Consider consolidating or adding more content."
             )
 
         # Schema improvements

@@ -483,8 +483,7 @@ def _generate_cleanup_recommendations(
 
     total_duplicates = sum(len(group["rows"]) - 1 for group in duplicate_groups)
     recommendations.append(
-        f"🔍 Found {
-            len(duplicate_groups)} duplicate groups with {total_duplicates} redundant records"
+        f"🔍 Found {len(duplicate_groups)} duplicate groups with {total_duplicates} redundant records"
     )
 
     # Group recommendations by suggested action

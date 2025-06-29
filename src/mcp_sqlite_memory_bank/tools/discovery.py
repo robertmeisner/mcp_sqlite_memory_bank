@@ -621,8 +621,7 @@ def discover_relationships(
                 table_relationships["semantic_similar"] = semantic_relationships
                 if semantic_relationships:
                     insights.append(
-                        f"Table '{target_table}' has semantic similarity with {
-                            len(semantic_relationships)} tables"
+                        f"Table '{target_table}' has semantic similarity with {len(semantic_relationships)} tables"
                     )
 
             # Discover temporal patterns

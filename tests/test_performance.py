@@ -327,9 +327,7 @@ class TestPerformance:
 
             print("\nSemantic Search Performance:")
             print(
-                f"  Completed {
-                    len(search_queries)} searches in {
-                    total_search_time:.3f} seconds"
+                f"  Completed {len(search_queries)} searches in {total_search_time:.3f} seconds"
             )
             print(f"  Average search time: {avg_search_time:.3f} seconds")
             print(f"  Performance: {searches_per_second:.2f} searches/second")
