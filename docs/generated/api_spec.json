@@ -1,0 +1,1310 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SQLite Memory Bank MCP API",
+    "description": "MCP tools for intelligent memory management",
+    "version": "1.4.3",
+    "generated": "2025-06-29T13:11:39.398768"
+  },
+  "servers": [
+    {
+      "url": "mcp://sqlite-memory-bank",
+      "description": "MCP Server"
+    }
+  ],
+  "paths": {
+    "/tools/create_table": {
+      "post": {
+        "summary": "Create a new table in the SQLite memory bank.",
+        "description": "Create a new table in the SQLite memory bank.\n\nArgs:\n    table_name (str): Name of the table to create. Must be a valid SQLite identifier.\n    columns (List[Dict[str, str]]): List of columns, each as {\"name\": str, \"type\": str}.\n\nReturns:\n    ToolResponse: On success: {\"success\": True}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> create_table(\"users\", [\n    ...     {\"name\": \"id\", \"type\": \"INTEGER PRIMARY KEY AUTOINCREMENT\"},\n    ...     {\"name\": \"name\", \"type\": \"TEXT\"},\n    ...     {\"name\": \"age\", \"type\": \"INTEGER\"}\n    ... ])\n    {\"success\": True}\n\nFastMCP Tool Info:\n    - Validates table name and column definitions\n    - Creates table if it doesn't exist (idempotent)\n    - Raises appropriate errors for invalid input",
+        "operationId": "create_table",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "columns": {
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "columns"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/list_tables": {
+      "post": {
+        "summary": "List all tables in the SQLite memory bank.",
+        "description": "List all tables in the SQLite memory bank.\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"tables\": List[str]}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> list_tables()\n    {\"success\": True, \"tables\": [\"users\", \"notes\", \"tasks\"]}\n\nFastMCP Tool Info:\n    - Returns list of all user-created tables\n    - Excludes SQLite system tables\n    - Useful for schema discovery by LLMs",
+        "operationId": "list_tables",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/describe_table": {
+      "post": {
+        "summary": "Get detailed schema information for a table.",
+        "description": "Get detailed schema information for a table.\n\nArgs:\n    table_name (str): Name of the table to describe.\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"columns\": List[TableColumn]}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\n    Where TableColumn is:\n    {\n        \"name\": str,\n        \"type\": str,\n        \"nullable\": bool,\n        \"default\": Any,\n        \"primary_key\": bool\n    }\n\nExamples:\n    >>> describe_table(\"users\")\n    {\n        \"success\": True,\n        \"columns\": [\n            {\"name\": \"id\", \"type\": \"INTEGER\", \"nullable\": False, \"default\": null, \"primary_key\": True},\n            {\"name\": \"name\", \"type\": \"TEXT\", \"nullable\": True, \"default\": null, \"primary_key\": False}\n        ]\n    }\n\nFastMCP Tool Info:\n    - Returns detailed column information\n    - Validates table existence\n    - Useful for schema introspection by LLMs",
+        "operationId": "describe_table",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/drop_table": {
+      "post": {
+        "summary": "Drop (delete) a table from the SQLite memory bank.",
+        "description": "Drop (delete) a table from the SQLite memory bank.\n\nArgs:\n    table_name (str): Name of the table to drop. Must be a valid SQLite identifier.\n\nReturns:\n    ToolResponse: On success: {\"success\": True}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> drop_table('notes')\n    {\"success\": True}\n\nFastMCP Tool Info:\n    - Validates table name\n    - Confirms table exists before dropping\n    - WARNING: This operation is irreversible and deletes all data in the table",
+        "operationId": "drop_table",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/rename_table": {
+      "post": {
+        "summary": "Rename a table in the SQLite memory bank.",
+        "description": "Rename a table in the SQLite memory bank.\n\nArgs:\n    old_name (str): Current table name. Must be a valid SQLite identifier.\n    new_name (str): New table name. Must be a valid SQLite identifier.\n\nReturns:\n    ToolResponse: On success: {\"success\": True}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> rename_table('notes', 'archive_notes')\n    {\"success\": True}\n\nFastMCP Tool Info:\n    - Validates both old and new table names\n    - Confirms old table exists and new name doesn't conflict",
+        "operationId": "rename_table",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "old_name": {
+                    "type": "string"
+                  },
+                  "new_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "old_name",
+                  "new_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/create_row": {
+      "post": {
+        "summary": "Insert a new row into any table in the SQLite Memory Bank for Copilot/AI agents.",
+        "description": "Insert a new row into any table in the SQLite Memory Bank for Copilot/AI agents.\n\nArgs:\n    table_name (str): Table name.\n    data (Dict[str, Any]): Data to insert (column-value pairs matching the table schema).\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"id\": rowid}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> create_row('notes', {'content': 'Remember to hydrate!'})\n    {\"success\": True, \"id\": 1}\n\nFastMCP Tool Info:\n    - Validates table name and column names\n    - Auto-converts data types where possible\n    - Returns the row ID of the inserted row",
+        "operationId": "create_row",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "data": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "data"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/upsert_memory": {
+      "post": {
+        "summary": "\ud83d\udd04 **SMART MEMORY UPSERT** - Prevent duplicates and maintain data consistency!",
+        "description": "\ud83d\udd04 **SMART MEMORY UPSERT** - Prevent duplicates and maintain data consistency!\n\nUpdate existing records or create new ones based on matching columns.\nThis is the preferred method for memory management as it prevents duplicates.\n\nArgs:\n    table_name (str): Table to upsert into\n    data (Dict[str, Any]): Data to upsert (column-value pairs)\n    match_columns (List[str]): Columns to use for finding existing records\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"action\": \"updated\"|\"created\", \"id\": rowid}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> upsert_memory('technical_decisions',\n    ...     {'decision_name': 'API Design', 'chosen_approach': 'REST'},\n    ...     ['decision_name'])\n    {\"success\": True, \"action\": \"updated\", \"id\": 15, \"rows_affected\": 1}\n\nFastMCP Tool Info:\n    - **PREVENTS DUPLICATES**: Automatically updates existing records instead of creating duplicates\n    - **SMART MATCHING**: Uses specified columns to find existing records\n    - **EFFICIENT MEMORY MANAGEMENT**: Ideal for agent memory patterns\n    - **CLEAR FEEDBACK**: Returns whether record was created or updated\n    - **PERFECT FOR AGENTS**: Handles the common \"update or create\" pattern automatically",
+        "operationId": "upsert_memory",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "data": {
+                    "type": "object"
+                  },
+                  "match_columns": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "data",
+                  "match_columns"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/read_rows": {
+      "post": {
+        "summary": "Read rows from any table in the SQLite memory bank, with optional filtering.",
+        "description": "Read rows from any table in the SQLite memory bank, with optional filtering.\n\nArgs:\n    table_name (str): Name of the table to read from.\n    where (Optional[Dict[str, Any]]): Optional filter conditions as {\"column\": value} pairs.\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"rows\": List[Dict[str, Any]]}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> read_rows(\"users\", {\"age\": 25})\n    {\"success\": True, \"rows\": [{\"id\": 1, \"name\": \"Alice\", \"age\": 25}, ...]}\n\nFastMCP Tool Info:\n    - Validates table name and filter conditions\n    - Returns rows as list of dictionaries\n    - Parameterizes all queries for safety",
+        "operationId": "read_rows",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "where": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "table_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/update_rows": {
+      "post": {
+        "summary": "Update rows in any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.",
+        "description": "Update rows in any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.\n\nArgs:\n    table_name (str): Table name.\n    data (Dict[str, Any]): Data to update (column-value pairs).\n    where (Optional[Dict[str, Any]]): WHERE clause as column-value pairs (optional).\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"rows_affected\": n}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> update_rows('notes', {'content': 'Updated note'}, {'id': 1})\n    {\"success\": True, \"rows_affected\": 1}\n\nFastMCP Tool Info:\n    - Validates table name, column names, and filter conditions\n    - Returns the number of rows affected by the update\n    - Parameterizes all queries for safety\n    - Where clause is optional (omitting it updates all rows!)",
+        "operationId": "update_rows",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "data": {
+                    "type": "object"
+                  },
+                  "where": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "data"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/delete_rows": {
+      "post": {
+        "summary": "Delete rows from any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.",
+        "description": "Delete rows from any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.\n\nArgs:\n    table_name (str): Table name.\n    where (Optional[Dict[str, Any]]): WHERE clause as column-value pairs (optional).\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"rows_affected\": n}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> delete_rows('notes', {'id': 1})\n    {\"success\": True, \"rows_affected\": 1}\n\nFastMCP Tool Info:\n    - Validates table name and filter conditions\n    - Returns the number of rows deleted\n    - Parameterizes all queries for safety\n    - Where clause is optional (omitting it deletes all rows!)",
+        "operationId": "delete_rows",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "where": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "table_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/run_select_query": {
+      "post": {
+        "summary": "Run a safe SELECT query on a table in the SQLite memory bank.",
+        "description": "Run a safe SELECT query on a table in the SQLite memory bank.\n\nArgs:\n    table_name (str): Table name.\n    columns (Optional[List[str]]): List of columns to select (default: all).\n    where (Optional[Dict[str, Any]]): WHERE clause as column-value pairs (optional).\n    limit (int): Maximum number of rows to return (default: 100).\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"rows\": [...]}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> run_select_query('notes', ['id', 'content'], {'id': 1})\n    {\"success\": True, \"rows\": [{\"id\": 1, \"content\": \"Remember to hydrate!\"}]}\n\nFastMCP Tool Info:\n    - Validates table name, column names, and filter conditions\n    - Parameterizes all queries for safety\n    - Only SELECT queries are allowed (no arbitrary SQL)\n    - Default limit of 100 rows prevents memory issues",
+        "operationId": "run_select_query",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "columns": {
+                    "type": "string"
+                  },
+                  "where": {
+                    "type": "object"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "limit"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/list_all_columns": {
+      "post": {
+        "summary": "List all columns for all tables in the SQLite memory bank.",
+        "description": "List all columns for all tables in the SQLite memory bank.\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"schemas\": {table_name: [columns]}}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> list_all_columns()\n    {\"success\": True, \"schemas\": {\"users\": [\"id\", \"name\", \"age\"], \"notes\": [\"id\", \"content\"]}}\n\nFastMCP Tool Info:\n    - Provides a full schema overview of the database\n    - Useful for agents to understand database structure\n    - Returns a nested dictionary with all table schemas",
+        "operationId": "list_all_columns",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/search_content": {
+      "post": {
+        "summary": "Perform full-text search across table content using natural language queries.",
+        "description": "Perform full-text search across table content using natural language queries.\n\nArgs:\n    query (str): Search query (supports natural language, keywords, phrases)\n    tables (Optional[List[str]]): Specific tables to search (default: all tables)\n    limit (int): Maximum number of results to return (default: 50)\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"results\": List[SearchResult]}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> search_content(\"API design patterns\")\n    {\"success\": True, \"results\": [\n        {\"table\": \"technical_decisions\", \"row_id\": 1, \"content\": \"...\", \"relevance\": 0.85},\n        {\"table\": \"project_structure\", \"row_id\": 3, \"content\": \"...\", \"relevance\": 0.72}\n    ]}\n\nFastMCP Tool Info:\n    - Searches all text columns across specified tables\n    - Uses SQLite FTS for fast full-text search\n    - Returns results ranked by relevance\n    - Supports phrase search with quotes: \"exact phrase\"\n    - Supports boolean operators: AND, OR, NOT",
+        "operationId": "search_content",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "tables": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "query",
+                  "limit"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/explore_tables": {
+      "post": {
+        "summary": "Explore and discover table structures and content for better searchability.",
+        "description": "Explore and discover table structures and content for better searchability.\n\nArgs:\n    pattern (Optional[str]): Optional pattern to filter table names (SQL LIKE pattern)\n    include_row_counts (bool): Whether to include row counts for each table\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"exploration\": Dict}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> explore_tables()\n    {\"success\": True, \"exploration\": {\n        \"tables\": [\n            {\"name\": \"users\", \"columns\": [...], \"row_count\": 42, \"sample_data\": [...]},\n            {\"name\": \"notes\", \"columns\": [...], \"row_count\": 156, \"sample_data\": [...]}\n        ],\n        \"total_tables\": 2,\n        \"total_rows\": 198\n    }}\n\nFastMCP Tool Info:\n    - Provides overview of all tables and their structure\n    - Shows sample data for content discovery\n    - Helps understand what data is available for searching\n    - Useful for exploratory data analysis",
+        "operationId": "explore_tables",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "type": "string"
+                  },
+                  "include_row_counts": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "include_row_counts"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/add_embeddings": {
+      "post": {
+        "summary": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!",
+        "description": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!\n\nGenerate and store vector embeddings for semantic search on table content.\n\n**RECOMMENDATION**: Use auto_smart_search() or auto_semantic_search() for automatic setup.\nThis tool is for advanced users who need manual control over embedding generation.\n\nThis tool enables intelligent knowledge discovery by creating vector representations\nof text content that can be searched semantically rather than just by exact keywords.\n\nArgs:\n    table_name (str): Name of the table to add embeddings to\n    text_columns (List[str]): List of text columns to generate embeddings from\n    embedding_column (str): Column name to store embeddings (default: \"embedding\")\n    model_name (str): Sentence transformer model to use (default: \"all-MiniLM-L6-v2\")\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"processed\": int, \"model\": str}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> add_embeddings(\"technical_decisions\", [\"decision_name\", \"rationale\"])\n    {\"success\": True, \"processed\": 15, \"model\": \"all-MiniLM-L6-v2\", \"embedding_dimension\": 384}\n\nFastMCP Tool Info:\n    - Automatically creates embedding column if it doesn't exist\n    - Combines multiple text columns into single embedding\n    - Only processes rows that don't already have embeddings\n    - Uses efficient batch processing for large datasets\n    - Supports various sentence-transformer models for different use cases",
+        "operationId": "add_embeddings",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "text_columns": {
+                    "type": "string"
+                  },
+                  "embedding_column": {
+                    "type": "string"
+                  },
+                  "model_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "text_columns",
+                  "embedding_column",
+                  "model_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/auto_semantic_search": {
+      "post": {
+        "summary": "\ud83d\ude80 **ZERO-SETUP SEMANTIC SEARCH** - Just search, embeddings are handled automatically!",
+        "description": "\ud83d\ude80 **ZERO-SETUP SEMANTIC SEARCH** - Just search, embeddings are handled automatically!\n\nFind content using natural language semantic similarity. If embeddings don't exist,\nthey will be automatically generated for text columns. This is the easiest way to\ndo semantic search - no manual setup required!\n\nArgs:\n    query (str): Natural language search query\n    tables (Optional[List[str]]): Specific tables to search (default: all tables)\n    similarity_threshold (float): Minimum similarity score (0.0-1.0, default: 0.5)\n    limit (int): Maximum number of results to return (default: 10)\n    model_name (str): Model to use for embeddings (default: \"all-MiniLM-L6-v2\")\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"results\": List[...], \"auto_embedded_tables\": List[str]}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> auto_semantic_search(\"API design patterns\")\n    {\"success\": True, \"results\": [\n        {\"table_name\": \"technical_decisions\", \"similarity_score\": 0.87, \"decision_name\": \"REST API Structure\", ...}\n    ], \"auto_embedded_tables\": [\"technical_decisions\"]}\n\n    >>> auto_semantic_search(\"machine learning concepts\")\n    # Finds content about \"ML\", \"AI\", \"neural networks\", etc.\n    # Automatically creates embeddings if they don't exist!\n\nFastMCP Tool Info:\n    - **COMPLETELY AUTOMATIC**: No manual embedding setup required\n    - Auto-detects text columns and creates embeddings as needed\n    - Works across multiple tables simultaneously\n    - Finds conceptually similar content regardless of exact wording\n    - Returns relevance scores for ranking results\n    - Supports fuzzy matching and concept discovery\n    - Perfect for agents - just search and it works!",
+        "operationId": "auto_semantic_search",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "tables": {
+                    "type": "string"
+                  },
+                  "similarity_threshold": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "model_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "query",
+                  "similarity_threshold",
+                  "limit",
+                  "model_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/auto_smart_search": {
+      "post": {
+        "summary": "\ud83d\ude80 **ZERO-SETUP HYBRID SEARCH** - Best of both worlds with automatic embedding!",
+        "description": "\ud83d\ude80 **ZERO-SETUP HYBRID SEARCH** - Best of both worlds with automatic embedding!\n\nIntelligent hybrid search combining semantic understanding with keyword matching.\nAutomatically generates embeddings for text columns when needed. This is the\nultimate search tool - no manual setup required!\n\nArgs:\n    query (str): Search query (natural language or keywords)\n    tables (Optional[List[str]]): Tables to search (default: all)\n    semantic_weight (float): Weight for semantic similarity (0.0-1.0, default: 0.7)\n    text_weight (float): Weight for keyword matching (0.0-1.0, default: 0.3)\n    limit (int): Maximum results (default: 10)\n    model_name (str): Semantic model to use (default: \"all-MiniLM-L6-v2\")\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"results\": List[...], \"search_type\": \"auto_hybrid\"}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> auto_smart_search(\"user authentication security\")\n    {\"success\": True, \"results\": [\n        {\"combined_score\": 0.89, \"semantic_score\": 0.92, \"text_score\": 0.82, ...}\n    ], \"search_type\": \"auto_hybrid\", \"auto_embedded_tables\": [\"user_data\"]}\n\nFastMCP Tool Info:\n    - **COMPLETELY AUTOMATIC**: No manual embedding setup required\n    - Automatically balances semantic and keyword search\n    - Auto-detects text columns and creates embeddings as needed\n    - Provides separate scores for transparency\n    - Falls back gracefully if semantic search unavailable\n    - Optimal for both exploratory and precise searches\n    - Perfect for agents - ultimate search tool that just works!",
+        "operationId": "auto_smart_search",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "tables": {
+                    "type": "string"
+                  },
+                  "semantic_weight": {
+                    "type": "string"
+                  },
+                  "text_weight": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "model_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "query",
+                  "semantic_weight",
+                  "text_weight",
+                  "limit",
+                  "model_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/embedding_stats": {
+      "post": {
+        "summary": "Get statistics about semantic search readiness for a table.",
+        "description": "Get statistics about semantic search readiness for a table.\n\nCheck which content has embeddings and can be searched semantically.\n\nArgs:\n    table_name (str): Table to analyze\n    embedding_column (str): Embedding column to check (default: \"embedding\")\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"coverage_percent\": float, \"total_rows\": int}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> embedding_stats(\"technical_decisions\")\n    {\"success\": True, \"total_rows\": 25, \"embedded_rows\": 25, \"coverage_percent\": 100.0,\n     \"embedding_dimensions\": 384}\n\nFastMCP Tool Info:\n    - Shows how much content is ready for semantic search\n    - Helps identify tables that need embedding generation\n    - Provides embedding dimension info for debugging\n    - Useful for monitoring semantic search capabilities",
+        "operationId": "embedding_stats",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "embedding_column": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "embedding_column"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/semantic_search": {
+      "post": {
+        "summary": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!",
+        "description": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!\n\nFind content using natural language semantic similarity rather than exact keyword matching.\n\n**RECOMMENDATION**: Use auto_smart_search() for the same functionality with automatic setup.\nThis tool requires manual embedding setup via add_embeddings() first.\n\nThis enables intelligent knowledge discovery - find related concepts even when\nthey use different terminology or phrasing.\n\nArgs:\n    query (str): Natural language search query\n    tables (Optional[List[str]]): Specific tables to search (default: all tables with embeddings)\n    similarity_threshold (float): Minimum similarity score (0.0-1.0, default: 0.5)\n    limit (int): Maximum number of results to return (default: 10)\n    model_name (str): Model to use for query embedding (default: \"all-MiniLM-L6-v2\")\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"results\": List[...], \"total_results\": int}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> semantic_search(\"API design patterns\")\n    {\"success\": True, \"results\": [\n        {\"table_name\": \"technical_decisions\", \"similarity_score\": 0.87, \"decision_name\": \"REST API Structure\", ...},\n        {\"table_name\": \"project_structure\", \"similarity_score\": 0.72, \"component\": \"API Gateway\", ...}\n    ]}\n\n    >>> semantic_search(\"machine learning\", tables=[\"technical_decisions\"], similarity_threshold=0.7)\n    # Finds content about \"ML\", \"AI\", \"neural networks\", etc.\n\nFastMCP Tool Info:\n    - Works across multiple tables simultaneously\n    - Finds conceptually similar content regardless of exact wording\n    - Returns relevance scores for ranking results\n    - Supports fuzzy matching and concept discovery\n    - Much more powerful than keyword-based search for knowledge discovery",
+        "operationId": "semantic_search",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "tables": {
+                    "type": "string"
+                  },
+                  "similarity_threshold": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "model_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "query",
+                  "similarity_threshold",
+                  "limit",
+                  "model_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/smart_search": {
+      "post": {
+        "summary": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!",
+        "description": "\u26a0\ufe0f  **ADVANCED TOOL** - Most agents should use auto_smart_search() instead!\n\nIntelligent hybrid search combining semantic understanding with keyword matching.\n\n**RECOMMENDATION**: Use auto_smart_search() for the same functionality with automatic setup.\nThis tool requires manual embedding setup via add_embeddings() first.\n\nProvides the best of both worlds - semantic similarity for concept discovery\nplus exact text matching for precise searches.\n\nArgs:\n    query (str): Search query (natural language or keywords)\n    tables (Optional[List[str]]): Tables to search (default: all)\n    semantic_weight (float): Weight for semantic similarity (0.0-1.0, default: 0.7)\n    text_weight (float): Weight for keyword matching (0.0-1.0, default: 0.3)\n    limit (int): Maximum results (default: 10)\n    model_name (str): Semantic model to use (default: \"all-MiniLM-L6-v2\")\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"results\": List[...], \"search_type\": \"hybrid\"}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> smart_search(\"user authentication security\")\n    {\"success\": True, \"results\": [\n        {\"combined_score\": 0.89, \"semantic_score\": 0.92, \"text_score\": 0.82, ...},\n        {\"combined_score\": 0.76, \"semantic_score\": 0.71, \"text_score\": 0.85, ...}\n    ], \"search_type\": \"hybrid\"}\n\nFastMCP Tool Info:\n    - Automatically balances semantic and keyword search\n    - Provides separate scores for transparency\n    - Falls back gracefully if semantic search unavailable\n    - Optimal for both exploratory and precise searches\n    - Perfect for agents - ultimate search tool that just works!",
+        "operationId": "smart_search",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "tables": {
+                    "type": "string"
+                  },
+                  "semantic_weight": {
+                    "type": "string"
+                  },
+                  "text_weight": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "model_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "query",
+                  "semantic_weight",
+                  "text_weight",
+                  "limit",
+                  "model_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/find_related": {
+      "post": {
+        "summary": "Find content related to a specific row by semantic similarity.",
+        "description": "Find content related to a specific row by semantic similarity.\n\nDiscover connections and related information that might not be obvious\nfrom direct references or tags.\n\nArgs:\n    table_name (str): Table containing the reference row\n    row_id (int): ID of the row to find related content for\n    similarity_threshold (float): Minimum similarity score (default: 0.5)\n    limit (int): Maximum number of related items to return (default: 5)\n    model_name (str): Model for similarity comparison (default: \"all-MiniLM-L6-v2\")\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"results\": List[...], \"target_row\": Dict}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> find_related(\"technical_decisions\", 5)\n    {\"success\": True, \"results\": [\n        {\"id\": 12, \"similarity_score\": 0.84, \"decision_name\": \"Related Architecture Choice\", ...},\n        {\"id\": 3, \"similarity_score\": 0.71, \"decision_name\": \"Similar Technology Decision\", ...}\n    ], \"target_row\": {\"id\": 5, \"decision_name\": \"API Framework Selection\", ...}}\n\nFastMCP Tool Info:\n    - Helps discover hidden relationships between data\n    - Useful for finding similar decisions, related problems, or connected concepts\n    - Can reveal patterns and themes across your knowledge base\n    - Enables serendipitous discovery of relevant information",
+        "operationId": "find_related",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "row_id": {
+                    "type": "integer"
+                  },
+                  "similarity_threshold": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "model_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "row_id",
+                  "similarity_threshold",
+                  "limit",
+                  "model_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/generate_knowledge_graph": {
+      "post": {
+        "summary": "\ud83c\udfaf **KNOWLEDGE GRAPH GENERATOR** - Visualize your memory as an interactive graph!",
+        "description": "\ud83c\udfaf **KNOWLEDGE GRAPH GENERATOR** - Visualize your memory as an interactive graph!\n\nCreates an interactive HTML visualization showing relationships between your stored data.\nPerfect for discovering hidden connections and understanding your knowledge structure.\n\nArgs:\n    output_path (str): Directory to save the graph (default: \"knowledge_graphs\")\n    include_temporal (bool): Include time-based relationships (default: True)\n    min_connections (int): Minimum connections to include a node (default: 1)\n    open_in_browser (bool): Attempt to open the graph in default browser (default: False)\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"file_path\": str, \"stats\": dict}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> generate_knowledge_graph()\n    {\"success\": True, \"file_path\": \"knowledge_graphs/knowledge_graph_20250628_183319.html\", \n     \"stats\": {\"nodes\": 24, \"edges\": 15, \"tables\": 5}}\n\nFastMCP Tool Info:\n    - **INTERACTIVE VISUALIZATION**: Creates professional HTML graphs using vis.js\n    - **RELATIONSHIP DISCOVERY**: Finds connections via foreign keys, naming patterns, temporal data\n    - **SEMANTIC CONNECTIONS**: Uses embeddings for content-based relationships if available\n    - **CLICKABLE OUTPUT**: Generates file:// links for instant browser opening\n    - **ZERO DEPENDENCIES**: Works with any memory bank schema without configuration",
+        "operationId": "generate_knowledge_graph",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "output_path": {
+                    "type": "string"
+                  },
+                  "include_temporal": {
+                    "type": "boolean"
+                  },
+                  "min_connections": {
+                    "type": "integer"
+                  },
+                  "open_in_browser": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "output_path",
+                  "include_temporal",
+                  "min_connections",
+                  "open_in_browser"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/intelligent_discovery": {
+      "post": {
+        "summary": "\ud83e\udde0 **INTELLIGENT DISCOVERY** - AI-guided exploration of your memory bank!",
+        "description": "\ud83e\udde0 **INTELLIGENT DISCOVERY** - AI-guided exploration of your memory bank!\n\nOrchestrates multiple discovery tools based on your exploration goals.\nProvides step-by-step guidance and actionable insights tailored to your needs.\n\nArgs:\n    discovery_goal (str): What you want to achieve\n        - \"understand_content\": Learn what data is available and how it's organized\n        - \"find_patterns\": Discover themes, relationships, and content patterns\n        - \"explore_structure\": Understand database schema and organization\n        - \"assess_quality\": Evaluate content quality and completeness\n        - \"prepare_search\": Get ready for effective content searching\n    focus_area (Optional[str]): Specific table or topic to focus on (default: all)\n    depth (str): How thorough the discovery should be\n        - \"quick\": Fast overview with key insights\n        - \"moderate\": Balanced analysis with actionable recommendations\n        - \"comprehensive\": Deep dive with detailed analysis\n    agent_id (Optional[str]): Agent identifier for learning discovery patterns\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"discovery\": Dict, \"next_steps\": List}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> intelligent_discovery(\"understand_content\")\n    {\"success\": True, \"discovery\": {\n        \"overview\": {\"total_tables\": 5, \"total_rows\": 234},\n        \"content_summary\": {...},\n        \"recommendations\": [...]\n    }, \"next_steps\": [\"Use auto_smart_search() for specific queries\"]}\n\nFastMCP Tool Info:\n    - **COMPLETELY AUTOMATED**: No manual tool chaining required\n    - **GOAL-ORIENTED**: Tailored discovery based on your specific objectives\n    - **ACTIONABLE INSIGHTS**: Always includes concrete next steps\n    - **LEARNING**: Improves recommendations based on usage patterns\n    - **PERFECT FOR AGENTS**: Single tool that orchestrates complex discovery workflows",
+        "operationId": "intelligent_discovery",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "discovery_goal": {
+                    "type": "string"
+                  },
+                  "focus_area": {
+                    "type": "string"
+                  },
+                  "depth": {
+                    "type": "string"
+                  },
+                  "agent_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "discovery_goal",
+                  "depth"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/discovery_templates": {
+      "post": {
+        "summary": "\ud83d\udccb **DISCOVERY TEMPLATES** - Pre-built exploration workflows for common scenarios!",
+        "description": "\ud83d\udccb **DISCOVERY TEMPLATES** - Pre-built exploration workflows for common scenarios!\n\nProvides step-by-step discovery templates optimized for specific agent use cases.\nEach template includes the exact sequence of tools to call and what to look for.\n\nArgs:\n    template_type (str): Type of discovery template to provide\n        - \"first_time_exploration\": Complete workflow for new agents\n        - \"content_audit\": Systematic content quality review\n        - \"search_optimization\": Prepare memory bank for optimal searching\n        - \"relationship_mapping\": Discover connections between data\n        - \"problem_solving\": Find information to solve specific problems\n        - \"knowledge_extraction\": Extract insights from stored knowledge\n    customize_for (Optional[str]): Customize template for specific domain/topic\n\nReturns:\n    ToolResponse: {\"success\": True, \"template\": Dict, \"workflow\": List}\n\nExamples:\n    >>> discovery_templates(\"first_time_exploration\")\n    {\"success\": True, \"template\": {\n        \"name\": \"First Time Exploration\",\n        \"description\": \"Complete discovery workflow for new agents\",\n        \"workflow\": [\n            {\"step\": 1, \"tool\": \"intelligent_discovery\", \"params\": {...}},\n            {\"step\": 2, \"tool\": \"explore_tables\", \"params\": {...}}\n        ]\n    }}\n\nFastMCP Tool Info:\n    - **PROVEN WORKFLOWS**: Battle-tested discovery sequences\n    - **STEP-BY-STEP GUIDANCE**: Exact tools and parameters to use\n    - **CUSTOMIZABLE**: Adapt templates to your specific needs\n    - **LEARNING-OPTIMIZED**: Based on successful discovery patterns",
+        "operationId": "discovery_templates",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "template_type": {
+                    "type": "string"
+                  },
+                  "customize_for": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "template_type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/discover_relationships": {
+      "post": {
+        "summary": "\ud83d\udd17 **RELATIONSHIP DISCOVERY** - Find hidden connections in your data!",
+        "description": "\ud83d\udd17 **RELATIONSHIP DISCOVERY** - Find hidden connections in your data!\n\nAutomatically discovers relationships between tables and content areas using\nboth structural analysis and semantic similarity to reveal data connections.\n\nArgs:\n    table_name (Optional[str]): Focus on relationships for specific table (default: all)\n    relationship_types (List[str]): Types of relationships to discover\n        - \"foreign_keys\": Structural relationships via foreign keys\n        - \"semantic_similarity\": Content-based relationships via semantic analysis\n        - \"temporal_patterns\": Time-based relationships and patterns\n        - \"naming_patterns\": Relationships based on naming conventions\n    similarity_threshold (float): Minimum similarity for semantic relationships (0.0-1.0)\n\nReturns:\n    ToolResponse: {\"success\": True, \"relationships\": Dict, \"insights\": List}\n\nExamples:\n    >>> discover_relationships(\"users\")\n    {\"success\": True, \"relationships\": {\n        \"users\": {\n            \"foreign_key_refs\": [\"posts.user_id\", \"comments.user_id\"],\n            \"semantic_similar\": [{\"table\": \"profiles\", \"similarity\": 0.8}],\n            \"temporal_related\": [\"user_sessions\"]\n        }\n    }}\n\nFastMCP Tool Info:\n    - **AUTOMATIC DETECTION**: Finds relationships you might not notice manually\n    - **MULTIPLE METHODS**: Combines structural, semantic, and temporal analysis\n    - **ACTIONABLE INSIGHTS**: Suggests how to leverage discovered relationships\n    - **PERFECT FOR EXPLORATION**: Reveals hidden data organization patterns",
+        "operationId": "discover_relationships",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "relationship_types": {
+                    "type": "string"
+                  },
+                  "similarity_threshold": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "relationship_types",
+                  "similarity_threshold"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/batch_create_memories": {
+      "post": {
+        "summary": "\ud83d\ude80 **BATCH MEMORY CREATION** - Efficiently add multiple memories at once!",
+        "description": "\ud83d\ude80 **BATCH MEMORY CREATION** - Efficiently add multiple memories at once!\n\nCreate multiple memory records in a single operation with optional duplicate prevention.\nMuch faster than creating records one by one.\n\nArgs:\n    table_name (str): Table to insert records into\n    data_list (List[Dict[str, Any]]): List of memory records to create\n    match_columns (Optional[List[str]]): Columns to use for duplicate detection (if use_upsert=True)\n    use_upsert (bool): Whether to use upsert logic to prevent duplicates (default: True)\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"created\": int, \"updated\": int, \"failed\": int}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> batch_create_memories('technical_decisions', [\n    ...     {'decision_name': 'API Design', 'chosen_approach': 'REST'},\n    ...     {'decision_name': 'Database Choice', 'chosen_approach': 'SQLite'},\n    ...     {'decision_name': 'Frontend Framework', 'chosen_approach': 'React'}\n    ... ], match_columns=['decision_name'])\n    {\"success\": True, \"created\": 2, \"updated\": 1, \"failed\": 0, \"total_processed\": 3}\n\nFastMCP Tool Info:\n    - **EFFICIENT**: Process multiple records in one operation\n    - **SMART DEDUPLICATION**: Optional upsert logic prevents duplicates\n    - **DETAILED FEEDBACK**: Returns counts for created, updated, and failed records\n    - **PARTIAL SUCCESS**: Continues processing even if some records fail\n    - **PERFECT FOR BULK IMPORTS**: Ideal for importing knowledge bases or datasets",
+        "operationId": "batch_create_memories",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "data_list": {
+                    "type": "array"
+                  },
+                  "match_columns": {
+                    "type": "string"
+                  },
+                  "use_upsert": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "data_list",
+                  "use_upsert"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tools/batch_delete_memories": {
+      "post": {
+        "summary": "\ud83d\uddd1\ufe0f **BATCH MEMORY DELETION** - Efficiently delete multiple memories at once!",
+        "description": "\ud83d\uddd1\ufe0f **BATCH MEMORY DELETION** - Efficiently delete multiple memories at once!\n\nDelete multiple memory records in a single operation with flexible matching conditions.\nMuch faster than deleting records one by one.\n\nArgs:\n    table_name (str): Table to delete records from\n    where_conditions (List[Dict[str, Any]]): List of WHERE conditions for deletion\n    match_all (bool): If True, delete records matching ALL conditions; if False, delete records matching ANY condition (default: False)\n\nReturns:\n    ToolResponse: On success: {\"success\": True, \"deleted\": int, \"failed\": int}\n                 On error: {\"success\": False, \"error\": str, \"category\": str, \"details\": dict}\n\nExamples:\n    >>> batch_delete_memories('technical_decisions', [\n    ...     {'decision_name': 'Old Decision 1'},\n    ...     {'decision_name': 'Old Decision 2'},\n    ...     {'id': 42}\n    ... ])\n    {\"success\": True, \"deleted\": 3, \"failed\": 0, \"total_conditions\": 3}\n\n    >>> batch_delete_memories('notes', [\n    ...     {'category': 'temp', 'created_date': '2024-01-01'}\n    ... ], match_all=True)\n    {\"success\": True, \"deleted\": 15, \"failed\": 0}  # Deletes notes that are BOTH temp AND from that date\n\nFastMCP Tool Info:\n    - **EFFICIENT**: Process multiple deletions in one operation\n    - **FLEXIBLE MATCHING**: Support both OR logic (any condition) and AND logic (all conditions)\n    - **DETAILED FEEDBACK**: Returns counts and per-condition results\n    - **PARTIAL SUCCESS**: Continues processing even if some deletions fail\n    - **SAFE**: Uses parameterized queries to prevent SQL injection",
+        "operationId": "batch_delete_memories",
+        "tags": [
+          "server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "table_name": {
+                    "type": "string"
+                  },
+                  "where_conditions": {
+                    "type": "array"
+                  },
+                  "match_all": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "table_name",
+                  "where_conditions",
+                  "match_all"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ToolResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

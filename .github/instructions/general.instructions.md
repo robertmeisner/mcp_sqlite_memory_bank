@@ -3,7 +3,7 @@ applyTo: '**'
 ---
                 
 ## PRIME DIRECTIVE
-	User/Author: Robert Meisner
+	User/Author: Robert Meisner robert@catchit.pl
 	Be chatting and teach about what you are doing while coding.
     First analyze the problem and requirements. Then, write a gameplan that implements the solution. 
 	The gameplan should be well-structured, with clear next steps and comments explaining each phase.

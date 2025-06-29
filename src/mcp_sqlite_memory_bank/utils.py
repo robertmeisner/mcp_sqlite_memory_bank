@@ -110,7 +110,9 @@ def get_table_columns(conn: sqlite3.Connection, table_name: str) -> List[str]:
     cur.execute(f"PRAGMA table_info({table_name})")
     columns = [row[1] for row in cur.fetchall()]
     if not columns:
-        raise SchemaError(f"Table does not exist: {table_name}", {"table_name": table_name})
+        raise SchemaError(
+            f"Table does not exist: {table_name}", {"table_name": table_name}
+        )
     return columns
 
 
@@ -162,9 +164,13 @@ def validate_table_exists(conn: sqlite3.Connection, table_name: str) -> None:
         table_name: Name of table to check
     """
     cur = conn.cursor()
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+    cur.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+    )
     if not cur.fetchone():
-        raise SchemaError(f"Table does not exist: {table_name}", {"table_name": table_name})
+        raise SchemaError(
+            f"Table does not exist: {table_name}", {"table_name": table_name}
+        )
 
 
 def build_where_clause(
@@ -375,7 +381,9 @@ def enhanced_catch_errors(
 
                 # Determine error category
                 if isinstance(e, MemoryBankError):
-                    category = e.category.name if hasattr(e, "category") else "MEMORY_BANK"
+                    category = (
+                        e.category.name if hasattr(e, "category") else "MEMORY_BANK"
+                    )
                     return cast(
                         ToolResponse,
                         {

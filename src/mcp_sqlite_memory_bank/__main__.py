@@ -11,7 +11,9 @@ import sys
 import os
 
 # Add the project root to Python path to avoid import issues
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+project_root = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
@@ -32,8 +34,12 @@ def main() -> None:
             print("SQLite Memory Bank MCP Server")
             print("Usage: python -m src.mcp_sqlite_memory_bank")
             print("")
-            print("This starts the SQLite Memory Bank as an MCP (Model Context Protocol) server.")
-            print("The server communicates via STDIO and provides memory management tools")
+            print(
+                "This starts the SQLite Memory Bank as an MCP (Model Context Protocol) server."
+            )
+            print(
+                "The server communicates via STDIO and provides memory management tools"
+            )
             print("for LLMs and AI agents.")
             print("")
             print(f"Database location: {DB_PATH}")
@@ -43,7 +49,9 @@ def main() -> None:
             return
 
         # Log startup information
-        logging.info(f"Starting SQLite Memory Bank MCP server with database at {DB_PATH}")
+        logging.info(
+            f"Starting SQLite Memory Bank MCP server with database at {DB_PATH}"
+        )
 
         # Run the FastMCP app in stdio mode for MCP clients
         app.run(transport="stdio")

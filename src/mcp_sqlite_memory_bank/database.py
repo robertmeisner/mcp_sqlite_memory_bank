@@ -116,7 +116,8 @@ class SQLiteMemoryDatabase:
         for col_name in column_names:
             if col_name not in valid_columns:
                 raise ValidationError(
-                    f"Invalid column '{col_name}' for table " f"'{table.name}' in {context}"
+                    f"Invalid column '{col_name}' for table "
+                    f"'{table.name}' in {context}"
                 )
 
     def _build_where_conditions(self, table: Table, where: Dict[str, Any]) -> List:
@@ -151,7 +152,9 @@ class SQLiteMemoryDatabase:
 
         return decorator
 
-    def create_table(self, table_name: str, columns: List[Dict[str, str]]) -> ToolResponse:
+    def create_table(
+        self, table_name: str, columns: List[Dict[str, str]]
+    ) -> ToolResponse:
         """Create a new table with the specified columns."""
         # Input validation
         if not table_name or not table_name.isidentifier():
@@ -187,7 +190,9 @@ class SQLiteMemoryDatabase:
             with self.get_connection() as conn:
                 inspector = inspect(conn)
                 tables = [
-                    name for name in inspector.get_table_names() if not name.startswith("sqlite_")
+                    name
+                    for name in inspector.get_table_names()
+                    if not name.startswith("sqlite_")
                 ]
             return {"success": True, "tables": tables}
         except SQLAlchemyError as e:
@@ -247,7 +252,9 @@ class SQLiteMemoryDatabase:
         except (ValidationError, SQLAlchemyError) as e:
             if isinstance(e, ValidationError):
                 raise e
-            raise DatabaseError(f"Failed to rename table from {old_name} to {new_name}: {str(e)}")
+            raise DatabaseError(
+                f"Failed to rename table from {old_name} to {new_name}: {str(e)}"
+            )
 
     def insert_row(self, table_name: str, data: Dict[str, Any]) -> ToolResponse:
         """Insert a row into a table."""
@@ -323,7 +330,9 @@ class SQLiteMemoryDatabase:
                 raise e
             raise DatabaseError(f"Failed to update table {table_name}: {str(e)}")
 
-    def delete_rows(self, table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
+    def delete_rows(
+        self, table_name: str, where: Optional[Dict[str, Any]] = None
+    ) -> ToolResponse:
         """Delete rows from a table."""
         try:
             table = self._ensure_table_exists(table_name)
@@ -334,7 +343,9 @@ class SQLiteMemoryDatabase:
             if conditions:
                 stmt = stmt.where(and_(*conditions))
             else:
-                logging.warning(f"delete_rows called without WHERE clause on table {table_name}")
+                logging.warning(
+                    f"delete_rows called without WHERE clause on table {table_name}"
+                )
 
             result = self._execute_with_commit(stmt)
             return {"success": True, "rows_affected": result.rowcount}
@@ -417,7 +428,8 @@ class SQLiteMemoryDatabase:
                     text_columns = [
                         col
                         for col in table.columns
-                        if "TEXT" in str(col.type).upper() or "VARCHAR" in str(col.type).upper()
+                        if "TEXT" in str(col.type).upper()
+                        or "VARCHAR" in str(col.type).upper()
                     ]
 
                     if not text_columns:
@@ -460,7 +472,8 @@ class SQLiteMemoryDatabase:
                                                 else 0
                                             )
 
-                                    # Factor 3: Position bonus (early matches score higher)
+                                    # Factor 3: Position bonus (early matches score
+                                    # higher)
                                     position_bonus = 0.0
                                     first_occurrence = content.find(query_lower)
                                     if first_occurrence != -1:
@@ -470,7 +483,8 @@ class SQLiteMemoryDatabase:
                                             * 0.1
                                         )
 
-                                    # Factor 4: Column importance (title/name columns get bonus)
+                                    # Factor 4: Column importance (title/name columns
+                                    # get bonus)
                                     column_bonus = 0.0
                                     if any(
                                         keyword in col.name.lower()
@@ -485,7 +499,10 @@ class SQLiteMemoryDatabase:
 
                                     # Combined relevance score
                                     col_relevance = (
-                                        exact_score + term_score + position_bonus + column_bonus
+                                        exact_score
+                                        + term_score
+                                        + position_bonus
+                                        + column_bonus
                                     )
                                     relevance_scores.append(col_relevance)
 
@@ -495,7 +512,9 @@ class SQLiteMemoryDatabase:
                                         len(row_dict[col.name]),
                                         first_occurrence + len(query) + 50,
                                     )
-                                    snippet = str(row_dict[col.name])[snippet_start:snippet_end]
+                                    snippet = str(row_dict[col.name])[
+                                        snippet_start:snippet_end
+                                    ]
                                     if snippet_start > 0:
                                         snippet = "..." + snippet
                                     if snippet_end < len(str(row_dict[col.name])):
@@ -515,7 +534,9 @@ class SQLiteMemoryDatabase:
                                     "match_quality": (
                                         "high"
                                         if total_relevance > 0.5
-                                        else ("medium" if total_relevance > 0.1 else "low")
+                                        else (
+                                            "medium" if total_relevance > 0.1 else "low"
+                                        )
                                     ),
                                     "match_count": len(relevance_scores),
                                 }
@@ -552,7 +573,9 @@ class SQLiteMemoryDatabase:
             table_names = list(self.metadata.tables.keys())
 
             if pattern:
-                table_names = [name for name in table_names if pattern.replace("%", "") in name]
+                table_names = [
+                    name for name in table_names if pattern.replace("%", "") in name
+                ]
 
             exploration: Dict[str, Any] = {
                 "tables": [],
@@ -578,7 +601,10 @@ class SQLiteMemoryDatabase:
                         }
                         columns.append(col_data)
 
-                        if "TEXT" in str(col.type).upper() or "VARCHAR" in str(col.type).upper():
+                        if (
+                            "TEXT" in str(col.type).upper()
+                            or "VARCHAR" in str(col.type).upper()
+                        ):
                             text_columns.append(col.name)
 
                     table_info: Dict[str, Any] = {
@@ -589,21 +615,27 @@ class SQLiteMemoryDatabase:
 
                     # Add row count if requested
                     if include_row_counts:
-                        count_result = conn.execute(select(text("COUNT(*)")).select_from(table))
+                        count_result = conn.execute(
+                            select(text("COUNT(*)")).select_from(table)
+                        )
                         row_count = count_result.scalar()
                         table_info["row_count"] = row_count
                         exploration["total_rows"] += row_count
 
                     # Add sample data
                     sample_result = conn.execute(select(table).limit(3))
-                    sample_rows = [dict(row._mapping) for row in sample_result.fetchall()]
+                    sample_rows = [
+                        dict(row._mapping) for row in sample_result.fetchall()
+                    ]
                     if sample_rows:
                         table_info["sample_data"] = sample_rows
 
                     # Add content preview for text columns
                     if text_columns:
                         content_preview: Dict[str, List[Any]] = {}
-                        for col_name in text_columns[:3]:  # Limit to first 3 text columns
+                        for col_name in text_columns[
+                            :3
+                        ]:  # Limit to first 3 text columns
                             col = table.c[col_name]
                             preview_result = conn.execute(
                                 select(col).distinct().where(col.isnot(None)).limit(5)
@@ -641,7 +673,9 @@ class SQLiteMemoryDatabase:
 
             # Add embedding column as TEXT (JSON storage)
             with self.get_connection() as conn:
-                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {embedding_column} TEXT"))
+                conn.execute(
+                    text(f"ALTER TABLE {table_name} ADD COLUMN {embedding_column} TEXT")
+                )
                 conn.commit()
 
             self._refresh_metadata()
@@ -677,7 +711,9 @@ class SQLiteMemoryDatabase:
             table_columns = [col.name for col in table.columns]
             for col in text_columns:
                 if col not in table_columns:
-                    raise ValidationError(f"Column '{col}' not found in table '{table_name}'")
+                    raise ValidationError(
+                        f"Column '{col}' not found in table '{table_name}'"
+                    )
 
             # Add embedding column if it doesn't exist
             if embedding_column not in table_columns:
@@ -708,7 +744,7 @@ class SQLiteMemoryDatabase:
 
                 processed = 0
                 for i in range(0, len(rows), batch_size):
-                    batch = rows[i : i + batch_size]
+                    batch = rows[i: i + batch_size]
 
                     for row in batch:
                         row_dict = dict(row._mapping)
@@ -723,7 +759,9 @@ class SQLiteMemoryDatabase:
                             combined_text = " ".join(text_parts)
 
                             # Generate embedding
-                            embedding = semantic_engine.generate_embedding(combined_text)
+                            embedding = semantic_engine.generate_embedding(
+                                combined_text
+                            )
                             embedding_json = json.dumps(embedding)
 
                             # Update row with embedding
@@ -738,7 +776,8 @@ class SQLiteMemoryDatabase:
 
                     conn.commit()
                     logging.info(
-                        f"Generated embeddings for batch {i//batch_size + 1}, processed {processed} rows"
+                        f"Generated embeddings for batch "
+                        f"{i // batch_size + 1}, processed {processed} rows"
                     )
 
                 return {
@@ -746,7 +785,8 @@ class SQLiteMemoryDatabase:
                     "message": f"Generated embeddings for {processed} rows",
                     "processed": processed,
                     "model": model_name,
-                    "embedding_dimension": semantic_engine.get_embedding_dimensions() or 0,
+                    "embedding_dimension": semantic_engine.get_embedding_dimensions()
+                    or 0,
                 }
 
         except (ValidationError, SQLAlchemyError) as e:
@@ -815,7 +855,8 @@ class SQLiteMemoryDatabase:
                         text_cols = [
                             col.name
                             for col in table.columns
-                            if "TEXT" in str(col.type).upper() or "VARCHAR" in str(col.type).upper()
+                            if "TEXT" in str(col.type).upper()
+                            or "VARCHAR" in str(col.type).upper()
                         ]
                     else:
                         text_cols = text_columns
@@ -885,7 +926,9 @@ class SQLiteMemoryDatabase:
                 target_row = conn.execute(target_stmt).fetchone()
 
                 if not target_row:
-                    raise ValidationError(f"Row with id {row_id} not found in table '{table_name}'")
+                    raise ValidationError(
+                        f"Row with id {row_id} not found in table '{table_name}'"
+                    )
 
                 target_dict = dict(target_row._mapping)
 
@@ -1059,7 +1102,9 @@ class SQLiteMemoryDatabase:
                 if not hasattr(semantic_engine, "hybrid_search") or not callable(
                     getattr(semantic_engine, "hybrid_search")
                 ):
-                    raise DatabaseError("Semantic engine hybrid_search method is not callable")
+                    raise DatabaseError(
+                        "Semantic engine hybrid_search method is not callable"
+                    )
 
                 enhanced_results = semantic_engine.hybrid_search(
                     query,
@@ -1071,7 +1116,8 @@ class SQLiteMemoryDatabase:
                     limit,
                 )
             except Exception as e:
-                # If semantic enhancement fails, return semantic results without text enhancement
+                # If semantic enhancement fails, return semantic results without text
+                # enhancement
                 logging.warning(f"Semantic enhancement failed: {e}")
                 enhanced_results = semantic_results[:limit]
 
@@ -1100,11 +1146,15 @@ class SQLiteMemoryDatabase:
 
             # Check if embedding column exists
             if embedding_column not in [col.name for col in table.columns]:
-                # Return 0% coverage when column doesn't exist (for compatibility with tests)
+                # Return 0% coverage when column doesn't exist (for compatibility with
+                # tests)
                 total_count = 0
                 with self.get_connection() as conn:
                     total_count = (
-                        conn.execute(select(text("COUNT(*)")).select_from(table)).scalar() or 0
+                        conn.execute(
+                            select(text("COUNT(*)")).select_from(table)
+                        ).scalar()
+                        or 0
                     )
 
                 return {
@@ -1120,7 +1170,8 @@ class SQLiteMemoryDatabase:
             with self.get_connection() as conn:
                 # Count total rows
                 total_count = (
-                    conn.execute(select(text("COUNT(*)")).select_from(table)).scalar() or 0
+                    conn.execute(select(text("COUNT(*)")).select_from(table)).scalar()
+                    or 0
                 )
 
                 # Count rows with embeddings
@@ -1161,7 +1212,9 @@ class SQLiteMemoryDatabase:
                     except json.JSONDecodeError:
                         pass
 
-                coverage_percent = (embedded_count / total_count * 100) if total_count > 0 else 0.0
+                coverage_percent = (
+                    (embedded_count / total_count * 100) if total_count > 0 else 0.0
+                )
 
                 return {
                     "success": True,

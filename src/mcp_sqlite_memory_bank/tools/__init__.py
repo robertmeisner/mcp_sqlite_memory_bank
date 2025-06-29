@@ -6,6 +6,7 @@ This module organizes the various MCP tools into logical categories:
 - search: Intelligent search and discovery tools
 - discovery: Advanced exploration and relationship discovery tools
 - basic: Core CRUD operations and table management
+- llm_optimization: LLM-assisted optimization and analysis tools
 """
 
 # Import all tools to make them available at the package level
@@ -42,6 +43,17 @@ from .basic import (
     run_select_query,
     list_all_columns,
 )
+from .llm_optimization import (
+    intelligent_duplicate_analysis,
+    intelligent_optimization_strategy,
+    smart_archiving_policy,
+)
+from .d3_visualization import (
+    create_interactive_d3_graph,
+    create_advanced_d3_dashboard,
+    export_graph_data,
+    create_3d_knowledge_graph,
+)
 
 __all__ = [
     # Analytics tools
@@ -73,4 +85,13 @@ __all__ = [
     "delete_rows",
     "run_select_query",
     "list_all_columns",
+    # LLM Optimization tools
+    "intelligent_duplicate_analysis",
+    "intelligent_optimization_strategy",
+    "smart_archiving_policy",
+    # D3.js Visualization tools
+    "create_interactive_d3_graph",
+    "create_advanced_d3_dashboard",
+    "export_graph_data",
+    "create_3d_knowledge_graph",
 ]

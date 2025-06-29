@@ -1,0 +1,26 @@
+# Pre-commit hook for automated documentation updates
+#
+# This hook automatically updates API documentation when code changes.
+# Install with: pre-commit install
+# Run manually with: pre-commit run update-api-docs
+
+repos:
+  - repo: local
+    hooks:
+      - id: update-api-docs
+        name: Update API Documentation
+        entry: python scripts/generate_api_docs.py
+        language: system
+        files: ^src/.*\.py$
+        pass_filenames: false
+        stages: [pre-commit]
+        verbose: true
+        
+      - id: validate-docs
+        name: Validate Documentation
+        entry: python scripts/update_docs.py
+        language: system
+        files: ^(docs/.*\.md|src/.*\.py)$
+        pass_filenames: false
+        stages: [pre-push]
+        verbose: true

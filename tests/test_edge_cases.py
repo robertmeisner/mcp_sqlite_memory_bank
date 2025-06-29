@@ -78,7 +78,9 @@ class TestBoundaryConditions:
             assert result_out["success"]
 
             # Test reading empty strings
-            read_result = await client.call_tool("read_rows", {"table_name": "empty_string_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "empty_string_test"}
+            )
             read_out = extract_result(read_result)
             assert read_out["success"]
             row = read_out["rows"][0]
@@ -87,7 +89,8 @@ class TestBoundaryConditions:
 
             # Test searching with empty strings
             search_result = await client.call_tool(
-                "read_rows", {"table_name": "empty_string_test", "where": {"empty_text": ""}}
+                "read_rows",
+                {"table_name": "empty_string_test", "where": {"empty_text": ""}},
             )
             search_out = extract_result(search_result)
             assert search_out["success"]
@@ -113,13 +116,18 @@ class TestBoundaryConditions:
 
             result = await client.call_tool(
                 "create_row",
-                {"table_name": "large_text_test", "data": {"large_content": large_content}},
+                {
+                    "table_name": "large_text_test",
+                    "data": {"large_content": large_content},
+                },
             )
             result_out = extract_result(result)
             assert result_out["success"]
 
             # Verify large content can be retrieved
-            read_result = await client.call_tool("read_rows", {"table_name": "large_text_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "large_text_test"}
+            )
             read_out = extract_result(read_result)
             assert read_out["success"]
             assert len(read_out["rows"][0]["large_content"]) == 1024 * 1024
@@ -155,7 +163,9 @@ class TestBoundaryConditions:
             assert result_out["success"]
 
             # Verify Unicode data integrity
-            read_result = await client.call_tool("read_rows", {"table_name": "unicode_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "unicode_test"}
+            )
             read_out = extract_result(read_result)
             assert read_out["success"]
             row = read_out["rows"][0]
@@ -191,7 +201,8 @@ class TestBoundaryConditions:
             }
 
             result = await client.call_tool(
-                "create_row", {"table_name": "numeric_boundary_test", "data": boundary_data}
+                "create_row",
+                {"table_name": "numeric_boundary_test", "data": boundary_data},
             )
             result_out = extract_result(result)
             assert result_out["success"]
@@ -208,7 +219,9 @@ class TestBoundaryConditions:
             assert row["min_int"] == boundary_data["min_int"]
             assert row["zero_val"] == 0
             # Float precision may be limited by SQLite
-            assert abs(row["float_precision"] - boundary_data["float_precision"]) < 1e-10
+            assert (
+                abs(row["float_precision"] - boundary_data["float_precision"]) < 1e-10
+            )
 
     @pytest.mark.asyncio
     async def test_table_and_column_name_boundaries(self, temp_db_edge):
@@ -232,7 +245,8 @@ class TestBoundaryConditions:
 
             # Test that the table was created and is usable
             insert_result = await client.call_tool(
-                "create_row", {"table_name": long_table_name, "data": {"a" * 50: "test_value"}}
+                "create_row",
+                {"table_name": long_table_name, "data": {"a" * 50: "test_value"}},
             )
             insert_out = extract_result(insert_result)
             assert insert_out["success"]
@@ -286,13 +300,16 @@ class TestMalformedInputs:
 
             for i, json_text in enumerate(invalid_json_samples):
                 result = await client.call_tool(
-                    "create_row", {"table_name": "json_test", "data": {"json_text": json_text}}
+                    "create_row",
+                    {"table_name": "json_test", "data": {"json_text": json_text}},
                 )
                 result_out = extract_result(result)
                 assert result_out["success"], f"Failed to store sample {i}: {json_text}"
 
             # Verify all samples were stored
-            read_result = await client.call_tool("read_rows", {"table_name": "json_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "json_test"}
+            )
             read_out = extract_result(read_result)
             assert read_out["success"]
             assert len(read_out["rows"]) == len(invalid_json_samples)
@@ -319,20 +336,24 @@ class TestMalformedInputs:
                 "1'; DELETE FROM injection_test; --",
                 "UNION SELECT * FROM sqlite_master",
                 "Robert'); DROP TABLE students;--",  # Classic Bobby Tables
-                "<script>alert('xss')</script>",  # XSS attempt (should be stored as text)
+                "<script>alert('xss')</script>",
+                # XSS attempt (should be stored as text)
                 "NULL; UPDATE injection_test SET user_input='hacked' WHERE 1=1; --",
             ]
 
             # All injection attempts should be safely stored as text data
             for attempt in injection_attempts:
                 result = await client.call_tool(
-                    "create_row", {"table_name": "injection_test", "data": {"user_input": attempt}}
+                    "create_row",
+                    {"table_name": "injection_test", "data": {"user_input": attempt}},
                 )
                 result_out = extract_result(result)
                 assert result_out["success"], f"Failed to safely store: {attempt}"
 
             # Verify table still exists and data is intact
-            read_result = await client.call_tool("read_rows", {"table_name": "injection_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "injection_test"}
+            )
             read_out = extract_result(read_result)
             assert read_out["success"]
             assert len(read_out["rows"]) == len(injection_attempts)
@@ -360,7 +381,8 @@ class TestMalformedInputs:
 
             # Insert test data
             await client.call_tool(
-                "create_row", {"table_name": "where_test", "data": {"name": "test1", "value": 1}}
+                "create_row",
+                {"table_name": "where_test", "data": {"name": "test1", "value": 1}},
             )
 
             # Test invalid column names in WHERE clauses
@@ -396,25 +418,34 @@ class TestMalformedInputs:
             # Create deeply nested dictionary as JSON string
             nested_data = {
                 "level1": {
-                    "level2": {"level3": {"level4": {"level5": {"value": "deep_nested_value"}}}}
+                    "level2": {
+                        "level3": {"level4": {"level5": {"value": "deep_nested_value"}}}
+                    }
                 }
             }
 
             result = await client.call_tool(
                 "create_row",
-                {"table_name": "nested_test", "data": {"complex_data": json.dumps(nested_data)}},
+                {
+                    "table_name": "nested_test",
+                    "data": {"complex_data": json.dumps(nested_data)},
+                },
             )
             result_out = extract_result(result)
             assert result_out["success"]
 
             # Verify data integrity
-            read_result = await client.call_tool("read_rows", {"table_name": "nested_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "nested_test"}
+            )
             read_out = extract_result(read_result)
             assert read_out["success"]
 
             retrieved_data = json.loads(read_out["rows"][0]["complex_data"])
             assert (
-                retrieved_data["level1"]["level2"]["level3"]["level4"]["level5"]["value"]
+                retrieved_data["level1"]["level2"]["level3"]["level4"]["level5"][
+                    "value"
+                ]
                 == "deep_nested_value"
             )
 
@@ -444,7 +475,10 @@ class TestErrorRecovery:
                 "create_row",
                 {
                     "table_name": "rollback_test",
-                    "data": {"required_field": "valid_data", "optional_field": "optional"},
+                    "data": {
+                        "required_field": "valid_data",
+                        "optional_field": "optional",
+                    },
                 },
             )
             valid_out = extract_result(valid_result)
@@ -462,7 +496,9 @@ class TestErrorRecovery:
             assert not invalid_out["success"]  # Should fail
 
             # Verify the database is still in a consistent state
-            read_result = await client.call_tool("read_rows", {"table_name": "rollback_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "rollback_test"}
+            )
             read_out = extract_result(read_result)
             assert read_out["success"]
             assert len(read_out["rows"]) == 1  # Only the valid row should exist
@@ -502,7 +538,9 @@ class TestErrorRecovery:
                 # After each attempt, verify database is still operational
                 health_check = await client.call_tool("list_tables")
                 health_out = extract_result(health_check)
-                assert health_out["success"], f"Database became unresponsive after input {i}"
+                assert health_out[
+                    "success"
+                ], f"Database became unresponsive after input {i}"
 
             # Should handle at least some of the inputs successfully
             assert success_count >= len(problematic_inputs) // 2
@@ -526,7 +564,10 @@ class TestErrorRecovery:
             # Insert test data
             await client.call_tool(
                 "create_row",
-                {"table_name": "fallback_test", "data": {"content": "test content for search"}},
+                {
+                    "table_name": "fallback_test",
+                    "data": {"content": "test content for search"},
+                },
             )
 
             # Test auto_semantic_search - should handle gracefully if embeddings fail
@@ -571,7 +612,8 @@ class TestErrorRecovery:
                 many_columns.append({"name": f"col_{i}", "type": "TEXT"})
 
             many_cols_result = await client.call_tool(
-                "create_table", {"table_name": "many_columns_table", "columns": many_columns}
+                "create_table",
+                {"table_name": "many_columns_table", "columns": many_columns},
             )
             many_cols_out = extract_result(many_cols_result)
             assert many_cols_out["success"]

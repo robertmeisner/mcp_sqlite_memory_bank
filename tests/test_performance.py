@@ -8,7 +8,7 @@ import os
 import tempfile
 import time
 import pytest
-from typing import List, Dict, Any
+from typing import Any, Dict
 from fastmcp import Client
 from mcp_sqlite_memory_bank import server as smb
 from tests.test_api import extract_result
@@ -91,18 +91,22 @@ class TestPerformance:
             duration = end_time - start_time
             ops_per_second = insert_count / duration
 
-            print(f"\nBulk Insert Performance:")
+            print("\nBulk Insert Performance:")
             print(f"  Inserted {insert_count} rows in {duration:.2f} seconds")
             print(f"  Performance: {ops_per_second:.2f} ops/second")
 
             # Verify all data was inserted correctly
-            count_result = await client.call_tool("read_rows", {"table_name": "bulk_test"})
+            count_result = await client.call_tool(
+                "read_rows", {"table_name": "bulk_test"}
+            )
             count_out = extract_result(count_result)
             assert count_out["success"]
             assert len(count_out["rows"]) == insert_count
 
             # Performance assertion - should handle at least 50 ops/sec
-            assert ops_per_second > 50, f"Performance too slow: {ops_per_second:.2f} ops/sec"
+            assert (
+                ops_per_second > 50
+            ), f"Performance too slow: {ops_per_second:.2f} ops/sec"
 
     @pytest.mark.asyncio
     async def test_large_query_performance(self, temp_db_perf):
@@ -156,7 +160,7 @@ class TestPerformance:
             query_out = extract_result(query_result)
             assert query_out["success"]
 
-            print(f"\nLarge Query Performance:")
+            print("\nLarge Query Performance:")
             print(f"  Queried 2000 rows with filters in {query_duration:.3f} seconds")
             print(f"  Found {len(query_out['rows'])} matching rows")
 
@@ -184,7 +188,8 @@ class TestPerformance:
             test_content = [
                 {
                     "title": f"Document {i}",
-                    "content": f"This is a comprehensive document about topic {i}. " * 20,
+                    "content": f"This is a comprehensive document about topic {i}. "
+                    * 20,
                 }
                 for i in range(100)
             ]
@@ -201,7 +206,10 @@ class TestPerformance:
 
             embed_result = await client.call_tool(
                 "add_embeddings",
-                {"table_name": "embedding_perf_test", "text_columns": ["title", "content"]},
+                {
+                    "table_name": "embedding_perf_test",
+                    "text_columns": ["title", "content"],
+                },
             )
 
             end_time = time.time()
@@ -213,8 +221,10 @@ class TestPerformance:
 
             docs_per_second = 100 / embed_duration
 
-            print(f"\nEmbedding Generation Performance:")
-            print(f"  Generated embeddings for 100 documents in {embed_duration:.2f} seconds")
+            print("\nEmbedding Generation Performance:")
+            print(
+                f"  Generated embeddings for 100 documents in {embed_duration:.2f} seconds"
+            )
             print(f"  Performance: {docs_per_second:.2f} docs/second")
 
             # Performance assertion - should process at least 5 docs/sec
@@ -273,7 +283,10 @@ class TestPerformance:
             # Generate embeddings
             embed_result = await client.call_tool(
                 "add_embeddings",
-                {"table_name": "search_perf_test", "text_columns": ["topic", "description"]},
+                {
+                    "table_name": "search_perf_test",
+                    "text_columns": ["topic", "description"],
+                },
             )
             embed_out = extract_result(embed_result)
             assert embed_out["success"]
@@ -312,13 +325,17 @@ class TestPerformance:
             avg_search_time = total_search_time / len(search_queries)
             searches_per_second = 1 / avg_search_time
 
-            print(f"\nSemantic Search Performance:")
-            print(f"  Completed {len(search_queries)} searches in {total_search_time:.3f} seconds")
+            print("\nSemantic Search Performance:")
+            print(
+                f"  Completed {len(search_queries)} searches in {total_search_time:.3f} seconds"
+            )
             print(f"  Average search time: {avg_search_time:.3f} seconds")
             print(f"  Performance: {searches_per_second:.2f} searches/second")
 
             # Performance assertion - searches should complete under 2 seconds each
-            assert avg_search_time < 2.0, f"Semantic search too slow: {avg_search_time:.3f} seconds"
+            assert (
+                avg_search_time < 2.0
+            ), f"Semantic search too slow: {avg_search_time:.3f} seconds"
 
 
 class TestConcurrency:
@@ -344,7 +361,10 @@ class TestConcurrency:
             for i in range(50):
                 await client.call_tool(
                     "create_row",
-                    {"table_name": "concurrent_read_test", "data": {"data": f"test_data_{i}"}},
+                    {
+                        "table_name": "concurrent_read_test",
+                        "data": {"data": f"test_data_{i}"},
+                    },
                 )
 
         async def read_worker(worker_id: int) -> Dict[str, Any]:
@@ -357,7 +377,11 @@ class TestConcurrency:
                     )
                     result_out = extract_result(result)
                     results.append(result_out["success"])
-                return {"worker_id": worker_id, "successes": sum(results), "total": len(results)}
+                return {
+                    "worker_id": worker_id,
+                    "successes": sum(results),
+                    "total": len(results),
+                }
 
         # Run concurrent read operations
         start_time = time.time()
@@ -375,12 +399,16 @@ class TestConcurrency:
         duration = end_time - start_time
         ops_per_second = total_operations / duration
 
-        print(f"\nConcurrent Read Performance:")
-        print(f"  Completed {total_operations} concurrent reads in {duration:.2f} seconds")
+        print("\nConcurrent Read Performance:")
+        print(
+            f"  Completed {total_operations} concurrent reads in {duration:.2f} seconds"
+        )
         print(f"  Performance: {ops_per_second:.2f} ops/second")
 
         # Performance assertion
-        assert ops_per_second > 20, f"Concurrent reads too slow: {ops_per_second:.2f} ops/sec"
+        assert (
+            ops_per_second > 20
+        ), f"Concurrent reads too slow: {ops_per_second:.2f} ops/sec"
 
     @pytest.mark.asyncio
     async def test_concurrent_write_operations(self, temp_db_perf):
@@ -434,7 +462,9 @@ class TestConcurrency:
 
         # Verify data integrity
         async with Client(smb.app) as client:
-            all_rows = await client.call_tool("read_rows", {"table_name": "concurrent_write_test"})
+            all_rows = await client.call_tool(
+                "read_rows", {"table_name": "concurrent_write_test"}
+            )
             all_rows_out = extract_result(all_rows)
             assert all_rows_out["success"]
 
@@ -445,7 +475,10 @@ class TestConcurrency:
             for worker_id in range(3):
                 worker_rows = await client.call_tool(
                     "read_rows",
-                    {"table_name": "concurrent_write_test", "where": {"worker_id": worker_id}},
+                    {
+                        "table_name": "concurrent_write_test",
+                        "where": {"worker_id": worker_id},
+                    },
                 )
                 worker_rows_out = extract_result(worker_rows)
                 assert len(worker_rows_out["rows"]) == 10
@@ -454,12 +487,16 @@ class TestConcurrency:
         total_operations = sum(result["total"] for result in results)
         ops_per_second = total_operations / duration
 
-        print(f"\nConcurrent Write Performance:")
-        print(f"  Completed {total_operations} concurrent writes in {duration:.2f} seconds")
+        print("\nConcurrent Write Performance:")
+        print(
+            f"  Completed {total_operations} concurrent writes in {duration:.2f} seconds"
+        )
         print(f"  Performance: {ops_per_second:.2f} ops/second")
 
         # Performance assertion
-        assert ops_per_second > 10, f"Concurrent writes too slow: {ops_per_second:.2f} ops/sec"
+        assert (
+            ops_per_second > 10
+        ), f"Concurrent writes too slow: {ops_per_second:.2f} ops/sec"
 
 
 class TestResourceUsage:
@@ -486,23 +523,30 @@ class TestResourceUsage:
 
             for i in range(100):  # 1MB total
                 result = await client.call_tool(
-                    "create_row", {"table_name": "memory_test", "data": {"large_text": large_text}}
+                    "create_row",
+                    {"table_name": "memory_test", "data": {"large_text": large_text}},
                 )
                 result_out = extract_result(result)
                 assert result_out["success"]
 
             # Test reading large dataset in chunks
-            all_rows = await client.call_tool("read_rows", {"table_name": "memory_test"})
+            all_rows = await client.call_tool(
+                "read_rows", {"table_name": "memory_test"}
+            )
             all_rows_out = extract_result(all_rows)
             assert all_rows_out["success"]
             assert len(all_rows_out["rows"]) == 100
 
             # Verify memory efficiency by checking response size
-            total_text_size = sum(len(row["large_text"]) for row in all_rows_out["rows"])
+            total_text_size = sum(
+                len(row["large_text"]) for row in all_rows_out["rows"]
+            )
             assert total_text_size == 100 * 10000  # 1MB as expected
 
-            print(f"\nMemory Usage Test:")
-            print(f"  Successfully handled {total_text_size / (1024*1024):.1f}MB of text data")
+            print("\nMemory Usage Test:")
+            print(
+                f"  Successfully handled {total_text_size / (1024 * 1024):.1f}MB of text data"
+            )
             print(f"  Retrieved {len(all_rows_out['rows'])} rows efficiently")
 
     @pytest.mark.asyncio

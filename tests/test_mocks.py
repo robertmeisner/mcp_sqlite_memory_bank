@@ -6,7 +6,7 @@ Focus on testable mock scenarios without complex dependency mocking.
 import os
 import tempfile
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch
 import json
 from fastmcp import Client
 from mcp_sqlite_memory_bank import server as smb
@@ -18,7 +18,7 @@ def temp_db_simple(monkeypatch):
     """Simple mock testing database fixture."""
     db_fd, db_path = tempfile.mkstemp(suffix=".db")
     os.close(db_fd)
-    orig_db = smb.DB_PATH
+    smb.DB_PATH
     monkeypatch.setattr(smb, "DB_PATH", db_path)
     yield db_path
     try:
@@ -47,11 +47,16 @@ class TestBasicMocking:
 
             await client.call_tool(
                 "create_row",
-                {"table_name": "test_semantic_flag", "data": {"content": "test content"}},
+                {
+                    "table_name": "test_semantic_flag",
+                    "data": {"content": "test content"},
+                },
             )
 
             # Mock the availability flag
-            with patch("mcp_sqlite_memory_bank.semantic.SENTENCE_TRANSFORMERS_AVAILABLE", False):
+            with patch(
+                "mcp_sqlite_memory_bank.semantic.SENTENCE_TRANSFORMERS_AVAILABLE", False
+            ):
                 result = await client.call_tool(
                     "add_embeddings",
                     {"table_name": "test_semantic_flag", "text_columns": ["content"]},
@@ -66,7 +71,9 @@ class TestBasicMocking:
         """Test that error responses have the expected structure."""
         async with Client(smb.app) as client:
             # Test with invalid table name to trigger error
-            result = await client.call_tool("read_rows", {"table_name": "nonexistent_table"})
+            result = await client.call_tool(
+                "read_rows", {"table_name": "nonexistent_table"}
+            )
             result_out = extract_result(result)
 
             # Should be a properly structured error response
@@ -82,7 +89,10 @@ class TestBasicMocking:
             # Test creating table with invalid column data
             result = await client.call_tool(
                 "create_table",
-                {"table_name": "validation_test", "columns": []},  # Empty columns should be handled
+                {
+                    "table_name": "validation_test",
+                    "columns": [],
+                },  # Empty columns should be handled
             )
             result_out = extract_result(result)
 
@@ -141,7 +151,8 @@ class TestBasicMocking:
             for i in range(5):
                 operations.append(
                     client.call_tool(
-                        "create_row", {"table_name": "concurrent_test", "data": {"value": i}}
+                        "create_row",
+                        {"table_name": "concurrent_test", "data": {"value": i}},
                     )
                 )
 
@@ -157,7 +168,9 @@ class TestBasicMocking:
                 assert result["success"]
 
             # Verify all data was inserted
-            read_result = await client.call_tool("read_rows", {"table_name": "concurrent_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "concurrent_test"}
+            )
             read_out = extract_result(read_result)
             assert len(read_out["rows"]) == 5
 
@@ -184,7 +197,10 @@ class TestUtilityMocking:
                         {
                             "table_name": table_name,
                             "columns": [
-                                {"name": "id", "type": "INTEGER PRIMARY KEY AUTOINCREMENT"},
+                                {
+                                    "name": "id",
+                                    "type": "INTEGER PRIMARY KEY AUTOINCREMENT",
+                                },
                                 {"name": "data", "type": "TEXT"},
                             ],
                         },
@@ -222,7 +238,9 @@ class TestUtilityMocking:
             assert result_out["success"]
 
             # Verify data was stored correctly
-            read_result = await client.call_tool("read_rows", {"table_name": "type_test"})
+            read_result = await client.call_tool(
+                "read_rows", {"table_name": "type_test"}
+            )
             read_out = extract_result(read_result)
 
             assert len(read_out["rows"]) == 1
@@ -273,7 +291,8 @@ class TestErrorHandlingSimulation:
             # Test with very long string
             long_string = "x" * 10000
             result = await client.call_tool(
-                "create_row", {"table_name": "boundary_test", "data": {"data": long_string}}
+                "create_row",
+                {"table_name": "boundary_test", "data": {"data": long_string}},
             )
             result_out = extract_result(result)
 
@@ -282,7 +301,8 @@ class TestErrorHandlingSimulation:
             # Test with unicode characters
             unicode_string = "Testing unicode: 🌟 ñ ü ñ ö ë ä"
             result = await client.call_tool(
-                "create_row", {"table_name": "boundary_test", "data": {"data": unicode_string}}
+                "create_row",
+                {"table_name": "boundary_test", "data": {"data": unicode_string}},
             )
             result_out = extract_result(result)
 

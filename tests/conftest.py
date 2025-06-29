@@ -247,17 +247,23 @@ class TestAssertions:
     @staticmethod
     def assert_success_response(response: Dict[str, Any], message: str = ""):
         """Assert that a response indicates success."""
-        assert response.get("success") is True, f"Expected success but got: {response}. {message}"
+        assert (
+            response.get("success") is True
+        ), f"Expected success but got: {response}. {message}"
 
     @staticmethod
     def assert_error_response(
-        response: Dict[str, Any], expected_error: Optional[str] = None, message: str = ""
+        response: Dict[str, Any],
+        expected_error: Optional[str] = None,
+        message: str = "",
     ):
         """Assert that a response indicates an error."""
         assert (
             response.get("success") is False
         ), f"Expected error but got success: {response}. {message}"
-        assert "error" in response, f"Error response missing 'error' field: {response}. {message}"
+        assert (
+            "error" in response
+        ), f"Error response missing 'error' field: {response}. {message}"
 
         if expected_error:
             assert (
@@ -269,7 +275,9 @@ class TestAssertions:
         """Assert that a table exists in the list_tables response."""
         TestAssertions.assert_success_response(client_response)
         tables = client_response.get("tables", [])
-        assert table_name in tables, f"Table '{table_name}' not found in tables list: {tables}"
+        assert (
+            table_name in tables
+        ), f"Table '{table_name}' not found in tables list: {tables}"
 
     @staticmethod
     def assert_row_count(client_response: Dict[str, Any], expected_count: int):
@@ -292,7 +300,9 @@ class TestAssertions:
         ), f"Expected at least {min_results} results but got {len(results)}"
 
         for i, result in enumerate(results):
-            assert "similarity_score" in result, f"Result {i} missing similarity_score: {result}"
+            assert (
+                "similarity_score" in result
+            ), f"Result {i} missing similarity_score: {result}"
             similarity = result["similarity_score"]
             assert (
                 similarity >= min_similarity

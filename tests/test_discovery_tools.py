@@ -6,8 +6,6 @@ import os
 import tempfile
 import pytest
 import pytest_asyncio
-import json
-from typing import Any, Dict, cast, TypeVar, Sequence
 from fastmcp import Client
 from mcp_sqlite_memory_bank import server as smb
 
@@ -131,7 +129,9 @@ async def client_with_sample_data(temp_db):
         ]
 
         for project in sample_projects:
-            await client.call_tool("create_row", {"table_name": "projects", "data": project})
+            await client.call_tool(
+                "create_row", {"table_name": "projects", "data": project}
+            )
 
         sample_knowledge = [
             {
@@ -167,7 +167,9 @@ async def client_with_sample_data(temp_db):
         ]
 
         for knowledge in sample_knowledge:
-            await client.call_tool("create_row", {"table_name": "knowledge", "data": knowledge})
+            await client.call_tool(
+                "create_row", {"table_name": "knowledge", "data": knowledge}
+            )
 
         yield client
 
@@ -182,7 +184,8 @@ class TestIntelligentDiscovery:
         client = client_with_sample_data
 
         result = await client.call_tool(
-            "intelligent_discovery", {"discovery_goal": "understand_content", "depth": "moderate"}
+            "intelligent_discovery",
+            {"discovery_goal": "understand_content", "depth": "moderate"},
         )
 
         output = extract_result(result)
@@ -219,7 +222,8 @@ class TestIntelligentDiscovery:
         client = client_with_sample_data
 
         result = await client.call_tool(
-            "intelligent_discovery", {"discovery_goal": "explore_structure", "depth": "quick"}
+            "intelligent_discovery",
+            {"discovery_goal": "explore_structure", "depth": "quick"},
         )
 
         output = extract_result(result)
@@ -239,7 +243,8 @@ class TestIntelligentDiscovery:
         client = client_with_sample_data
 
         result = await client.call_tool(
-            "intelligent_discovery", {"discovery_goal": "assess_quality", "depth": "comprehensive"}
+            "intelligent_discovery",
+            {"discovery_goal": "assess_quality", "depth": "comprehensive"},
         )
 
         output = extract_result(result)
@@ -259,7 +264,8 @@ class TestIntelligentDiscovery:
         client = client_with_sample_data
 
         result = await client.call_tool(
-            "intelligent_discovery", {"discovery_goal": "find_patterns", "focus_area": "knowledge"}
+            "intelligent_discovery",
+            {"discovery_goal": "find_patterns", "focus_area": "knowledge"},
         )
 
         output = extract_result(result)
@@ -296,7 +302,9 @@ class TestIntelligentDiscovery:
         """Test intelligent discovery with invalid goal."""
         client = client_with_sample_data
 
-        result = await client.call_tool("intelligent_discovery", {"discovery_goal": "invalid_goal"})
+        result = await client.call_tool(
+            "intelligent_discovery", {"discovery_goal": "invalid_goal"}
+        )
 
         output = extract_result(result)
         # Should still work but with default behavior
@@ -343,7 +351,9 @@ class TestDiscoveryTemplates:
         """Test content_audit template."""
         client = client_with_sample_data
 
-        result = await client.call_tool("discovery_templates", {"template_type": "content_audit"})
+        result = await client.call_tool(
+            "discovery_templates", {"template_type": "content_audit"}
+        )
 
         output = extract_result(result)
         assert output["success"] is True
@@ -373,7 +383,9 @@ class TestDiscoveryTemplates:
         """Test problem_solving template."""
         client = client_with_sample_data
 
-        result = await client.call_tool("discovery_templates", {"template_type": "problem_solving"})
+        result = await client.call_tool(
+            "discovery_templates", {"template_type": "problem_solving"}
+        )
 
         output = extract_result(result)
         assert output["success"] is True
@@ -471,7 +483,9 @@ class TestDiscoverRelationships:
         """Test discovering relationships for specific table."""
         client = client_with_sample_data
 
-        result = await client.call_tool("discover_relationships", {"table_name": "users"})
+        result = await client.call_tool(
+            "discover_relationships", {"table_name": "users"}
+        )
 
         output = extract_result(result)
         assert output["success"] is True
@@ -569,7 +583,8 @@ class TestDiscoveryIntegration:
 
         # Step 2: Execute intelligent discovery as recommended in template
         discovery_result = await client.call_tool(
-            "intelligent_discovery", {"discovery_goal": "understand_content", "depth": "moderate"}
+            "intelligent_discovery",
+            {"discovery_goal": "understand_content", "depth": "moderate"},
         )
         discovery_output = extract_result(discovery_result)
         assert discovery_output["success"] is True
@@ -675,7 +690,9 @@ class TestDiscoveryPerformance:
 
         # Run multiple discovery operations
         tasks = [
-            client.call_tool("intelligent_discovery", {"discovery_goal": "understand_content"}),
+            client.call_tool(
+                "intelligent_discovery", {"discovery_goal": "understand_content"}
+            ),
             client.call_tool("discovery_templates", {"template_type": "content_audit"}),
             client.call_tool("discover_relationships", {"table_name": "users"}),
         ]

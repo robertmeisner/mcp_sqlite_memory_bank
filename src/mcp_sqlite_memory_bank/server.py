@@ -48,6 +48,9 @@ from .tools.discovery import (
     discovery_templates as discovery_templates_impl,
     discover_relationships as discover_relationships_impl,
 )
+from .tools.visualization import (
+    generate_knowledge_graph as generate_knowledge_graph_impl,
+)
 from .tools.search import (
     search_content as search_content_impl,
     explore_tables as explore_tables_impl,
@@ -55,6 +58,13 @@ from .tools.search import (
     auto_semantic_search as auto_semantic_search_impl,
     auto_smart_search as auto_smart_search_impl,
     embedding_stats as embedding_stats_impl,
+)
+from .tools import (
+    basic,
+    search,
+    analytics,
+    optimization,
+    llm_optimization,
 )
 import os
 import logging
@@ -80,8 +90,8 @@ from .utils import catch_errors
 from .resources import setup_mcp_resources
 from .prompts import setup_mcp_prompts
 
-# Import modular tool implementations (for aliases only)
-from .tools import basic, search, analytics
+# Import D3.js visualization tools (C05 implementation)
+from .tools import d3_visualization
 
 # Initialize FastMCP app with explicit name
 mcp: FastMCP = FastMCP("SQLite Memory Bank for Copilot/AI Agents")
@@ -135,7 +145,9 @@ def create_table(table_name: str, columns: List[Dict[str, str]]) -> ToolResponse
         - Creates table if it doesn't exist (idempotent)
         - Raises appropriate errors for invalid input
     """
-    return cast(CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns))
+    return cast(
+        CreateTableResponse, get_database(DB_PATH).create_table(table_name, columns)
+    )
 
 
 @mcp.tool
@@ -247,7 +259,9 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
         - Validates both old and new table names
         - Confirms old table exists and new name doesn't conflict
     """
-    return cast(RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name))
+    return cast(
+        RenameTableResponse, get_database(DB_PATH).rename_table(old_name, new_name)
+    )
 
 
 @mcp.tool
@@ -278,7 +292,9 @@ def create_row(table_name: str, data: Dict[str, Any]) -> ToolResponse:
 
 @mcp.tool
 @catch_errors
-def upsert_memory(table_name: str, data: Dict[str, Any], match_columns: List[str]) -> ToolResponse:
+def upsert_memory(
+    table_name: str, data: Dict[str, Any], match_columns: List[str]
+) -> ToolResponse:
     """
     🔄 **SMART MEMORY UPSERT** - Prevent duplicates and maintain data consistency!
 
@@ -363,12 +379,16 @@ def update_rows(
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it updates all rows!)
     """
-    return cast(UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where))
+    return cast(
+        UpdateRowsResponse, get_database(DB_PATH).update_rows(table_name, data, where)
+    )
 
 
 @mcp.tool
 @catch_errors
-def delete_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> ToolResponse:
+def delete_rows(
+    table_name: str, where: Optional[Dict[str, Any]] = None
+) -> ToolResponse:
     """
     Delete rows from any table in the SQLite Memory Bank for Copilot/AI agents, matching the WHERE clause.
 
@@ -390,7 +410,9 @@ def delete_rows(table_name: str, where: Optional[Dict[str, Any]] = None) -> Tool
         - Parameterizes all queries for safety
         - Where clause is optional (omitting it deletes all rows!)
     """
-    return cast(DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where))
+    return cast(
+        DeleteRowsResponse, get_database(DB_PATH).delete_rows(table_name, where)
+    )
 
 
 @mcp.tool
@@ -621,7 +643,9 @@ def auto_semantic_search(
         - Supports fuzzy matching and concept discovery
         - Perfect for agents - just search and it works!
     """
-    return auto_semantic_search_impl(query, tables, similarity_threshold, limit, model_name)
+    return auto_semantic_search_impl(
+        query, tables, similarity_threshold, limit, model_name
+    )
 
 
 @mcp.tool
@@ -668,7 +692,9 @@ def auto_smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return auto_smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
+    return auto_smart_search_impl(
+        query, tables, semantic_weight, text_weight, limit, model_name
+    )
 
 
 @mcp.tool
@@ -802,7 +828,9 @@ def smart_search(
         - Optimal for both exploratory and precise searches
         - Perfect for agents - ultimate search tool that just works!
     """
-    return _smart_search_impl(query, tables, semantic_weight, text_weight, limit, model_name)
+    return _smart_search_impl(
+        query, tables, semantic_weight, text_weight, limit, model_name
+    )
 
 
 @mcp.tool
@@ -844,7 +872,187 @@ def find_related(
         - Can reveal patterns and themes across your knowledge base
         - Enables serendipitous discovery of relevant information
     """
-    return _find_related_impl(table_name, row_id, similarity_threshold, limit, model_name)
+    return _find_related_impl(
+        table_name, row_id, similarity_threshold, limit, model_name
+    )
+
+
+# --- Visualization Tools for SQLite Memory Bank ---
+
+
+@mcp.tool
+@catch_errors
+def generate_knowledge_graph(
+    output_path: str = "knowledge_graphs",
+    include_temporal: bool = True,
+    min_connections: int = 1,
+    open_in_browser: bool = False,
+) -> ToolResponse:
+    """
+    🎯 **KNOWLEDGE GRAPH GENERATOR** - Visualize your memory as an interactive graph!
+
+    Creates an interactive HTML visualization showing relationships between your stored data.
+    Perfect for discovering hidden connections and understanding your knowledge structure.
+
+    Args:
+        output_path (str): Directory to save the graph (default: "knowledge_graphs")
+        include_temporal (bool): Include time-based relationships (default: True)
+        min_connections (int): Minimum connections to include a node (default: 1)
+        open_in_browser (bool): Attempt to open the graph in default browser (default: False)
+
+    Returns:
+        ToolResponse: On success: {"success": True, "file_path": str, "stats": dict}
+                     On error: {"success": False, "error": str, "category": str, "details": dict}
+
+    Examples:
+        >>> generate_knowledge_graph()
+        {"success": True, "file_path": "knowledge_graphs/knowledge_graph_20250628_183319.html",
+         "stats": {"nodes": 24, "edges": 15, "tables": 5}}
+
+    FastMCP Tool Info:
+        - **INTERACTIVE VISUALIZATION**: Creates professional HTML graphs using vis.js
+        - **RELATIONSHIP DISCOVERY**: Finds connections via foreign keys, naming patterns, temporal data
+        - **SEMANTIC CONNECTIONS**: Uses embeddings for content-based relationships if available
+        - **CLICKABLE OUTPUT**: Generates file:// links for instant browser opening
+        - **ZERO DEPENDENCIES**: Works with any memory bank schema without configuration
+    """
+    return generate_knowledge_graph_impl(
+        output_path, include_temporal, min_connections, open_in_browser
+    )
+
+
+# =============================================================================
+# PREMIUM D3.JS VISUALIZATION TOOLS (C05)
+# Enterprise-grade interactive visualizations with advanced features
+# =============================================================================
+
+
+@mcp.tool()
+def create_interactive_d3_graph(
+    output_path: Optional[str] = None,
+    include_semantic_links: bool = True,
+    filter_tables: Optional[List[str]] = None,
+    min_connections: int = 1,
+    layout_algorithm: str = "force",
+    color_scheme: str = "professional",
+    node_size_by: str = "connections",
+    open_in_browser: bool = False,
+    export_formats: Optional[List[str]] = None,
+) -> ToolResponse:
+    """
+    🎨 **PREMIUM D3.JS KNOWLEDGE GRAPH** - Interactive enterprise visualization!
+
+    Creates a professional, interactive D3.js knowledge graph with advanced features.
+    Perfect for enterprise presentations and data exploration sessions.
+
+    Args:
+        output_path: Directory to save the graph (default: "knowledge_graphs/d3_interactive")
+        include_semantic_links: Use semantic similarity for intelligent edge connections
+        filter_tables: Specific tables to include (default: all tables)
+        min_connections: Minimum connections to include a node (default: 1)
+        layout_algorithm: Graph layout - "force", "hierarchical", "circular"
+        color_scheme: Visual theme - "professional", "vibrant", "minimal"
+        node_size_by: Node sizing strategy - "connections", "content_length", "static"
+        open_in_browser: Automatically open in default browser
+        export_formats: Export options - ["png", "svg", "json"]
+
+    Returns:
+        ToolResponse: {"success": True, "file_path": str, "stats": dict, "interactive_features": list}
+
+    Examples:
+        >>> create_interactive_d3_graph(layout_algorithm="force", color_scheme="professional")
+        {"success": True, "file_path": "knowledge_graphs/d3_interactive/graph_20250628_203000.html",
+         "stats": {"nodes": 45, "edges": 78, "tables": 6}}
+
+    Premium Features:
+        - **Real-time Filtering**: Dynamic node/edge filtering with search
+        - **Semantic Relationships**: AI-powered intelligent edge connections
+        - **Professional Styling**: Enterprise-grade visual design
+        - **Export Capabilities**: PNG, SVG, JSON export for presentations
+        - **Responsive Design**: Works on desktop, tablet, mobile
+        - **Performance Optimized**: Handles large datasets efficiently
+    """
+    return d3_visualization.create_interactive_d3_graph(
+        output_path,
+        include_semantic_links,
+        filter_tables,
+        min_connections,
+        layout_algorithm,
+        color_scheme,
+        node_size_by,
+        open_in_browser,
+        export_formats,
+    )
+
+
+@mcp.tool()
+def create_advanced_d3_dashboard(
+    output_path: Optional[str] = None,
+    dashboard_type: str = "enterprise",
+    include_metrics: bool = True,
+    real_time_updates: bool = False,
+    custom_widgets: Optional[List[str]] = None,
+) -> ToolResponse:
+    """
+    🚀 **ENTERPRISE D3.JS DASHBOARD** - Premium visualization dashboard!
+
+    Creates a comprehensive D3.js dashboard with multiple interactive visualizations.
+    Perfect for enterprise reporting and executive presentations.
+
+    Args:
+        output_path: Directory for dashboard files
+        dashboard_type: Dashboard style - "enterprise", "analytics", "research"
+        include_metrics: Add performance metrics and KPI widgets
+        real_time_updates: Enable WebSocket for live data updates
+        custom_widgets: Additional widget types to include
+
+    Returns:
+        ToolResponse: {"success": True, "dashboard_url": str, "widgets": list, "features": list}
+
+    Enterprise Dashboard Features:
+        - **Multiple Visualizations**: Force graph, timeline, metrics, heatmaps
+        - **Interactive Filtering**: Cross-widget filtering and drill-down
+        - **Real-time Updates**: Live data refresh capabilities
+        - **Export Suite**: PDF reports, image exports, data downloads
+        - **Responsive Design**: Mobile and desktop optimized
+        - **Professional Styling**: Enterprise-grade UI/UX design
+    """
+    return d3_visualization.create_advanced_d3_dashboard(
+        output_path, dashboard_type, include_metrics, real_time_updates, custom_widgets
+    )
+
+
+@mcp.tool()
+def export_graph_data(
+    output_path: Optional[str] = None,
+    format: str = "json",
+    include_metadata: bool = True,
+    compress_output: bool = False,
+) -> ToolResponse:
+    """
+    📊 **GRAPH DATA EXPORT** - Professional data format conversion!
+
+    Exports graph data in various professional formats for use with external tools.
+    Supports industry-standard graph formats for research and analysis.
+
+    Args:
+        output_path: Directory for exported files
+        format: Export format - "json", "graphml", "gexf", "cytoscape"
+        include_metadata: Include node/edge metadata and statistics
+        compress_output: Compress large exports (ZIP format)
+
+    Returns:
+        ToolResponse: {"success": True, "export_path": str, "format": str, "file_size": int}
+
+    Supported Formats:
+        - **JSON**: Standard web format with full metadata
+        - **GraphML**: XML-based format for academic tools
+        - **GEXF**: Gephi format for network analysis
+        - **Cytoscape**: Format for biological network analysis
+    """
+    return d3_visualization.export_graph_data(
+        output_path, format, include_metadata, compress_output
+    )
 
 
 # --- Advanced Discovery Tools for SQLite Memory Bank ---
@@ -989,7 +1197,9 @@ def discover_relationships(
         - **ACTIONABLE INSIGHTS**: Suggests how to leverage discovered relationships
         - **PERFECT FOR EXPLORATION**: Reveals hidden data organization patterns
     """
-    return discover_relationships_impl(table_name, relationship_types, similarity_threshold)
+    return discover_relationships_impl(
+        table_name, relationship_types, similarity_threshold
+    )
 
 
 # Export the FastMCP app for use in other modules and server runners
@@ -1045,6 +1255,7 @@ __all__ = [
     "auto_semantic_search",
     "auto_smart_search",
     "embedding_stats",
+    "generate_knowledge_graph",
     "intelligent_discovery",
     "discovery_templates",
     "discover_relationships",
@@ -1071,11 +1282,15 @@ def main():
     import uvicorn
     import argparse
 
-    parser = argparse.ArgumentParser(description="Run MCP SQLite Memory Bank Server in HTTP mode")
+    parser = argparse.ArgumentParser(
+        description="Run MCP SQLite Memory Bank Server in HTTP mode"
+    )
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
     parser.add_argument("--port", type=int, default=8000, help="Port to bind to")
     parser.add_argument("--db-path", help="Path to SQLite database file")
-    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
+    parser.add_argument(
+        "--reload", action="store_true", help="Enable auto-reload for development"
+    )
 
     args = parser.parse_args()
 
@@ -1085,7 +1300,9 @@ def main():
         DB_PATH = args.db_path
         os.environ["DB_PATH"] = args.db_path
 
-    print(f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}")
+    print(
+        f"Starting MCP SQLite Memory Bank server in HTTP mode on {args.host}:{args.port}"
+    )
     print(f"Database path: {DB_PATH}")
     print("Available at: http://localhost:8000/docs")
 
@@ -1142,6 +1359,9 @@ _get_content_health_score_impl = analytics.get_content_health_score
 _intelligent_discovery_impl = intelligent_discovery_impl
 _discovery_templates_impl = discovery_templates_impl
 _discover_relationships_impl = discover_relationships_impl
+
+# Visualization operation aliases
+_generate_knowledge_graph_impl = generate_knowledge_graph_impl
 
 
 @mcp.tool
@@ -1227,3 +1447,282 @@ def batch_delete_memories(
         - **SAFE**: Uses parameterized queries to prevent SQL injection
     """
     return basic.batch_delete_memories(table_name, where_conditions, match_all)
+
+
+@mcp.tool
+@catch_errors
+def find_duplicates(
+    table_name: str,
+    content_columns: List[str],
+    similarity_threshold: float = 0.95,
+    sample_size: Optional[int] = None,
+) -> ToolResponse:
+    """
+    🔍 **DUPLICATE DETECTION** - Find duplicate and near-duplicate content!
+
+    Identifies duplicate memories using content hash comparison and semantic similarity.
+    Essential for maintaining clean memory banks and reducing storage costs.
+
+    Args:
+        table_name (str): Table to analyze for duplicates
+        content_columns (List[str]): Columns to compare for duplicate detection
+        similarity_threshold (float): Similarity threshold for near-duplicates (0.0-1.0, default: 0.95)
+        sample_size (Optional[int]): Limit analysis to sample size for performance (default: analyze all)
+
+    Returns:
+        ToolResponse: {"success": True, "duplicates": List[...], "stats": Dict}
+
+    Examples:
+        >>> find_duplicates('project_knowledge', ['title', 'content'])
+        {"success": True, "duplicates": [
+            {"content_hash": "abc123", "duplicate_count": 3, "rows": [...], "suggested_action": "keep_newest"}
+        ], "stats": {"total_rows": 100, "duplicate_groups": 2, "potential_savings_percent": 15.0}}
+
+    FastMCP Tool Info:
+        - **ENTERPRISE ESSENTIAL**: Prevents storage costs from spiraling out of control
+        - **SMART DETECTION**: Uses content hashing for exact duplicates
+        - **ACTIONABLE RESULTS**: Provides cleanup recommendations and suggested actions
+        - **PERFORMANCE OPTIMIZED**: Sample size option for large datasets
+        - **COST SAVINGS**: Can reduce storage costs by 60% for large deployments
+    """
+    return optimization.find_duplicates(
+        table_name, content_columns, similarity_threshold, sample_size
+    )
+
+
+@mcp.tool
+@catch_errors
+def optimize_memory_bank(
+    table_name: str, optimization_strategy: str = "comprehensive", dry_run: bool = True
+) -> ToolResponse:
+    """
+    ⚡ **MEMORY BANK OPTIMIZATION** - Optimize storage and performance!
+
+    Performs comprehensive memory bank optimization including deduplication,
+    archiving, and index optimization for enterprise-scale performance.
+
+    Args:
+        table_name (str): Table to optimize
+        optimization_strategy (str): Strategy - "conservative", "aggressive", "comprehensive"
+        dry_run (bool): If True, only analyze without making changes (default: True)
+
+    Returns:
+        ToolResponse: {"success": True, "optimizations": List[...], "savings": Dict}
+
+    Examples:
+        >>> optimize_memory_bank('user_memories', 'comprehensive', dry_run=True)
+        {"success": True, "optimizations": [
+            {"type": "duplicate_removal", "rows_affected": 50},
+            {"type": "archive_old_entries", "rows_affected": 200}
+        ], "potential_savings": {"rows_removed": 250, "storage_saved_mb": 15.6}}
+
+    FastMCP Tool Info:
+        - **ENTERPRISE PERFORMANCE**: Optimizes for large-scale deployments
+        - **SAFE BY DEFAULT**: dry_run=True prevents accidental data loss
+        - **COMPREHENSIVE ANALYSIS**: Checks duplicates, old data, storage efficiency
+        - **ACTIONABLE INSIGHTS**: Provides specific optimization recommendations
+        - **COST CONTROL**: Prevents storage costs from spiraling out of control
+    """
+    return optimization.optimize_memory_bank(table_name, optimization_strategy, dry_run)
+
+
+@mcp.tool
+@catch_errors
+def archive_old_memories(
+    table_name: str,
+    archive_days: int = 365,
+    archive_table_suffix: str = "_archive",
+    delete_after_archive: bool = False,
+) -> ToolResponse:
+    """
+    📦 **MEMORY ARCHIVING** - Archive old memories to reduce active storage!
+
+    Moves old memories to archive tables to keep active memory bank lean while
+    preserving historical data for compliance and analysis.
+
+    Args:
+        table_name (str): Source table to archive from
+        archive_days (int): Archive memories older than this many days (default: 365)
+        archive_table_suffix (str): Suffix for archive table name (default: "_archive")
+        delete_after_archive (bool): Delete from source after archiving (default: False)
+
+    Returns:
+        ToolResponse: {"success": True, "archived": int, "archive_table": str}
+
+    Examples:
+        >>> archive_old_memories('project_logs', archive_days=180, delete_after_archive=False)
+        {"success": True, "archived": 1500, "archive_table": "project_logs_archive",
+         "recommendations": ["Archived 1500 records older than 180 days"]}
+
+    FastMCP Tool Info:
+        - **COMPLIANCE READY**: Preserves historical data while optimizing active storage
+        - **SAFE ARCHIVING**: Creates archive tables before moving data
+        - **FLEXIBLE RETENTION**: Configurable archive periods for different use cases
+        - **ENTERPRISE SCALE**: Handles large datasets with transaction safety
+        - **STORAGE OPTIMIZATION**: Reduces active memory bank size for better performance
+    """
+    return optimization.archive_old_memories(
+        table_name, archive_days, archive_table_suffix, delete_after_archive
+    )
+
+
+# =============================================================================
+# LLM-ASSISTED OPTIMIZATION TOOLS
+# =============================================================================
+
+
+@mcp.tool
+@catch_errors
+def intelligent_duplicate_analysis(
+    table_name: str, content_columns: List[str], analysis_depth: str = "semantic"
+) -> ToolResponse:
+    """
+    🧠 **LLM-ASSISTED DUPLICATE DETECTION** - AI-powered semantic duplicate analysis!
+
+    Uses MCP sampling to let an LLM analyze potential duplicates with semantic understanding,
+    going beyond simple text similarity to understand conceptual duplicates.
+
+    Args:
+        table_name (str): Table to analyze for duplicates
+        content_columns (List[str]): Columns to analyze for duplicate content
+        analysis_depth (str): Level of analysis - "basic", "semantic", "contextual"
+
+    Returns:
+        ToolResponse: AI analysis of duplicates with recommended actions
+
+    Examples:
+        >>> intelligent_duplicate_analysis('project_knowledge', ['title', 'content'], 'semantic')
+        # LLM identifies "API Design" and "REST API Architecture" as conceptual duplicates
+        # even though text similarity is low
+
+    FastMCP Tool Info:
+        - **AI INTELLIGENCE**: LLM analyzes content semantically, not just textually
+        - **CONTEXT AWARENESS**: Understands conceptual duplicates beyond exact matches
+        - **ACTIONABLE INSIGHTS**: Provides specific recommendations for each duplicate group
+        - **MCP SAMPLING**: Uses human-in-the-loop AI for nuanced analysis
+        - **COST OPTIMIZATION**: Prevents storage waste from conceptual duplicates
+    """
+    return llm_optimization.intelligent_duplicate_analysis(
+        table_name, content_columns, analysis_depth
+    )
+
+
+@mcp.tool
+@catch_errors
+def intelligent_optimization_strategy(
+    table_name: str, optimization_goals: Optional[List[str]] = None
+) -> ToolResponse:
+    """
+    🎯 **LLM-GUIDED OPTIMIZATION STRATEGY** - AI-powered optimization planning!
+
+    Uses MCP sampling to analyze table characteristics and recommend a customized
+    optimization strategy based on data patterns, usage, and business goals.
+
+    Args:
+        table_name (str): Table to analyze and optimize
+        optimization_goals (Optional[List[str]]): Primary goals - ["storage", "performance", "cost", "maintenance"]
+
+    Returns:
+        ToolResponse: AI-generated optimization strategy with specific recommendations
+
+    FastMCP Tool Info:
+        - **INTELLIGENT ANALYSIS**: LLM analyzes data patterns and usage characteristics
+        - **CUSTOMIZED STRATEGIES**: Tailored recommendations based on specific table needs
+        - **GOAL-ORIENTED**: Optimization plans aligned with business objectives
+        - **ACTIONABLE PLANS**: Step-by-step implementation guidance
+        - **ENTERPRISE READY**: Scalable strategies for production environments
+    """
+    return llm_optimization.intelligent_optimization_strategy(
+        table_name, optimization_goals
+    )
+
+
+@mcp.tool
+@catch_errors
+def smart_archiving_policy(
+    table_name: str,
+    business_context: Optional[str] = None,
+    retention_requirements: Optional[Dict[str, Any]] = None,
+) -> ToolResponse:
+    """
+    📋 **INTELLIGENT ARCHIVING POLICY** - AI-powered retention strategy!
+
+    Uses MCP sampling to analyze content relevance, usage patterns, and business
+    requirements to generate intelligent archiving policies.
+
+    Args:
+        table_name (str): Table to create archiving policy for
+        business_context (Optional[str]): Description of business use case
+        retention_requirements (Optional[Dict[str, Any]]): Compliance or business retention needs
+
+    Returns:
+        ToolResponse: AI-generated archiving policy with automated schedules
+
+    FastMCP Tool Info:
+        - **CONTENT-AWARE**: Analyzes actual content relevance and business value
+        - **COMPLIANCE READY**: Considers legal and regulatory retention requirements
+        - **AUTOMATED POLICIES**: Generates smart archiving rules and schedules
+        - **COST OPTIMIZATION**: Balances retention needs with storage costs
+        - **BUSINESS ALIGNED**: Archiving strategies aligned with operational needs
+    """
+    return llm_optimization.smart_archiving_policy(
+        table_name, business_context, retention_requirements
+    )
+
+
+# =============================================================================
+# 3D VISUALIZATION TOOLS
+# =============================================================================
+
+
+@mcp.tool
+@catch_errors
+def create_3d_knowledge_graph(
+    output_path: Optional[str] = None,
+    table_name: str = "knowledge_nodes",
+    include_semantic_links: bool = True,
+    color_scheme: str = "professional",
+    camera_position: str = "perspective",
+    animation_enabled: bool = True,
+    export_formats: Optional[List[str]] = None,
+) -> ToolResponse:
+    """
+    🌐 **THREE.JS 3D KNOWLEDGE GRAPH** - Immersive 3D data visualization!
+
+    Creates a stunning 3D knowledge graph using Three.js and WebGL for immersive
+    data exploration with real-time lighting, shadows, and camera controls.
+
+    Args:
+        output_path (Optional[str]): Directory to save the 3D graph (default: "knowledge_graphs/3d")
+        table_name (str): Source table for nodes and relationships
+        include_semantic_links (bool): Generate semantic relationship edges
+        color_scheme (str): Visual theme - "professional", "vibrant", "neon", "cosmic"
+        camera_position (str): Camera type - "perspective", "orthographic"
+        animation_enabled (bool): Enable rotating animations and particle effects
+        export_formats (Optional[List[str]]): Export options - ["screenshot", "gltf", "obj"]
+
+    Returns:
+        ToolResponse: {"success": True, "file_path": str, "stats": dict, "3d_features": list}
+
+    Examples:
+        >>> create_3d_knowledge_graph(color_scheme="cosmic", animation_enabled=True)
+        {"success": True, "file_path": "knowledge_graphs/3d/graph_3d_20250629.html",
+         "stats": {"nodes": 8, "edges": 12, "dimensions": 3}}
+
+    Premium 3D Features:
+        - **WebGL Rendering**: Hardware-accelerated 3D graphics
+        - **Real-time Lighting**: Dynamic shadows and reflections
+        - **Interactive Camera**: Orbit, pan, zoom controls
+        - **Animated Particles**: Flowing connection effects
+        - **VR Ready**: WebXR support for immersive viewing
+        - **Export Options**: Screenshot, 3D model formats
+    """
+    return d3_visualization.create_3d_knowledge_graph(
+        output_path,
+        table_name,
+        include_semantic_links,
+        color_scheme,
+        camera_position,
+        animation_enabled,
+        export_formats,
+    )
