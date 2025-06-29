@@ -106,7 +106,7 @@ jobs:
         git config --local user.name "GitHub Action"
         git add docs/
         git commit -m "docs: auto-update API documentation [skip ci]"
-        git push
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
 
   security:
     runs-on: ubuntu-latest
