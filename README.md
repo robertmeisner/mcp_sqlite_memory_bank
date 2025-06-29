@@ -234,7 +234,7 @@ For detailed changes, see [CHANGELOG.md](CHANGELOG.md).
 
 ## 🚀 Batch Operations & Advanced Memory Management
 
-SQLite Memory Bank v1.6.0+ provides powerful batch operations and intelligent optimization for efficient memory management:
+SQLite Memory Bank v1.6.4+ provides powerful batch operations and intelligent optimization for efficient memory management:
 
 ### Smart Memory Updates & Change Tracking
 - **Enhanced `upsert_memory`**: Intelligent update-or-create with detailed change tracking
