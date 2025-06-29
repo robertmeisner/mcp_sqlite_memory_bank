@@ -1,0 +1,171 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin
+          
+      - name: Create MkDocs configuration
+        run: |
+          cat > mkdocs.yml << 'EOF'
+          site_name: SQLite Memory Bank Documentation
+          site_description: FastMCP SQLite Memory Bank - Dynamic agent-friendly memory system
+          site_author: Robert Meisner
+          site_url: https://robertmeisner.github.io/mcp_sqlite_memory_bank/
+          
+          repo_name: robertmeisner/mcp_sqlite_memory_bank
+          repo_url: https://github.com/robertmeisner/mcp_sqlite_memory_bank
+          
+          theme:
+            name: material
+            palette:
+              - scheme: default
+                primary: blue
+                accent: blue
+                toggle:
+                  icon: material/brightness-7
+                  name: Switch to dark mode
+              - scheme: slate
+                primary: blue
+                accent: blue
+                toggle:
+                  icon: material/brightness-4
+                  name: Switch to light mode
+            features:
+              - navigation.tabs
+              - navigation.tabs.sticky
+              - navigation.sections
+              - navigation.expand
+              - navigation.top
+              - search.highlight
+              - search.share
+              - content.code.copy
+              - content.tabs.link
+          
+          plugins:
+            - search
+            - mermaid2
+          
+          markdown_extensions:
+            - admonition
+            - pymdownx.details
+            - pymdownx.superfences:
+                custom_fences:
+                  - name: mermaid
+                    class: mermaid
+                    format: !!python/name:mermaid2.fence_mermaid
+            - pymdownx.tabbed:
+                alternate_style: true
+            - pymdownx.highlight:
+                anchor_linenums: true
+            - pymdownx.inlinehilite
+            - pymdownx.snippets
+            - attr_list
+            - md_in_html
+            - toc:
+                permalink: true
+          
+          nav:
+            - Home: index.md
+            - API Documentation: api.md
+            - Generated Documentation:
+              - API Reference: generated/api_reference.md
+              - Tools Summary: generated/tools_summary.md
+          EOF
+          
+      - name: Convert JSON to Markdown
+        run: |
+          python << 'EOF'
+          import json
+          import os
+          
+          # Convert tools_summary.json to markdown
+          if os.path.exists('docs/generated/tools_summary.json'):
+              with open('docs/generated/tools_summary.json', 'r') as f:
+                  data = json.load(f)
+              
+              md_content = f"""# Tools Summary
+          
+          *Generated on {data.get('generated_at', 'unknown')}*
+          
+          ## Overview
+          
+          - **Total Tools**: {data.get('total_tools', 0)}
+          - **Modules**: {', '.join(data.get('tools_by_module', {}).keys())}
+          
+          ## Tools by Module
+          
+          """
+              
+              for module, count in data.get('tools_by_module', {}).items():
+                  md_content += f"### {module.title()} ({count} tools)\n\n"
+                  
+                  module_tools = [t for t in data.get('tools', []) if t.get('module') == module]
+                  for tool in module_tools:
+                      md_content += f"- **{tool.get('name', 'unknown')}**: {tool.get('description', 'No description')}\n"
+                  md_content += "\n"
+              
+              with open('docs/generated/tools_summary.md', 'w') as f:
+                  f.write(md_content)
+                  
+              print("✅ Created tools_summary.md")
+          EOF
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        
+      - name: Build with MkDocs
+        run: mkdocs build
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site'
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

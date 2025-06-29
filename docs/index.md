@@ -1,22 +1,70 @@
-# mcp_sqlite_memory_bank Documentation
+# SQLite Memory Bank Documentation
 
-Welcome to the **mcp_sqlite_memory_bank** documentation. This library provides a dynamic, LLM-friendly SQLite memory bank.
+Welcome to the **SQLite Memory Bank** - a dynamic, agent-friendly FastMCP server providing intelligent memory management for AI applications.
 
-## Overview
+## 🚀 Quick Start
 
-For installation, quickstart, and architecture, see the [README](../README.md).
+The SQLite Memory Bank is a production-ready FastMCP server that provides:
 
-## Documentation
+- **37 comprehensive MCP tools** for memory management
+- **Semantic search capabilities** with vector embeddings
+- **Knowledge graph generation** and visualization
+- **Intelligent discovery** and relationship mapping
+- **Enterprise-grade optimization** and archiving tools
 
-- [API Reference](api.md) – Detailed tool signatures, return formats, and examples.
+## 📚 Documentation
 
-## Examples
+### Core Documentation
+- [**API Reference**](api.md) – Manual API documentation and guides
+- [**Generated API Reference**](generated/api_reference.md) – Complete auto-generated tool documentation
+- [**Tools Summary**](generated/tools_summary.md) – Quick overview of all 37 tools
 
-- [Agent Memory Example](../examples/agent_memory_example.py)
-- [Client Example](../examples/client_example.py)
-- [Running the Server](../examples/run_server.py)
+### Features
 
-## Additional Resources
+#### 🧠 **Memory Management**
+- **Dynamic Schema**: Create tables and manage data structures on-the-fly
+- **Intelligent Upserts**: Prevent duplicates with smart merge operations
+- **Batch Operations**: Efficient bulk creation and deletion of memories
 
-- [Memory Bank Instructions](../examples/memory_instructions.md) – Guidelines for LLM Agent for interacting with the memory bank.
-- [Tests](../tests) – Unit and integration tests demonstrating expected behavior.
+#### 🔍 **Intelligent Search**
+- **Semantic Search**: Natural language queries with vector embeddings
+- **Hybrid Search**: Combines keyword matching with semantic similarity
+- **Auto-Discovery**: Automatically enables semantic search on existing data
+
+#### 📊 **Visualization & Analytics**
+- **Knowledge Graphs**: Interactive D3.js and Three.js visualizations
+- **Relationship Discovery**: Find hidden connections in your data
+- **Enterprise Dashboards**: Professional analytics and reporting
+
+#### 🛠️ **Enterprise Features**
+- **Optimization Tools**: Memory bank performance tuning and cleanup
+- **Archiving Policies**: Intelligent data lifecycle management
+- **Duplicate Detection**: AI-powered duplicate analysis and resolution
+
+## 🎯 **Use Cases**
+
+- **AI Agent Memory**: Persistent memory for conversational AI agents
+- **Knowledge Management**: Enterprise knowledge base with semantic search
+- **Data Discovery**: Explore relationships and patterns in structured data
+- **Project Documentation**: Version-controlled documentation with auto-generation
+
+## 🏗️ **Architecture**
+
+Built with modern, professional standards:
+
+- **FastMCP Framework**: High-performance MCP server implementation
+- **Type Safety**: Full type annotations with Pylance/mypy validation
+- **Quality Assurance**: Comprehensive testing and CI/CD pipeline
+- **Professional Git Workflow**: Branch protection and automated PR creation
+
+## 📖 **Getting Started**
+
+1. **Installation**: See the [main repository](https://github.com/robertmeisner/mcp_sqlite_memory_bank)
+2. **Examples**: Check out the [examples directory](https://github.com/robertmeisner/mcp_sqlite_memory_bank/tree/main/examples)
+3. **API Reference**: Start with the [API documentation](api.md)
+
+## 🔗 **Links**
+
+- [**GitHub Repository**](https://github.com/robertmeisner/mcp_sqlite_memory_bank)
+- [**Issues & Support**](https://github.com/robertmeisner/mcp_sqlite_memory_bank/issues)
+- [**Contributing Guidelines**](https://github.com/robertmeisner/mcp_sqlite_memory_bank/blob/main/CONTRIBUTING.md)
