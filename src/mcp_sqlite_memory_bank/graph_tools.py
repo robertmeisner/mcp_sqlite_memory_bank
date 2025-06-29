@@ -253,8 +253,8 @@ def get_graph_insights_impl(db: SQLiteMemoryDatabase) -> ToolResponse:
         # Generate recommendations based on analysis
         if len(isolated_nodes) > total_nodes * 0.3:
             insights["recommendations"].append(
-                f"High isolation: {
-                    len(isolated_nodes)} nodes have no connections. Consider adding semantic relationships or reviewing data organization.")
+                f"High isolation: {len(isolated_nodes)} nodes have no connections. "
+                f"Consider adding semantic relationships or reviewing data organization.")
 
         if connectivity < 0.5:
             insights["recommendations"].append(

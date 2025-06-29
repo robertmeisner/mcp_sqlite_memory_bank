@@ -186,9 +186,132 @@ def tool_function(params):
 2. Verify no new type errors
 3. Update memory bank with new context
 4. Validate error handling works correctly
-5. Fix linting issues with `flake8` and type issues with mypy and pylance errors
+5. **MANDATORY: Run code quality checks** (see CODE QUALITY PREVENTION section below)
 6. **RESTART MCP SERVER IN VS CODE**: Use `Ctrl+Shift+P` → `MCP: Restart Server` to load code changes for testing
 7. When I say "DEPLOY!", follow the professional Git workflow deployment process outlined in the DEPLOYMENT WORKFLOW section below.
+
+## CODE QUALITY PREVENTION PROTOCOL
+
+### ⚠️ MANDATORY PRE-COMMIT WORKFLOW
+**NEVER commit code without running these checks first - prevents CI/CD pipeline failures**
+
+#### 1. AUTOMATED LINTING CHECKS (REQUIRED BEFORE EVERY COMMIT)
+```powershell
+# Basic linting check (MANDATORY)
+flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503 --count
+
+# If critical violations found (F811, F841, F541, E303), run automated fixes:
+black src/ tests/ --line-length=88
+autopep8 --in-place --aggressive --recursive src/ tests/
+autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive src/ tests/
+```
+
+#### 2. CRITICAL VIOLATION TYPES TO PREVENT
+- **F811**: Import redefinitions (multiple imports of same name)
+- **F841**: Unused variables (leftover from development)
+- **F541**: f-string placeholders without expressions
+- **E303**: Too many blank lines between functions/classes
+- **E501**: Line length violations (less critical but still important)
+
+#### 3. AUTOMATED FORMATTING WORKFLOW
+```powershell
+# Complete automated formatting pipeline (run when linting fails)
+black src/ tests/ --line-length=88; autopep8 --in-place --aggressive --recursive src/ tests/; autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive src/ tests/; flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503 --count
+```
+
+### PREVENTION STRATEGIES
+
+#### Pre-Commit Hook Setup (RECOMMENDED)
+```powershell
+# Create .git/hooks/pre-commit file with:
+#!/bin/sh
+echo "Running code quality checks..."
+flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503 --count
+if [ $? -ne 0 ]; then
+    echo "❌ Linting failed! Run automated fixes before committing."
+    echo "Run: black src/ tests/ --line-length=88"
+    echo "Run: autopep8 --in-place --aggressive --recursive src/ tests/"
+    echo "Run: autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive src/ tests/"
+    exit 1
+fi
+```
+
+#### Editor Configuration (VS Code settings.json)
+```json
+{
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": ["--max-line-length=88", "--extend-ignore=E203,W503"],
+    "python.formatting.provider": "black",
+    "python.formatting.blackArgs": ["--line-length=88"],
+    "editor.formatOnSave": true,
+    "python.linting.lintOnSave": true
+}
+```
+
+#### Development Best Practices
+1. **Import Organization**: Use consistent import ordering and avoid duplicate imports
+2. **Variable Management**: Remove unused variables immediately during development
+3. **F-String Usage**: Ensure all f-string placeholders have valid expressions
+4. **Line Length**: Keep lines under 88 characters (Black standard)
+5. **Blank Line Management**: Follow PEP 8 for spacing between functions/classes
+
+### EMERGENCY LINTING REMEDIATION (When CI/CD Fails)
+
+#### Phase 1: Automated Fixes
+```powershell
+# Step 1: Black formatting
+black src/ tests/ --line-length=88
+
+# Step 2: Aggressive autopep8 fixes
+autopep8 --in-place --aggressive --recursive src/ tests/
+
+# Step 3: Remove unused imports/variables
+autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive src/ tests/
+```
+
+#### Phase 2: Manual Critical Fixes
+```powershell
+# Check remaining critical violations
+flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503,E501 --select=F811,F841,F541,E303
+
+# Fix manually:
+# F811: Remove duplicate imports
+# F841: Remove unused variables
+# F541: Fix f-string placeholders
+# E303: Remove extra blank lines
+```
+
+#### Phase 3: Line Length Management (Optional)
+```powershell
+# Check line length violations (less critical)
+flake8 src/ tests/ --max-line-length=88 --select=E501 --count
+```
+
+### LESSONS LEARNED FROM LINTING CRISIS (June 29, 2025)
+
+#### What Happened
+- **700+ flake8 violations** blocked v1.6.3 deployment
+- **CI/CD pipeline correctly prevented** deployment of poor-quality code
+- **Emergency remediation required** 3-phase automated + manual fixing
+
+#### Root Causes
+1. **No pre-commit linting checks** in development workflow
+2. **Accumulated technical debt** from incremental development
+3. **Missing automated formatting** in regular development cycle
+4. **Manual code formatting** led to inconsistent style
+
+#### Prevention Measures Implemented
+1. **Mandatory pre-commit checks** added to project instructions
+2. **Automated formatting pipeline** documented for emergency use
+3. **Editor configuration** provided for continuous quality assurance
+4. **CI/CD compliance emphasis** in deployment instructions
+
+#### Key Takeaways
+- **Quality gates work**: CI/CD correctly prevented deployment of problematic code
+- **Automation is essential**: Manual formatting is not scalable for large codebases
+- **Prevention > Remediation**: Pre-commit checks are faster than emergency fixes
+- **Professional workflows matter**: Following proper Git/CI processes saves time long-term
 
 ## VS CODE MCP DEVELOPMENT WORKFLOW
 
@@ -247,6 +370,13 @@ When I say **"DEPLOY!"**, follow these steps in order:
    - 🔧 **Fix the issue in the release branch**
    - 🔄 **Push fixes and wait for checks to re-run**
    - ✅ **Only proceed when ALL checks are green**
+
+### 🚨 LESSONS FROM LINTING CRISIS: Why CI/CD Compliance Matters
+**v1.6.3 Emergency (June 29, 2025)**: 700+ flake8 violations blocked deployment
+- **What Happened**: Bypassed pre-commit checks, accumulated massive technical debt
+- **CI/CD Response**: Quality gates correctly prevented deployment of poor-quality code
+- **Emergency Fix**: Required 3-phase remediation (automated + manual fixes)
+- **Key Lesson**: **PREVENTION > CRISIS REMEDIATION** - pre-commit checks are mandatory
 
 ### 🚀 Deployment After Successful CI/CD
 **Only proceed after ALL automated checks pass**
@@ -318,6 +448,31 @@ If CI/CD checks were bypassed or failed tests were merged to production:
 - ✅ Added explicit warnings about bypassing automated checks
 - ✅ Documented this failure as learning example
 - 🔄 TODO: Strengthen branch protection to prevent admin bypasses
+- 🔄 TODO: Add post-deployment verification scripts
+
+#### **Example Crisis: v1.6.3 Linting Failure (June 29, 2025)**
+**Issue**: Massive CI/CD pipeline failure due to 700+ flake8 violations blocking deployment
+- Violation types: F811 (import redefinitions), F841 (unused variables), F541 (f-string placeholders), E303 (blank lines), E501 (line length)
+- Root cause: No pre-commit linting checks, accumulated technical debt over time
+- Impact: Complete deployment blockage requiring emergency 3-phase remediation
+- Emergency fix: Black formatting → autopep8 aggressive fixes → autoflake cleanup → manual critical fixes
+- Lesson: **Prevention is 100x easier than crisis remediation**
+
+**Corrective Actions**:
+- ✅ Added mandatory pre-commit linting workflow to project instructions
+- ✅ Documented 3-phase emergency remediation process for future crises
+- ✅ Created automated formatting pipeline commands
+- ✅ Added VS Code editor configuration for continuous quality assurance
+- ✅ Emphasized CI/CD compliance in deployment instructions
+- 🔄 TODO: Set up automated pre-commit hooks
+- 🔄 TODO: Add linting status badges to README
+
+#### **Prevention Strategies**:
+- **Patience Over Speed**: Wait for all checks, even if it takes longer
+- **No Admin Overrides**: Admin privileges are for emergencies only, not convenience
+- **Double-Check Green Status**: Visually verify all checks are green before merging
+- **Test in Production**: Quick smoke test after deployment to catch immediate issues
+- **Pre-Commit Quality Checks**: Run linting and formatting before every commit
 - 🔄 TODO: Add post-deployment verification scripts
 
 #### **Prevention Strategies**:

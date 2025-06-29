@@ -776,8 +776,8 @@ class SQLiteMemoryDatabase:
 
                     conn.commit()
                     logging.info(
-                        f"Generated embeddings for batch {
-                            i // batch_size + 1}, processed {processed} rows")
+                        f"Generated embeddings for batch "
+                        f"{i // batch_size + 1}, processed {processed} rows")
 
                 return {
                     "success": True,
