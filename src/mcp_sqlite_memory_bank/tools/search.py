@@ -7,7 +7,7 @@ semantic search, embedding management, and intelligent search capabilities.
 
 import logging
 import traceback
-from typing import List, Optional, cast, Dict, Any
+from typing import List, Optional, cast
 
 from ..database import get_database
 from ..types import ToolResponse
@@ -19,19 +19,19 @@ def _auto_embed_tables(
 ) -> List[str]:
     """
     Auto-embed text columns in tables that don't have embeddings.
-    
+
     Args:
         search_tables: List of table names to process
         model_name: Model to use for embedding generation
-        
+
     Returns:
         List of table names that were successfully auto-embedded
     """
     from .. import server
-    
+
     db = get_database(server.DB_PATH)
     auto_embedded_tables: List[str] = []
-    
+
     for table_name in search_tables:
         try:
             # Check if table has embeddings
@@ -68,30 +68,30 @@ def _auto_embed_tables(
         except Exception:
             # If auto-embedding fails, continue without it
             continue
-    
+
     return auto_embedded_tables
 
 
 def _get_search_tables(tables: Optional[List[str]]) -> List[str]:
     """
     Get tables to search - either provided list or all available tables.
-    
+
     Args:
         tables: Optional list of specific tables to search
-        
+
     Returns:
         List of table names to search
     """
     from .. import server
-    
+
     if tables:
         return tables
-    
+
     db = get_database(server.DB_PATH)
     tables_result = db.list_tables()
     if not tables_result.get("success"):
         return []
-    
+
     all_tables = tables_result.get("tables", [])
     return all_tables if isinstance(all_tables, list) else []
 
@@ -105,7 +105,9 @@ def search_content(
     """Perform full-text search across table content using natural language queries."""
     from .. import server
 
-    return cast(ToolResponse, get_database(server.DB_PATH).search_content(query, tables, limit))
+    return cast(
+        ToolResponse, get_database(server.DB_PATH).search_content(query, tables, limit)
+    )
 
 
 @catch_errors
@@ -270,8 +272,15 @@ def auto_semantic_search(
         # Get tables to search and auto-embed text columns
         search_tables = _get_search_tables(tables)
         if not search_tables:
-            return cast(ToolResponse, {"success": False, "error": "No tables available for search", "category": "TABLE_ERROR"})
-        
+            return cast(
+                ToolResponse,
+                {
+                    "success": False,
+                    "error": "No tables available for search",
+                    "category": "TABLE_ERROR",
+                },
+            )
+
         auto_embedded_tables = _auto_embed_tables(search_tables, model_name)
 
         # Perform semantic search
@@ -291,8 +300,8 @@ def auto_semantic_search(
             search_result["auto_embedded_tables"] = auto_embedded_tables
             if auto_embedded_tables:
                 search_result["auto_embedding_note"] = (
-                    f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
-                )
+                    f"Automatically generated embeddings for {
+                        len(auto_embedded_tables)} table(s)")
 
         return cast(ToolResponse, search_result)
 
@@ -357,8 +366,15 @@ def auto_smart_search(
         # Get tables to search and auto-embed text columns
         search_tables = _get_search_tables(tables)
         if not search_tables:
-            return cast(ToolResponse, {"success": False, "error": "No tables available for search", "category": "TABLE_ERROR"})
-        
+            return cast(
+                ToolResponse,
+                {
+                    "success": False,
+                    "error": "No tables available for search",
+                    "category": "TABLE_ERROR",
+                },
+            )
+
         auto_embedded_tables = _auto_embed_tables(search_tables, model_name)
 
         # Now perform hybrid search using the same pattern as smart_search
@@ -375,7 +391,9 @@ def auto_smart_search(
             )
         except Exception as search_error:
             # If hybrid search fails, fall back to regular content search
-            logging.warning(f"Hybrid search failed, falling back to content search: {search_error}")
+            logging.warning(
+                f"Hybrid search failed, falling back to content search: {search_error}"
+            )
             try:
                 fallback_result = get_database(server.DB_PATH).search_content(
                     query, search_tables, limit
@@ -394,7 +412,9 @@ def auto_smart_search(
                         "success": False,
                         "error": f"Both hybrid and fallback search failed. Hybrid: {search_error}, Fallback: {fallback_error}",
                         "category": "HYBRID_SEARCH_ERROR",
-                        "details": {"query": query, "tables": tables},
+                        "details": {
+                            "query": query,
+                            "tables": tables},
                     },
                 )
 
@@ -417,8 +437,8 @@ def auto_smart_search(
             final_result["auto_embedded_tables"] = auto_embedded_tables
             if auto_embedded_tables:
                 final_result["auto_embedding_note"] = (
-                    f"Automatically generated embeddings for {len(auto_embedded_tables)} table(s)"
-                )
+                    f"Automatically generated embeddings for {
+                        len(auto_embedded_tables)} table(s)")
             return cast(ToolResponse, final_result)
         else:
             return cast(ToolResponse, hybrid_result)

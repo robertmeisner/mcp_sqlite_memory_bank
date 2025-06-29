@@ -110,7 +110,9 @@ def get_table_columns(conn: sqlite3.Connection, table_name: str) -> List[str]:
     cur.execute(f"PRAGMA table_info({table_name})")
     columns = [row[1] for row in cur.fetchall()]
     if not columns:
-        raise SchemaError(f"Table does not exist: {table_name}", {"table_name": table_name})
+        raise SchemaError(
+            f"Table does not exist: {table_name}", {"table_name": table_name}
+        )
     return columns
 
 
@@ -162,9 +164,13 @@ def validate_table_exists(conn: sqlite3.Connection, table_name: str) -> None:
         table_name: Name of table to check
     """
     cur = conn.cursor()
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+    cur.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+    )
     if not cur.fetchone():
-        raise SchemaError(f"Table does not exist: {table_name}", {"table_name": table_name})
+        raise SchemaError(
+            f"Table does not exist: {table_name}", {"table_name": table_name}
+        )
 
 
 def build_where_clause(
@@ -237,8 +243,7 @@ def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
                 ],
                 "explanation": "Semantic search requires the sentence-transformers library",
                 "fallback_available": "Keyword search is available as fallback",
-            }
-        )
+            })
 
     # Database errors
     elif "database" in error_str or "sqlite" in error_str:
@@ -255,8 +260,7 @@ def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
                     "check_db_path": "Verify DB_PATH environment variable",
                     "check_permissions": "Ensure write permissions to database directory",
                 },
-            }
-        )
+            })
 
     # Table/schema errors
     elif "table" in error_str and ("not exist" in error_str or "missing" in error_str):
@@ -301,8 +305,7 @@ def suggest_recovery(error: Exception, function_name: str) -> Dict[str, Any]:
                     "python_version": sys.version,
                     "check_packages": "pip list | grep -E '(torch|transformers|sentence)'",
                 },
-            }
-        )
+            })
 
     # Function/method errors (like our recent 'FunctionTool' issue)
     elif "not callable" in error_str or "has no attribute" in error_str:
@@ -375,7 +378,9 @@ def enhanced_catch_errors(
 
                 # Determine error category
                 if isinstance(e, MemoryBankError):
-                    category = e.category.name if hasattr(e, "category") else "MEMORY_BANK"
+                    category = (
+                        e.category.name if hasattr(e, "category") else "MEMORY_BANK"
+                    )
                     return cast(
                         ToolResponse,
                         {

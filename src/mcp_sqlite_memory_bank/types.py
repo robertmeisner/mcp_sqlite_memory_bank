@@ -106,19 +106,13 @@ class ErrorResponse(TypedDict):
 class CreateTableResponse(SuccessResponse):
     """Response for create_table tool."""
 
-    pass
-
 
 class DropTableResponse(SuccessResponse):
     """Response for drop_table tool."""
 
-    pass
-
 
 class RenameTableResponse(SuccessResponse):
     """Response for rename_table tool."""
-
-    pass
 
 
 class ListTablesResponse(SuccessResponse):

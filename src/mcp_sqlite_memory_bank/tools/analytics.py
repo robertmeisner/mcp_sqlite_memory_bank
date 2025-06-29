@@ -79,14 +79,19 @@ def analyze_memory_patterns() -> ToolResponse:
                 schema_result = db.describe_table(table_name)
                 if schema_result.get("success"):
                     columns = schema_result.get("columns", [])
-                    text_columns = [col for col in columns if "TEXT" in col.get("type", "").upper()]
+                    text_columns = [
+                        col for col in columns if "TEXT" in col.get("type", "").upper()
+                    ]
 
                     analysis["schema_analysis"][table_name] = {
                         "total_columns": len(columns),
                         "text_columns": len(text_columns),
-                        "has_id_column": any(col.get("name") == "id" for col in columns),
+                        "has_id_column": any(
+                            col.get("name") == "id" for col in columns
+                        ),
                         "has_timestamp": any(
-                            "timestamp" in col.get("name", "").lower() for col in columns
+                            "timestamp" in col.get("name", "").lower()
+                            for col in columns
                         ),
                     }
 
@@ -100,7 +105,9 @@ def analyze_memory_patterns() -> ToolResponse:
                                     text_content_lengths.append(len(str(content)))
 
                         if text_content_lengths:
-                            avg_length = sum(text_content_lengths) / len(text_content_lengths)
+                            avg_length = sum(text_content_lengths) / len(
+                                text_content_lengths
+                            )
                             if avg_length > 500:
                                 analysis["text_density"]["high"].append(table_name)
                             elif avg_length > 100:
@@ -118,7 +125,9 @@ def analyze_memory_patterns() -> ToolResponse:
                         elif coverage > 0:
                             analysis["semantic_readiness"]["partial"].append(table_name)
                         else:
-                            analysis["semantic_readiness"]["needs_setup"].append(table_name)
+                            analysis["semantic_readiness"]["needs_setup"].append(
+                                table_name
+                            )
 
             except Exception as e:
                 logging.warning(f"Error analyzing table {table_name}: {e}")
@@ -132,7 +141,8 @@ def analyze_memory_patterns() -> ToolResponse:
             high_value_tables = [
                 t
                 for t in analysis["semantic_readiness"]["needs_setup"]
-                if t in analysis["text_density"]["high"] + analysis["text_density"]["medium"]
+                if t
+                in analysis["text_density"]["high"] + analysis["text_density"]["medium"]
             ]
             if high_value_tables:
                 recommendations.append(
@@ -140,20 +150,24 @@ def analyze_memory_patterns() -> ToolResponse:
                 )
 
         # Content organization recommendations
-        large_tables = [t for t, count in analysis["content_distribution"].items() if count > 50]
+        large_tables = [
+            t for t, count in analysis["content_distribution"].items() if count > 50
+        ]
         if large_tables:
             recommendations.append(
-                f"Large tables detected: {', '.join(large_tables)}. Consider organizing with categories or tags."
-            )
+                f"Large tables detected: {
+                    ', '.join(large_tables)}. Consider organizing with categories or tags.")
 
         # Empty or sparse tables
         sparse_tables = [
-            t for t, count in analysis["content_distribution"].items() if count < 5 and count > 0
+            t
+            for t, count in analysis["content_distribution"].items()
+            if count < 5 and count > 0
         ]
         if sparse_tables:
             recommendations.append(
-                f"Sparse tables found: {', '.join(sparse_tables)}. Consider consolidating or adding more content."
-            )
+                f"Sparse tables found: {
+                    ', '.join(sparse_tables)}. Consider consolidating or adding more content.")
 
         # Schema improvements
         tables_without_timestamps = [
@@ -267,14 +281,19 @@ def get_content_health_score() -> ToolResponse:
                 schema_result = db.describe_table(table_name)
                 if schema_result.get("success"):
                     columns = schema_result.get("columns", [])
-                    text_columns = [col for col in columns if "TEXT" in col.get("type", "").upper()]
+                    text_columns = [
+                        col for col in columns if "TEXT" in col.get("type", "").upper()
+                    ]
 
                     analysis["schema_analysis"][table_name] = {
                         "total_columns": len(columns),
                         "text_columns": len(text_columns),
-                        "has_id_column": any(col.get("name") == "id" for col in columns),
+                        "has_id_column": any(
+                            col.get("name") == "id" for col in columns
+                        ),
                         "has_timestamp": any(
-                            "timestamp" in col.get("name", "").lower() for col in columns
+                            "timestamp" in col.get("name", "").lower()
+                            for col in columns
                         ),
                     }
 
@@ -288,7 +307,9 @@ def get_content_health_score() -> ToolResponse:
                                     text_content_lengths.append(len(str(content)))
 
                         if text_content_lengths:
-                            avg_length = sum(text_content_lengths) / len(text_content_lengths)
+                            avg_length = sum(text_content_lengths) / len(
+                                text_content_lengths
+                            )
                             if avg_length > 500:
                                 analysis["text_density"]["high"].append(table_name)
                             elif avg_length > 100:
@@ -306,7 +327,9 @@ def get_content_health_score() -> ToolResponse:
                         elif coverage > 0:
                             analysis["semantic_readiness"]["partial"].append(table_name)
                         else:
-                            analysis["semantic_readiness"]["needs_setup"].append(table_name)
+                            analysis["semantic_readiness"]["needs_setup"].append(
+                                table_name
+                            )
 
             except Exception as e:
                 logging.warning(f"Error analyzing table {table_name}: {e}")
@@ -338,7 +361,9 @@ def get_content_health_score() -> ToolResponse:
         else:
             metrics["content_volume"] = 10.0
 
-        metrics["content_quality"] = min(10.0, (high_quality_tables / total_tables) * 10 + 3)
+        metrics["content_quality"] = min(
+            10.0, (high_quality_tables / total_tables) * 10 + 3
+        )
 
         # 2. Organization Score (based on schema quality)
         schema_analysis = analysis.get("schema_analysis", {})
@@ -357,17 +382,23 @@ def get_content_health_score() -> ToolResponse:
             organization_factors.append(table_score)
 
         metrics["organization"] = (
-            (sum(organization_factors) / len(organization_factors)) if organization_factors else 5.0
+            (sum(organization_factors) / len(organization_factors))
+            if organization_factors
+            else 5.0
         )
 
         # 3. Semantic Readiness Score
         semantic_ready = len(analysis.get("semantic_readiness", {}).get("ready", []))
-        semantic_partial = len(analysis.get("semantic_readiness", {}).get("partial", []))
+        semantic_partial = len(
+            analysis.get("semantic_readiness", {}).get("partial", [])
+        )
         if not is_semantic_search_available():
             metrics["semantic_readiness"] = 5.0  # Neutral score if not available
             metrics["semantic_note"] = "Semantic search dependencies not available"
         else:
-            semantic_score = ((semantic_ready * 2 + semantic_partial) / (total_tables * 2)) * 10
+            semantic_score = (
+                (semantic_ready * 2 + semantic_partial) / (total_tables * 2)
+            ) * 10
             metrics["semantic_readiness"] = min(10.0, semantic_score)
 
         # 4. Accessibility Score (how easy it is to find and use content)

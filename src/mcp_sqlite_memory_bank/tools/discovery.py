@@ -111,13 +111,17 @@ def intelligent_discovery(
         # Step 2: Content analysis based on goal
         if discovery_goal in ["understand_content", "find_patterns", "assess_quality"]:
             discovery_session["steps_completed"].append("content_analysis")
-            content_analysis = _analyze_content_for_discovery(db, tables, focus_area, depth)
+            content_analysis = _analyze_content_for_discovery(
+                db, tables, focus_area, depth
+            )
             overview.update(content_analysis)
 
         # Step 3: Schema analysis for structure exploration
         if discovery_goal in ["explore_structure", "understand_content"]:
             discovery_session["steps_completed"].append("schema_analysis")
-            schema_analysis = _analyze_schema_for_discovery(db, tables, focus_area, depth)
+            schema_analysis = _analyze_schema_for_discovery(
+                db, tables, focus_area, depth
+            )
             overview.update(schema_analysis)
 
         # Step 4: Quality assessment
@@ -159,7 +163,9 @@ def intelligent_discovery(
                 },
                 "next_steps": next_steps,
                 "discovery_session": discovery_session,
-                "quick_actions": _generate_quick_actions(discovery_goal, overview, focus_area),
+                "quick_actions": _generate_quick_actions(
+                    discovery_goal, overview, focus_area
+                ),
             },
         )
 
@@ -221,260 +227,218 @@ def discovery_templates(
         - **LEARNING-OPTIMIZED**: Based on successful discovery patterns
     """
     try:
-        templates = {
-            "first_time_exploration": {
-                "name": "First Time Exploration",
-                "description": "Complete discovery workflow for agents new to this memory bank",
-                "estimated_time": "2-3 minutes",
-                "workflow": [
-                    {
-                        "step": 1,
-                        "action": "Get Overview",
-                        "tool": "intelligent_discovery",
-                        "params": {
-                            "discovery_goal": "understand_content",
-                            "depth": "moderate",
-                        },
-                        "purpose": "Understand what data is available and how it's organized",
-                        "look_for": ["total tables", "content types", "data volume"],
-                    },
-                    {
-                        "step": 2,
-                        "action": "Explore Structure",
-                        "tool": "explore_tables",
-                        "params": {"include_row_counts": True},
-                        "purpose": "See detailed table schemas and sample data",
-                        "look_for": [
-                            "column types",
-                            "sample content",
-                            "data relationships",
-                        ],
-                    },
-                    {
-                        "step": 3,
-                        "action": "Test Search Capabilities",
-                        "tool": "auto_smart_search",
-                        "params": {"query": "recent important information", "limit": 5},
-                        "purpose": "Understand search capabilities and content accessibility",
-                        "look_for": [
-                            "search quality",
-                            "result relevance",
-                            "content types found",
-                        ],
-                    },
-                    {
-                        "step": 4,
-                        "action": "Assess Quality",
-                        "tool": "get_content_health_score",
-                        "params": {},
-                        "purpose": "Understand overall memory bank quality and opportunities",
-                        "look_for": [
-                            "health score",
-                            "improvement recommendations",
-                            "strengths",
-                        ],
-                    },
-                ],
-                "success_criteria": [
-                    "Understand what types of information are stored",
-                    "Know which tables contain the most valuable content",
-                    "Identify best search strategies for this memory bank",
-                    "Have actionable next steps for productive use",
-                ],
-            },
-            "content_audit": {
-                "name": "Content Quality Audit",
-                "description": "Systematic review of content quality and completeness",
-                "estimated_time": "5-7 minutes",
-                "workflow": [
-                    {
-                        "step": 1,
-                        "action": "Quality Assessment",
-                        "tool": "get_content_health_score",
-                        "params": {},
-                        "purpose": "Get overall quality metrics and problem areas",
-                        "look_for": [
-                            "quality scores",
-                            "problem tables",
-                            "recommendations",
-                        ],
-                    },
-                    {
-                        "step": 2,
-                        "action": "Pattern Analysis",
-                        "tool": "analyze_memory_patterns",
-                        "params": {},
-                        "purpose": "Identify content patterns and organizational issues",
-                        "look_for": [
-                            "content distribution",
-                            "sparse tables",
-                            "organization gaps",
-                        ],
-                    },
-                    {
-                        "step": 3,
-                        "action": "Table-by-Table Review",
-                        "tool": "explore_tables",
-                        "params": {"include_row_counts": True},
-                        "purpose": "Detailed examination of each table's content",
-                        "look_for": [
-                            "empty tables",
-                            "low-quality content",
-                            "missing data",
-                        ],
-                    },
-                    {
-                        "step": 4,
-                        "action": "Search Readiness",
-                        "tool": "intelligent_discovery",
-                        "params": {
-                            "discovery_goal": "prepare_search",
-                            "depth": "comprehensive",
-                        },
-                        "purpose": "Ensure content is optimally searchable",
-                        "look_for": [
-                            "embedding coverage",
-                            "search optimization opportunities",
-                        ],
-                    },
-                ],
-                "success_criteria": [
-                    "Identify all content quality issues",
-                    "Have specific recommendations for improvement",
-                    "Understand which content areas need attention",
-                    "Know how to optimize for better searchability",
-                ],
-            },
-            "search_optimization": {
-                "name": "Search Optimization Setup",
-                "description": "Prepare memory bank for optimal content discovery and searching",
-                "estimated_time": "3-5 minutes",
-                "workflow": [
-                    {
-                        "step": 1,
-                        "action": "Search Capability Assessment",
-                        "tool": "intelligent_discovery",
-                        "params": {
-                            "discovery_goal": "prepare_search",
-                            "depth": "comprehensive",
-                        },
-                        "purpose": "Understand current search capabilities and gaps",
-                        "look_for": [
-                            "semantic readiness",
-                            "text column identification",
-                            "embedding status",
-                        ],
-                    },
-                    {
-                        "step": 2,
-                        "action": "Content Analysis for Search",
-                        "tool": "analyze_memory_patterns",
-                        "params": {},
-                        "purpose": "Identify high-value content for search optimization",
-                        "look_for": [
-                            "text-rich tables",
-                            "high-value content",
-                            "search opportunities",
-                        ],
-                    },
-                    {
-                        "step": 3,
-                        "action": "Test Current Search",
-                        "tool": "search_content",
-                        "params": {"query": "test search capabilities", "limit": 10},
-                        "purpose": "Baseline current search performance",
-                        "look_for": ["search result quality", "coverage", "relevance"],
-                    },
-                    {
-                        "step": 4,
-                        "action": "Semantic Search Setup",
-                        "tool": "auto_semantic_search",
-                        "params": {"query": "important valuable content", "limit": 5},
-                        "purpose": "Enable and test semantic search capabilities",
-                        "look_for": [
-                            "automatic embedding generation",
-                            "semantic result quality",
-                        ],
-                    },
-                ],
-                "success_criteria": [
-                    "Semantic search is enabled for key tables",
-                    "Both keyword and semantic search work effectively",
-                    "Search performance meets quality standards",
-                    "Clear strategy for ongoing search optimization",
-                ],
-            },
-            "problem_solving": {
-                "name": "Problem-Solving Discovery",
-                "description": "Find information to solve specific problems or answer questions",
-                "estimated_time": "2-4 minutes",
-                "workflow": [
-                    {
-                        "step": 1,
-                        "action": "Quick Content Survey",
-                        "tool": "intelligent_discovery",
-                        "params": {
-                            "discovery_goal": "understand_content",
-                            "depth": "quick",
-                        },
-                        "purpose": "Rapid overview of available information",
-                        "look_for": [
-                            "relevant content areas",
-                            "potential information sources",
-                        ],
-                    },
-                    {
-                        "step": 2,
-                        "action": "Targeted Search",
-                        "tool": "auto_smart_search",
-                        "params": {
-                            "query": "REPLACE_WITH_PROBLEM_KEYWORDS",
-                            "limit": 10,
-                        },
-                        "purpose": "Find directly relevant information",
-                        "look_for": [
-                            "directly applicable content",
-                            "related information",
-                            "context clues",
-                        ],
-                    },
-                    {
-                        "step": 3,
-                        "action": "Related Content Discovery",
-                        "tool": "auto_semantic_search",
-                        "params": {
-                            "query": "REPLACE_WITH_CONCEPTUAL_TERMS",
-                            "similarity_threshold": 0.3,
-                        },
-                        "purpose": "Find conceptually related information",
-                        "look_for": [
-                            "broader context",
-                            "related concepts",
-                            "background information",
-                        ],
-                    },
-                    {
-                        "step": 4,
-                        "action": "Information Gap Analysis",
-                        "tool": "explore_tables",
-                        "params": {"include_row_counts": True},
-                        "purpose": "Identify what information might be missing",
-                        "look_for": [
-                            "information gaps",
-                            "additional context sources",
-                            "related data",
-                        ],
-                    },
-                ],
-                "customization_note": "Replace REPLACE_WITH_PROBLEM_KEYWORDS and REPLACE_WITH_CONCEPTUAL_TERMS with your specific problem terms",
-                "success_criteria": [
-                    "Found directly relevant information",
-                    "Identified related/contextual information",
-                    "Understand what information might be missing",
-                    "Have clear next steps for problem resolution",
-                ],
-            },
-        }
+        templates = {"first_time_exploration": {"name": "First Time Exploration",
+                                                "description": "Complete discovery workflow for agents new to this memory bank",
+                                                "estimated_time": "2-3 minutes",
+                                                "workflow": [{"step": 1,
+                                                              "action": "Get Overview",
+                                                              "tool": "intelligent_discovery",
+                                                              "params": {"discovery_goal": "understand_content",
+                                                                         "depth": "moderate",
+                                                                         },
+                                                              "purpose": "Understand what data is available and how it's organized",
+                                                              "look_for": ["total tables",
+                                                                           "content types",
+                                                                           "data volume"],
+                                                              },
+                                                             {"step": 2,
+                                                              "action": "Explore Structure",
+                                                              "tool": "explore_tables",
+                                                              "params": {"include_row_counts": True},
+                                                              "purpose": "See detailed table schemas and sample data",
+                                                              "look_for": ["column types",
+                                                                           "sample content",
+                                                                           "data relationships",
+                                                                           ],
+                                                              },
+                                                             {"step": 3,
+                                                              "action": "Test Search Capabilities",
+                                                              "tool": "auto_smart_search",
+                                                              "params": {"query": "recent important information",
+                                                                         "limit": 5},
+                                                              "purpose": "Understand search capabilities and content accessibility",
+                                                              "look_for": ["search quality",
+                                                                           "result relevance",
+                                                                           "content types found",
+                                                                           ],
+                                                              },
+                                                             {"step": 4,
+                                                              "action": "Assess Quality",
+                                                              "tool": "get_content_health_score",
+                                                              "params": {},
+                                                              "purpose": "Understand overall memory bank quality and opportunities",
+                                                              "look_for": ["health score",
+                                                                           "improvement recommendations",
+                                                                           "strengths",
+                                                                           ],
+                                                              },
+                                                             ],
+                                                "success_criteria": ["Understand what types of information are stored",
+                                                                     "Know which tables contain the most valuable content",
+                                                                     "Identify best search strategies for this memory bank",
+                                                                     "Have actionable next steps for productive use",
+                                                                     ],
+                                                },
+                     "content_audit": {"name": "Content Quality Audit",
+                                       "description": "Systematic review of content quality and completeness",
+                                       "estimated_time": "5-7 minutes",
+                                       "workflow": [{"step": 1,
+                                                     "action": "Quality Assessment",
+                                                     "tool": "get_content_health_score",
+                                                     "params": {},
+                                                     "purpose": "Get overall quality metrics and problem areas",
+                                                     "look_for": ["quality scores",
+                                                                  "problem tables",
+                                                                  "recommendations",
+                                                                  ],
+                                                     },
+                                                    {"step": 2,
+                                                     "action": "Pattern Analysis",
+                                                     "tool": "analyze_memory_patterns",
+                                                     "params": {},
+                                                     "purpose": "Identify content patterns and organizational issues",
+                                                     "look_for": ["content distribution",
+                                                                  "sparse tables",
+                                                                  "organization gaps",
+                                                                  ],
+                                                     },
+                                                    {"step": 3,
+                                                     "action": "Table-by-Table Review",
+                                                     "tool": "explore_tables",
+                                                     "params": {"include_row_counts": True},
+                                                     "purpose": "Detailed examination of each table's content",
+                                                     "look_for": ["empty tables",
+                                                                  "low-quality content",
+                                                                  "missing data",
+                                                                  ],
+                                                     },
+                                                    {"step": 4,
+                                                     "action": "Search Readiness",
+                                                     "tool": "intelligent_discovery",
+                                                     "params": {"discovery_goal": "prepare_search",
+                                                                "depth": "comprehensive",
+                                                                },
+                                                     "purpose": "Ensure content is optimally searchable",
+                                                     "look_for": ["embedding coverage",
+                                                                  "search optimization opportunities",
+                                                                  ],
+                                                     },
+                                                    ],
+                                       "success_criteria": ["Identify all content quality issues",
+                                                            "Have specific recommendations for improvement",
+                                                            "Understand which content areas need attention",
+                                                            "Know how to optimize for better searchability",
+                                                            ],
+                                       },
+                     "search_optimization": {"name": "Search Optimization Setup",
+                                             "description": "Prepare memory bank for optimal content discovery and searching",
+                                             "estimated_time": "3-5 minutes",
+                                             "workflow": [{"step": 1,
+                                                           "action": "Search Capability Assessment",
+                                                           "tool": "intelligent_discovery",
+                                                           "params": {"discovery_goal": "prepare_search",
+                                                                      "depth": "comprehensive",
+                                                                      },
+                                                           "purpose": "Understand current search capabilities and gaps",
+                                                           "look_for": ["semantic readiness",
+                                                                        "text column identification",
+                                                                        "embedding status",
+                                                                        ],
+                                                           },
+                                                          {"step": 2,
+                                                           "action": "Content Analysis for Search",
+                                                           "tool": "analyze_memory_patterns",
+                                                           "params": {},
+                                                           "purpose": "Identify high-value content for search optimization",
+                                                           "look_for": ["text-rich tables",
+                                                                        "high-value content",
+                                                                        "search opportunities",
+                                                                        ],
+                                                           },
+                                                          {"step": 3,
+                                                           "action": "Test Current Search",
+                                                           "tool": "search_content",
+                                                           "params": {"query": "test search capabilities",
+                                                                      "limit": 10},
+                                                           "purpose": "Baseline current search performance",
+                                                           "look_for": ["search result quality",
+                                                                        "coverage",
+                                                                        "relevance"],
+                                                           },
+                                                          {"step": 4,
+                                                           "action": "Semantic Search Setup",
+                                                           "tool": "auto_semantic_search",
+                                                           "params": {"query": "important valuable content",
+                                                                      "limit": 5},
+                                                           "purpose": "Enable and test semantic search capabilities",
+                                                           "look_for": ["automatic embedding generation",
+                                                                        "semantic result quality",
+                                                                        ],
+                                                           },
+                                                          ],
+                                             "success_criteria": ["Semantic search is enabled for key tables",
+                                                                  "Both keyword and semantic search work effectively",
+                                                                  "Search performance meets quality standards",
+                                                                  "Clear strategy for ongoing search optimization",
+                                                                  ],
+                                             },
+                     "problem_solving": {"name": "Problem-Solving Discovery",
+                                         "description": "Find information to solve specific problems or answer questions",
+                                         "estimated_time": "2-4 minutes",
+                                         "workflow": [{"step": 1,
+                                                       "action": "Quick Content Survey",
+                                                       "tool": "intelligent_discovery",
+                                                       "params": {"discovery_goal": "understand_content",
+                                                                  "depth": "quick",
+                                                                  },
+                                                       "purpose": "Rapid overview of available information",
+                                                       "look_for": ["relevant content areas",
+                                                                    "potential information sources",
+                                                                    ],
+                                                       },
+                                                      {"step": 2,
+                                                       "action": "Targeted Search",
+                                                       "tool": "auto_smart_search",
+                                                       "params": {"query": "REPLACE_WITH_PROBLEM_KEYWORDS",
+                                                                  "limit": 10,
+                                                                  },
+                                                       "purpose": "Find directly relevant information",
+                                                       "look_for": ["directly applicable content",
+                                                                    "related information",
+                                                                    "context clues",
+                                                                    ],
+                                                       },
+                                                      {"step": 3,
+                                                       "action": "Related Content Discovery",
+                                                       "tool": "auto_semantic_search",
+                                                       "params": {"query": "REPLACE_WITH_CONCEPTUAL_TERMS",
+                                                                  "similarity_threshold": 0.3,
+                                                                  },
+                                                       "purpose": "Find conceptually related information",
+                                                       "look_for": ["broader context",
+                                                                    "related concepts",
+                                                                    "background information",
+                                                                    ],
+                                                       },
+                                                      {"step": 4,
+                                                       "action": "Information Gap Analysis",
+                                                       "tool": "explore_tables",
+                                                       "params": {"include_row_counts": True},
+                                                       "purpose": "Identify what information might be missing",
+                                                       "look_for": ["information gaps",
+                                                                    "additional context sources",
+                                                                    "related data",
+                                                                    ],
+                                                       },
+                                                      ],
+                                         "customization_note": "Replace REPLACE_WITH_PROBLEM_KEYWORDS and REPLACE_WITH_CONCEPTUAL_TERMS with your specific problem terms",
+                                         "success_criteria": ["Found directly relevant information",
+                                                              "Identified related/contextual information",
+                                                              "Understand what information might be missing",
+                                                              "Have clear next steps for problem resolution",
+                                                              ],
+                                         },
+                     }
 
         if template_type not in templates:
             available_templates = list(templates.keys())
@@ -504,7 +468,8 @@ def discovery_templates(
                 "template": template,
                 "template_type": template_type,
                 "customized_for": customize_for,
-                "available_templates": list(templates.keys()),
+                "available_templates": list(
+                    templates.keys()),
                 "usage_tip": "Follow the workflow steps in order, adapting parameters as needed for your specific situation",
             },
         )
@@ -601,19 +566,22 @@ def discover_relationships(
                 table_relationships["foreign_key_refs"] = fk_relationships
                 if fk_relationships:
                     insights.append(
-                        f"Table '{target_table}' has structural relationships with {len(fk_relationships)} other tables"
-                    )
+                        f"Table '{target_table}' has structural relationships with {
+                            len(fk_relationships)} other tables")
 
             # Discover semantic similarity relationships
-            if "semantic_similarity" in relationship_types and is_semantic_search_available():
+            if (
+                "semantic_similarity" in relationship_types
+                and is_semantic_search_available()
+            ):
                 semantic_relationships = _discover_semantic_relationships(
                     db, target_table, all_tables, similarity_threshold
                 )
                 table_relationships["semantic_similar"] = semantic_relationships
                 if semantic_relationships:
                     insights.append(
-                        f"Table '{target_table}' has semantic similarity with {len(semantic_relationships)} tables"
-                    )
+                        f"Table '{target_table}' has semantic similarity with {
+                            len(semantic_relationships)} tables")
 
             # Discover temporal patterns
             if "temporal_patterns" in relationship_types:
@@ -623,17 +591,19 @@ def discover_relationships(
                 table_relationships["temporal_related"] = temporal_relationships
                 if temporal_relationships:
                     insights.append(
-                        f"Table '{target_table}' shows temporal patterns with {len(temporal_relationships)} tables"
-                    )
+                        f"Table '{target_table}' shows temporal patterns with {
+                            len(temporal_relationships)} tables")
 
             # Discover naming pattern relationships
             if "naming_patterns" in relationship_types:
-                naming_relationships = _discover_naming_relationships(target_table, all_tables)
+                naming_relationships = _discover_naming_relationships(
+                    target_table, all_tables
+                )
                 table_relationships["naming_related"] = naming_relationships
                 if naming_relationships:
                     insights.append(
-                        f"Table '{target_table}' has naming pattern relationships with {len(naming_relationships)} tables"
-                    )
+                        f"Table '{target_table}' has naming pattern relationships with {
+                            len(naming_relationships)} tables")
 
             relationships[target_table] = table_relationships
 
@@ -652,8 +622,8 @@ def discover_relationships(
             )
         else:
             insights.append(
-                f"Discovered {total_relationships} total relationships across {len(relationships)} tables"
-            )
+                f"Discovered {total_relationships} total relationships across {
+                    len(relationships)} tables")
 
         return cast(
             ToolResponse,
@@ -664,9 +634,13 @@ def discover_relationships(
                 "relationship_summary": {
                     "total_relationships": total_relationships,
                     "tables_analyzed": len(relationships),
-                    "strongest_connections": _identify_strongest_connections(relationships),
+                    "strongest_connections": _identify_strongest_connections(
+                        relationships
+                    ),
                 },
-                "recommendations": _generate_relationship_recommendations(relationships, insights),
+                "recommendations": _generate_relationship_recommendations(
+                    relationships, insights
+                ),
             },
         )
 
@@ -761,12 +735,16 @@ def _analyze_schema_for_discovery(
                 schema_analysis["total_columns"] += len(columns)
 
                 # Find text columns
-                text_columns = [col for col in columns if "TEXT" in col.get("type", "").upper()]
+                text_columns = [
+                    col for col in columns if "TEXT" in col.get("type", "").upper()
+                ]
                 schema_analysis["text_columns_by_table"][table_name] = len(text_columns)
 
                 # Check for well-structured tables
                 has_id = any(col.get("name") == "id" for col in columns)
-                has_timestamp = any("timestamp" in col.get("name", "").lower() for col in columns)
+                has_timestamp = any(
+                    "timestamp" in col.get("name", "").lower() for col in columns
+                )
                 has_text_content = len(text_columns) > 0
 
                 if has_id and has_timestamp and has_text_content:
@@ -778,7 +756,9 @@ def _analyze_schema_for_discovery(
                         f"Table '{table_name}' has very few columns"
                     )
                 if not has_id:
-                    schema_analysis["schema_issues"].append(f"Table '{table_name}' lacks ID column")
+                    schema_analysis["schema_issues"].append(
+                        f"Table '{table_name}' lacks ID column"
+                    )
 
         except Exception:
             continue
@@ -824,7 +804,9 @@ def _assess_content_quality(
                     non_null_fields = sum(
                         1 for v in row.values() if v is not None and str(v).strip()
                     )
-                    total_content_length = sum(len(str(v)) for v in row.values() if v is not None)
+                    total_content_length = sum(
+                        len(str(v)) for v in row.values() if v is not None
+                    )
 
                     # Score based on completeness and content richness
                     if non_null_fields > 2:
@@ -836,7 +818,9 @@ def _assess_content_quality(
 
                     content_scores.append(min(10, row_score))
 
-                table_quality = sum(content_scores) / len(content_scores) if content_scores else 0
+                table_quality = (
+                    sum(content_scores) / len(content_scores) if content_scores else 0
+                )
                 quality_analysis["quality_scores"][table_name] = round(table_quality, 1)
 
                 # Categorize quality
@@ -863,7 +847,9 @@ def _assess_content_quality(
     return quality_analysis
 
 
-def _analyze_search_readiness(db, tables: List[str], focus_area: Optional[str]) -> Dict[str, Any]:
+def _analyze_search_readiness(
+    db, tables: List[str], focus_area: Optional[str]
+) -> Dict[str, Any]:
     """Analyze readiness for effective searching."""
     search_analysis = {
         "semantic_ready_tables": [],
@@ -880,7 +866,9 @@ def _analyze_search_readiness(db, tables: List[str], focus_area: Optional[str]) 
             schema_result = db.describe_table(table_name)
             if schema_result.get("success"):
                 columns = schema_result.get("columns", [])
-                text_columns = [col for col in columns if "TEXT" in col.get("type", "").upper()]
+                text_columns = [
+                    col for col in columns if "TEXT" in col.get("type", "").upper()
+                ]
 
                 if text_columns:
                     search_analysis["text_searchable_tables"].append(table_name)
@@ -893,9 +881,13 @@ def _analyze_search_readiness(db, tables: List[str], focus_area: Optional[str]) 
                             search_analysis["embedding_coverage"][table_name] = coverage
 
                             if coverage > 80:
-                                search_analysis["semantic_ready_tables"].append(table_name)
+                                search_analysis["semantic_ready_tables"].append(
+                                    table_name
+                                )
                             elif len(text_columns) > 0:
-                                search_analysis["search_optimization_needed"].append(table_name)
+                                search_analysis["search_optimization_needed"].append(
+                                    table_name
+                                )
 
         except Exception:
             continue
@@ -916,11 +908,15 @@ def _generate_discovery_insights(
 
     # Goal-specific insights
     if discovery_goal == "understand_content":
-        insights.append(f"Memory bank contains {total_tables} tables with {total_rows} total rows")
+        insights.append(
+            f"Memory bank contains {total_tables} tables with {total_rows} total rows"
+        )
 
         high_value_tables = overview.get("high_value_tables", [])
         if high_value_tables:
-            insights.append(f"High-value content found in: {', '.join(high_value_tables[:3])}")
+            insights.append(
+                f"High-value content found in: {', '.join(high_value_tables[:3])}"
+            )
             recommendations.append(
                 f"Focus search efforts on high-value tables: {', '.join(high_value_tables)}"
             )
@@ -936,7 +932,9 @@ def _generate_discovery_insights(
     elif discovery_goal == "find_patterns":
         text_rich_tables = overview.get("text_rich_tables", [])
         if text_rich_tables:
-            insights.append(f"Text-rich content found in {len(text_rich_tables)} tables")
+            insights.append(
+                f"Text-rich content found in {len(text_rich_tables)} tables"
+            )
             next_steps.append("Use semantic search to find content patterns")
 
         quality_scores = overview.get("quality_scores", {})
@@ -970,14 +968,20 @@ def _generate_discovery_insights(
             next_steps.append("Use auto_semantic_search() for conceptual queries")
 
         if optimization_needed:
-            insights.append(f"Search optimization needed for {len(optimization_needed)} tables")
-            next_steps.append(f"Set up embeddings for: {', '.join(optimization_needed[:2])}")
+            insights.append(
+                f"Search optimization needed for {len(optimization_needed)} tables"
+            )
+            next_steps.append(
+                f"Set up embeddings for: {', '.join(optimization_needed[:2])}"
+            )
 
     # Universal recommendations
     if overview.get("semantic_search_available"):
         recommendations.append("Use auto_smart_search() for best search results")
     else:
-        recommendations.append("Install sentence-transformers for semantic search capabilities")
+        recommendations.append(
+            "Install sentence-transformers for semantic search capabilities"
+        )
 
     if not next_steps:
         next_steps.append("Use explore_tables() for detailed content examination")
@@ -1031,7 +1035,9 @@ def _store_discovery_pattern(db, discovery_session: Dict[str, Any]) -> None:
     try:
         # Check if discovery_patterns table exists
         tables_result = db.list_tables()
-        if tables_result.get("success") and "discovery_patterns" in tables_result.get("tables", []):
+        if tables_result.get("success") and "discovery_patterns" in tables_result.get(
+            "tables", []
+        ):
             # Store the discovery session
             db.insert_row(
                 "discovery_patterns",
@@ -1040,7 +1046,9 @@ def _store_discovery_pattern(db, discovery_session: Dict[str, Any]) -> None:
                     "goal": discovery_session.get("goal"),
                     "focus_area": discovery_session.get("focus_area"),
                     "depth": discovery_session.get("depth"),
-                    "steps_completed": str(discovery_session.get("steps_completed", [])),
+                    "steps_completed": str(
+                        discovery_session.get("steps_completed", [])
+                    ),
                     "success": True,
                     "timestamp": discovery_session.get("timestamp"),
                 },
@@ -1106,13 +1114,20 @@ def _discover_foreign_keys(db, target_table: str, all_tables: List[str]) -> List
                         col_name = col.get("name", "")
                         # Look for naming patterns that suggest foreign keys
                         if col_name.endswith("_id") or col_name.endswith("Id"):
-                            potential_ref = col_name.replace("_id", "").replace("Id", "")
-                            if potential_ref == target_table or f"{potential_ref}s" == target_table:
+                            potential_ref = col_name.replace("_id", "").replace(
+                                "Id", ""
+                            )
+                            if (
+                                potential_ref == target_table
+                                or f"{potential_ref}s" == target_table
+                            ):
                                 relationships.append(f"{other_table}.{col_name}")
 
                         # Look for exact column name matches (potential shared keys)
                         if col_name in target_col_names and col_name != "id":
-                            relationships.append(f"{other_table}.{col_name} (shared key)")
+                            relationships.append(
+                                f"{other_table}.{col_name} (shared key)"
+                            )
 
             except Exception:
                 continue
@@ -1140,7 +1155,9 @@ def _discover_semantic_relationships(
 
         # Create a sample query from target table content
         sample_row = target_rows["rows"][0]
-        sample_text = " ".join(str(v) for v in sample_row.values() if v is not None)[:200]
+        sample_text = " ".join(str(v) for v in sample_row.values() if v is not None)[
+            :200
+        ]
 
         if len(sample_text.strip()) < 10:
             return relationships
@@ -1164,9 +1181,9 @@ def _discover_semantic_relationships(
 
                 if search_result.get("success") and search_result.get("results"):
                     results = search_result["results"]
-                    avg_similarity = sum(r.get("similarity_score", 0) for r in results) / len(
-                        results
-                    )
+                    avg_similarity = sum(
+                        r.get("similarity_score", 0) for r in results
+                    ) / len(results)
 
                     if avg_similarity >= threshold:
                         relationships.append(
@@ -1186,7 +1203,9 @@ def _discover_semantic_relationships(
     return relationships
 
 
-def _discover_temporal_relationships(db, target_table: str, all_tables: List[str]) -> List[str]:
+def _discover_temporal_relationships(
+    db, target_table: str, all_tables: List[str]
+) -> List[str]:
     """Discover temporal pattern relationships."""
     relationships = []
 
@@ -1235,7 +1254,9 @@ def _discover_temporal_relationships(db, target_table: str, all_tables: List[str
     return relationships
 
 
-def _discover_naming_relationships(target_table: str, all_tables: List[str]) -> List[str]:
+def _discover_naming_relationships(
+    target_table: str, all_tables: List[str]
+) -> List[str]:
     """Discover relationships based on naming conventions."""
     relationships = []
 

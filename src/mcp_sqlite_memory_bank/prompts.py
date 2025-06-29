@@ -37,9 +37,7 @@ class MemoryBankPrompts:
                 # Analyze specific table
                 result = cast(Dict[str, Any], db.read_rows(table_name, {}))
                 if not result.get("success"):
-                    return (
-                        f"Error: Could not access table '{table_name}'. Please check if it exists."
-                    )
+                    return f"Error: Could not access table '{table_name}'. Please check if it exists."
 
                 rows = result.get("rows", [])
                 prompt = f"""Please analyze the content in the '{table_name}' table from the memory bank.
@@ -93,16 +91,20 @@ Focus on high-level strategic insights about the memory bank's utility and organ
             return prompt
 
         @self.mcp.prompt("search-and-summarize")
-        async def search_and_summarize(query: str, max_results: Optional[int] = 10) -> str:
+        async def search_and_summarize(
+            query: str, max_results: Optional[int] = 10
+        ) -> str:
             """Search memory content and create a summary prompt."""
             db = get_database(self.db_path)
 
             # Perform search
-            result = cast(Dict[str, Any], db.search_content(query, None, max_results or 10))
+            result = cast(
+                Dict[str, Any], db.search_content(query, None, max_results or 10)
+            )
             if not result.get("success"):
-                return (
-                    f"Error: Could not search for '{query}'. {result.get('error', 'Unknown error')}"
-                )
+                return f"Error: Could not search for '{query}'. {
+                    result.get(
+                        'error', 'Unknown error')}"
 
             search_results = result.get("results", [])
             if not search_results:
@@ -111,11 +113,15 @@ Focus on high-level strategic insights about the memory bank's utility and organ
             # Format results for prompt
             formatted_results = []
             for i, result in enumerate(search_results[: max_results or 10], 1):
-                formatted_results.append(f"{i}. Table: {result.get('table', 'unknown')}")
+                formatted_results.append(
+                    f"{i}. Table: {result.get('table', 'unknown')}"
+                )
                 formatted_results.append(
                     f"   Content: {result.get('content', 'No content')[:200]}..."
                 )
-                formatted_results.append(f"   Relevance: {result.get('relevance', 'N/A')}")
+                formatted_results.append(
+                    f"   Relevance: {result.get('relevance', 'N/A')}"
+                )
                 formatted_results.append("")
 
             prompt = f"""Based on the search query "{query}", here are the most relevant results from the memory bank:
@@ -147,7 +153,7 @@ Use this information to provide a thorough, well-organized response that synthes
 
             tables = tables_result.get("tables", [])
             if "technical_decisions" not in tables:
-                return """No technical decisions table found in the memory bank. 
+                return """No technical decisions table found in the memory bank.
 
 To use this prompt effectively, please:
 1. Create a 'technical_decisions' table
@@ -185,8 +191,12 @@ The table should include fields like: decision_name, chosen_approach, rationale,
                     f"   Rationale: {decision.get('rationale', 'Not provided')}"
                 )
                 if decision.get("alternatives"):
-                    formatted_decisions.append(f"   Alternatives: {decision.get('alternatives')}")
-                formatted_decisions.append(f"   Date: {decision.get('timestamp', 'Unknown')}")
+                    formatted_decisions.append(
+                        f"   Alternatives: {decision.get('alternatives')}"
+                    )
+                formatted_decisions.append(
+                    f"   Date: {decision.get('timestamp', 'Unknown')}"
+                )
                 formatted_decisions.append("")
 
             prompt = f"""Please analyze these technical decisions from the memory bank:

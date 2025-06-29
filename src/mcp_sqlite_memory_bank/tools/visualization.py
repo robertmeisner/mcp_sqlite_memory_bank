@@ -9,9 +9,7 @@ import json
 import sqlite3
 import os
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple, Set, Union, cast
-import tempfile
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 import webbrowser
 
 from ..types import ToolResponse
@@ -26,153 +24,156 @@ def generate_knowledge_graph(
 ) -> ToolResponse:
     """
     🚨 **DEPRECATED - USE create_interactive_d3_graph() INSTEAD**
-    
+
     ⚠️ This basic knowledge graph tool is deprecated in favor of the premium D3.js
     interactive visualizations. Please use create_interactive_d3_graph() from the
     d3_visualization tools for:
     - Professional enterprise styling
-    - Advanced interactivity features  
+    - Advanced interactivity features
     - Export capabilities (PNG, SVG, JSON)
     - Semantic relationship detection
     - Real-time filtering
-    
+
     🎯 **MIGRATION PATH**:
     ```python
     # OLD (deprecated)
     generate_knowledge_graph()
-    
+
     # NEW (recommended)
     create_interactive_d3_graph(
         layout_algorithm="force",
-        color_scheme="professional", 
+        color_scheme="professional",
         export_formats=["png", "svg"]
     )
     ```
-    
+
     This function is maintained for backward compatibility but will be removed
     in a future version. All new features are added to the D3.js tools.
     """
     print("⚠️  WARNING: generate_knowledge_graph() is DEPRECATED")
     print("🎯  Please use create_interactive_d3_graph() for premium features")
     print("📖  See d3_visualization tools for modern alternatives")
-    
+
     # Continue with original implementation for backward compatibility
     try:
         # Get the working directory (where VS Code is running)
         workspace_root = os.getcwd()
-        
+
         # Create output directory in workspace
         output_dir = os.path.join(workspace_root, output_path)
         os.makedirs(output_dir, exist_ok=True)
-        
+
         # Get database connection
         db_path = os.environ.get("DB_PATH", "./test.db")
-        db = get_database(db_path)
-        
+        get_database(db_path)
+
         # Initialize analyzer
         analyzer = KnowledgeGraphAnalyzer(db_path)
-        
+
         # Generate the graph
         graph_data = analyzer.generate_graph_data(
-            include_temporal=include_temporal,
-            min_connections=min_connections
+            include_temporal=include_temporal, min_connections=min_connections
         )
-        
+
         # Create timestamped filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"knowledge_graph_{timestamp}.html"
         file_path = os.path.join(output_dir, filename)
-        
+
         # Generate HTML visualization
         html_content = _generate_html_visualization(graph_data)
-        
+
         # Write to file
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(html_content)
-        
+
         # Convert to file:// URL for clickable link
         file_url = f"file:///{file_path.replace(os.sep, '/')}"
-        
+
         # Optionally open in browser
         if open_in_browser:
             try:
                 webbrowser.open(file_url)
             except Exception:
                 pass  # Ignore browser open errors
-        
+
         # Prepare stats
         nodes_list = cast(List[Dict[str, Any]], graph_data["nodes"])
         edges_list = cast(List[Dict[str, Any]], graph_data["edges"])
-        
+
         stats = {
             "nodes": len(nodes_list),
             "edges": len(edges_list),
             "tables": len(set(node["table"] for node in nodes_list)),
             "relationship_types": len(set(edge["type"] for edge in edges_list)),
-            "file_size_kb": round(os.path.getsize(file_path) / 1024, 2)
+            "file_size_kb": round(os.path.getsize(file_path) / 1024, 2),
         }
-        
-        return cast(ToolResponse, {
-            "success": True,
-            "file_path": file_path,
-            "file_url": file_url,
-            "stats": stats,
-            "output_directory": output_dir,
-            "timestamp": timestamp
-        })
-        
+
+        return cast(
+            ToolResponse,
+            {
+                "success": True,
+                "file_path": file_path,
+                "file_url": file_url,
+                "stats": stats,
+                "output_directory": output_dir,
+                "timestamp": timestamp,
+            },
+        )
+
     except Exception as e:
-        return cast(ToolResponse, {
-            "success": False,
-            "error": f"Failed to generate knowledge graph: {str(e)}",
-            "category": "visualization_error",
-            "details": {"output_path": output_path}
-        })
+        return cast(
+            ToolResponse,
+            {
+                "success": False,
+                "error": f"Failed to generate knowledge graph: {str(e)}",
+                "category": "visualization_error",
+                "details": {"output_path": output_path},
+            },
+        )
 
 
 class KnowledgeGraphAnalyzer:
     """Analyzes database content and generates knowledge graph data."""
-    
+
     def __init__(self, db_path: str):
         self.db_path = db_path
         self.connection = sqlite3.connect(db_path)
         self.connection.row_factory = sqlite3.Row
-        
+
     def __del__(self):
-        if hasattr(self, 'connection'):
+        if hasattr(self, "connection"):
             self.connection.close()
-    
+
     def generate_graph_data(
-        self, 
-        include_temporal: bool = True, 
-        min_connections: int = 1
+        self, include_temporal: bool = True, min_connections: int = 1
     ) -> Dict[str, Union[List[Dict[str, Any]], Dict[str, Any]]]:
         """Generate nodes and edges for the knowledge graph."""
-        
+
         nodes = []
         edges = []
         node_id_map = {}
-        
+
         # Get all tables
         tables = self._get_tables()
-        
+
         for table_name in tables:
             # Get table info and sample data
-            table_info = self._get_table_info(table_name)
+            self._get_table_info(table_name)
             sample_data = self._get_sample_data(table_name, limit=5)
-            
+
             # Create nodes for each record
             for row in sample_data:
                 row_dict = dict(row)
                 node_id = f"{table_name}_{row_dict.get('id', len(nodes))}"
-                
+
                 # Determine node label and description
                 label = self._generate_node_label(table_name, row_dict)
                 description = self._generate_node_description(table_name, row_dict)
-                
+
                 # Enhanced node styling based on table type
                 node_style = self._get_node_style(table_name, row_dict)
-                
+
                 node = {
                     "id": node_id,
                     "label": label,
@@ -180,29 +181,29 @@ class KnowledgeGraphAnalyzer:
                     "table": table_name,
                     "title": description,
                     "data": row_dict,
-                    **node_style  # Merge styling properties
+                    **node_style,  # Merge styling properties
                 }
-                
+
                 nodes.append(node)
                 node_id_map[node_id] = len(nodes) - 1
-        
+
         # Generate relationships between nodes
         edges.extend(self._find_foreign_key_relationships(nodes, tables))
         edges.extend(self._find_naming_pattern_relationships(nodes))
-        
+
         if include_temporal:
             edges.extend(self._find_temporal_relationships(nodes))
-        
+
         # Apply semantic relationships if embeddings are available
         try:
             edges.extend(self._find_semantic_relationships(nodes))
         except Exception:
             pass  # Semantic relationships are optional
-        
+
         # Filter nodes by minimum connections if specified
         if min_connections > 1:
             nodes, edges = self._filter_by_connections(nodes, edges, min_connections)
-        
+
         return {
             "nodes": nodes,
             "edges": edges,
@@ -210,144 +211,197 @@ class KnowledgeGraphAnalyzer:
                 "tables": tables,
                 "total_nodes": len(nodes),
                 "total_edges": len(edges),
-                "generation_timestamp": datetime.now().isoformat()
-            }
+                "generation_timestamp": datetime.now().isoformat(),
+            },
         }
-    
+
     def _get_tables(self) -> List[str]:
         """Get list of all user tables."""
         cursor = self.connection.cursor()
-        cursor.execute("""
-            SELECT name FROM sqlite_master 
+        cursor.execute(
+            """
+            SELECT name FROM sqlite_master
             WHERE type='table' AND name NOT LIKE 'sqlite_%'
             ORDER BY name
-        """)
+        """
+        )
         return [row[0] for row in cursor.fetchall()]
-    
+
     def _get_table_info(self, table_name: str) -> List[Dict[str, Any]]:
         """Get column information for a table."""
         cursor = self.connection.cursor()
         cursor.execute(f"PRAGMA table_info({table_name})")
         return [dict(row) for row in cursor.fetchall()]
-    
+
     def _get_sample_data(self, table_name: str, limit: int = 5) -> List[sqlite3.Row]:
         """Get sample data from a table."""
         cursor = self.connection.cursor()
         cursor.execute(f"SELECT * FROM {table_name} LIMIT {limit}")
         return cursor.fetchall()
-    
+
     def _generate_node_label(self, table_name: str, row_data: Dict[str, Any]) -> str:
         """Generate a concise label for a node."""
         # Priority order for label fields
         label_candidates = [
-            'title', 'name', 'decision_name', 'category', 'topic', 'content', 'note'
+            "title",
+            "name",
+            "decision_name",
+            "category",
+            "topic",
+            "content",
+            "note",
         ]
-        
+
         for candidate in label_candidates:
             if candidate in row_data and row_data[candidate]:
                 value = str(row_data[candidate])
                 return value[:30] + "..." if len(value) > 30 else value
-        
+
         # Fallback to table name + ID
-        record_id = row_data.get('id', row_data.get('rowid', '?'))
+        record_id = row_data.get("id", row_data.get("rowid", "?"))
         return f"{table_name}#{record_id}"
-    
-    def _generate_node_description(self, table_name: str, row_data: Dict[str, Any]) -> str:
+
+    def _generate_node_description(
+        self, table_name: str, row_data: Dict[str, Any]
+    ) -> str:
         """Generate a detailed description for a node tooltip."""
         lines = [f"Table: {table_name}"]
-        
+
         # Add key fields to description
-        priority_fields = ['title', 'name', 'decision_name', 'category', 'content', 'note']
+        priority_fields = [
+            "title",
+            "name",
+            "decision_name",
+            "category",
+            "content",
+            "note",
+        ]
         for field in priority_fields:
             if field in row_data and row_data[field]:
                 value = str(row_data[field])
                 display_value = value[:100] + "..." if len(value) > 100 else value
                 lines.append(f"{field.title()}: {display_value}")
-        
+
         # Add timestamp if available
-        timestamp_fields = ['timestamp', 'created_at', 'date', 'created_date']
+        timestamp_fields = ["timestamp", "created_at", "date", "created_date"]
         for field in timestamp_fields:
             if field in row_data and row_data[field]:
                 lines.append(f"Time: {row_data[field]}")
                 break
-        
+
         return "\\n".join(lines)
-    
-    def _get_node_style(self, table_name: str, row_data: Dict[str, Any]) -> Dict[str, Any]:
+
+    def _get_node_style(
+        self, table_name: str, row_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Get enhanced styling for nodes based on table type and content."""
         # Define color schemes for different table types
         table_styles = {
-            'project_structure': {'color': '#10b981', 'shape': 'box', 'size': 25},      # Green for structure
-            'technical_decisions': {'color': '#f59e0b', 'shape': 'diamond', 'size': 30}, # Orange for decisions
-            'user_preferences': {'color': '#8b5cf6', 'shape': 'star', 'size': 28},      # Purple for preferences
-            'session_context': {'color': '#06b6d4', 'shape': 'triangle', 'size': 22},   # Cyan for sessions
-            'documentation': {'color': '#ef4444', 'shape': 'square', 'size': 24},       # Red for docs
-            'conversation_memory': {'color': '#84cc16', 'shape': 'dot', 'size': 20},    # Lime for conversations
-            'domain_insights': {'color': '#f97316', 'shape': 'ellipse', 'size': 26},    # Orange for insights
-            'unified_memory': {'color': '#6366f1', 'shape': 'circle', 'size': 22},      # Indigo for unified
-            'notes': {'color': '#ec4899', 'shape': 'dot', 'size': 18},                  # Pink for notes
+            "project_structure": {
+                "color": "#10b981",
+                "shape": "box",
+                "size": 25,
+            },  # Green for structure
+            "technical_decisions": {
+                "color": "#f59e0b",
+                "shape": "diamond",
+                "size": 30,
+            },  # Orange for decisions
+            "user_preferences": {
+                "color": "#8b5cf6",
+                "shape": "star",
+                "size": 28,
+            },  # Purple for preferences
+            "session_context": {
+                "color": "#06b6d4",
+                "shape": "triangle",
+                "size": 22,
+            },  # Cyan for sessions
+            "documentation": {
+                "color": "#ef4444",
+                "shape": "square",
+                "size": 24,
+            },  # Red for docs
+            "conversation_memory": {
+                "color": "#84cc16",
+                "shape": "dot",
+                "size": 20,
+            },  # Lime for conversations
+            "domain_insights": {
+                "color": "#f97316",
+                "shape": "ellipse",
+                "size": 26,
+            },  # Orange for insights
+            "unified_memory": {
+                "color": "#6366f1",
+                "shape": "circle",
+                "size": 22,
+            },  # Indigo for unified
+            "notes": {"color": "#ec4899", "shape": "dot", "size": 18},  # Pink for notes
         }
-        
+
         # Get base style for table type or use default
-        base_style = table_styles.get(table_name, {'color': '#64748b', 'shape': 'dot', 'size': 20})
-        
+        base_style = table_styles.get(
+            table_name, {"color": "#64748b", "shape": "dot", "size": 20}
+        )
+
         # Enhance size based on content richness
         content_score = 0
         for key, value in row_data.items():
             if value and len(str(value)) > 50:
                 content_score += 1
-        
+
         # Adjust size based on content richness (more content = larger node)
         size_multiplier = 1 + (content_score * 0.1)
-        enhanced_size = int(base_style['size'] * size_multiplier)
-        
+        enhanced_size = int(base_style["size"] * size_multiplier)
+
         # Determine border color based on data importance
-        border_color = '#2563eb' if any(key in ['id', 'decision_name', 'title'] for key in row_data.keys()) else '#64748b'
-        
+        border_color = (
+            "#2563eb"
+            if any(key in ["id", "decision_name", "title"] for key in row_data.keys())
+            else "#64748b"
+        )
+
         return {
-            'color': {
-                'background': base_style['color'],
-                'border': border_color,
-                'highlight': {
-                    'background': base_style['color'],
-                    'border': '#1d4ed8'
-                },
-                'hover': {
-                    'background': base_style['color'],
-                    'border': '#3b82f6'
-                }
+            "color": {
+                "background": base_style["color"],
+                "border": border_color,
+                "highlight": {"background": base_style["color"], "border": "#1d4ed8"},
+                "hover": {"background": base_style["color"], "border": "#3b82f6"},
             },
-            'shape': base_style['shape'],
-            'size': enhanced_size,
-            'borderWidth': 3,
-            'font': {
-                'size': min(16, 12 + content_score),
-                'color': '#1f2937',
-                'bold': content_score > 2
-            }
+            "shape": base_style["shape"],
+            "size": enhanced_size,
+            "borderWidth": 3,
+            "font": {
+                "size": min(16, 12 + content_score),
+                "color": "#1f2937",
+                "bold": content_score > 2,
+            },
         }
 
-    def _find_foreign_key_relationships(self, nodes: List[Dict], tables: List[str]) -> List[Dict]:
+    def _find_foreign_key_relationships(
+        self, nodes: List[Dict], tables: List[str]
+    ) -> List[Dict]:
         """Find relationships based on foreign key patterns."""
         edges = []
-        
+
         for table_name in tables:
             # Get foreign key info
             cursor = self.connection.cursor()
             cursor.execute(f"PRAGMA foreign_key_list({table_name})")
             foreign_keys = cursor.fetchall()
-            
+
             for fk in foreign_keys:
                 # Create edges based on foreign key relationships
                 # This is a simplified implementation
                 pass
-        
+
         return edges
-    
+
     def _find_naming_pattern_relationships(self, nodes: List[Dict]) -> List[Dict]:
         """Find relationships based on naming patterns and common values."""
         edges = []
-        
+
         # Group nodes by table for cross-table analysis
         tables = {}
         for node in nodes:
@@ -355,110 +409,119 @@ class KnowledgeGraphAnalyzer:
             if table_name not in tables:
                 tables[table_name] = []
             tables[table_name].append(node)
-        
+
         # Find nodes with similar content or shared categories
         for i, node1 in enumerate(nodes):
-            for j, node2 in enumerate(nodes[i+1:], i+1):
+            for j, node2 in enumerate(nodes[i + 1:], i + 1):
                 if node1["table"] != node2["table"]:
                     # Check for shared categories or similar content
                     similarity = self._calculate_simple_similarity(node1, node2)
                     if similarity > 0.3:  # Threshold for creating an edge
-                        edges.append({
-                            "from": node1["id"],
-                            "to": node2["id"],
-                            "type": "content_similarity",
-                            "weight": similarity,
-                            "title": f"Content similarity: {similarity:.2f}"
-                        })
-        
+                        edges.append(
+                            {
+                                "from": node1["id"],
+                                "to": node2["id"],
+                                "type": "content_similarity",
+                                "weight": similarity,
+                                "title": f"Content similarity: {similarity:.2f}",
+                            }
+                        )
+
         return edges
-    
+
     def _find_temporal_relationships(self, nodes: List[Dict]) -> List[Dict]:
         """Find relationships based on temporal patterns."""
         edges = []
-        
+
         # Group nodes by date/time patterns
         timestamp_nodes = []
         for node in nodes:
             timestamp = self._extract_timestamp(node["data"])
             if timestamp:
                 timestamp_nodes.append((node, timestamp))
-        
+
         # Sort by timestamp
         timestamp_nodes.sort(key=lambda x: x[1])
-        
+
         # Create temporal sequence edges
         for i in range(len(timestamp_nodes) - 1):
             current_node, current_time = timestamp_nodes[i]
             next_node, next_time = timestamp_nodes[i + 1]
-            
+
             # Only connect if reasonably close in time (same day or consecutive entries)
             if i < 5:  # Limit temporal connections
-                edges.append({
-                    "from": current_node["id"],
-                    "to": next_node["id"],
-                    "type": "temporal_sequence",
-                    "weight": 0.5,
-                    "title": f"Temporal: {current_time} → {next_time}"
-                })
-        
+                edges.append(
+                    {
+                        "from": current_node["id"],
+                        "to": next_node["id"],
+                        "type": "temporal_sequence",
+                        "weight": 0.5,
+                        "title": f"Temporal: {current_time} → {next_time}",
+                    }
+                )
+
         return edges
-    
+
     def _find_semantic_relationships(self, nodes: List[Dict]) -> List[Dict]:
         """Find relationships based on semantic similarity (requires embeddings)."""
         edges = []
-        
+
         # This would require sentence-transformers and embeddings
         # For now, return empty list as semantic relationships are optional
         return edges
-    
+
     def _calculate_simple_similarity(self, node1: Dict, node2: Dict) -> float:
         """Calculate simple text similarity between nodes."""
         # Extract text content from both nodes
         text1 = self._extract_text_content(node1["data"])
         text2 = self._extract_text_content(node2["data"])
-        
+
         if not text1 or not text2:
             return 0.0
-        
+
         # Simple word overlap similarity
         words1 = set(text1.lower().split())
         words2 = set(text2.lower().split())
-        
+
         if not words1 or not words2:
             return 0.0
-        
+
         intersection = words1.intersection(words2)
         union = words1.union(words2)
-        
+
         return len(intersection) / len(union) if union else 0.0
-    
+
     def _extract_text_content(self, row_data: Dict[str, Any]) -> str:
         """Extract all text content from a row."""
         text_fields = []
-        text_columns = ['content', 'title', 'name', 'decision_name', 'category', 'note', 'description']
-        
+        text_columns = [
+            "content",
+            "title",
+            "name",
+            "decision_name",
+            "category",
+            "note",
+            "description",
+        ]
+
         for column in text_columns:
             if column in row_data and row_data[column]:
                 text_fields.append(str(row_data[column]))
-        
+
         return " ".join(text_fields)
-    
+
     def _extract_timestamp(self, row_data: Dict[str, Any]) -> Optional[str]:
         """Extract timestamp from row data."""
-        timestamp_fields = ['timestamp', 'created_at', 'date', 'created_date']
-        
+        timestamp_fields = ["timestamp", "created_at", "date", "created_date"]
+
         for field in timestamp_fields:
             if field in row_data and row_data[field]:
                 return str(row_data[field])
-        
+
         return None
-    
+
     def _filter_by_connections(
-        self, 
-        nodes: List[Dict], 
-        edges: List[Dict], 
-        min_connections: int
+        self, nodes: List[Dict], edges: List[Dict], min_connections: int
     ) -> Tuple[List[Dict], List[Dict]]:
         """Filter nodes that don't meet minimum connection requirements."""
         # Count connections per node
@@ -466,31 +529,33 @@ class KnowledgeGraphAnalyzer:
         for edge in edges:
             connection_counts[edge["from"]] = connection_counts.get(edge["from"], 0) + 1
             connection_counts[edge["to"]] = connection_counts.get(edge["to"], 0) + 1
-        
+
         # Filter nodes
         filtered_nodes = [
-            node for node in nodes 
+            node
+            for node in nodes
             if connection_counts.get(node["id"], 0) >= min_connections
         ]
-        
+
         # Get filtered node IDs
         filtered_node_ids = {node["id"] for node in filtered_nodes}
-        
+
         # Filter edges to only include edges between filtered nodes
         filtered_edges = [
-            edge for edge in edges 
+            edge
+            for edge in edges
             if edge["from"] in filtered_node_ids and edge["to"] in filtered_node_ids
         ]
-        
+
         return filtered_nodes, filtered_edges
 
 
 def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
     """Generate HTML content for knowledge graph visualization."""
-    
+
     nodes_json = json.dumps(graph_data["nodes"], indent=2)
     edges_json = json.dumps(graph_data["edges"], indent=2)
-    
+
     html_template = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -734,7 +799,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
             <h1>🧠 Knowledge Graph</h1>
             <p>Interactive visualization of your SQLite Memory Bank</p>
         </div>
-        
+
         <div class="stats">
             <div class="stat">
                 <div class="stat-value">{len(graph_data["nodes"])}</div>
@@ -753,7 +818,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 <div class="stat-label">Generated</div>
             </div>
         </div>
-        
+
         <div class="controls">
             <button class="btn" onclick="network.fit()">🔍 Fit to Screen</button>
             <button class="btn" onclick="togglePhysics()">⚡ Toggle Physics</button>
@@ -764,9 +829,9 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
             <button class="btn" onclick="toggleNodeTypes()">🏷️ Toggle Types</button>
             <button class="btn" onclick="exportPNG()">📸 Export PNG</button>
         </div>
-        
+
         <div id="mynetworkid"></div>
-        
+
         <!-- Node Details Modal (same structure as help modal) -->
         <div id="nodeModal" class="node-modal">
             <div class="node-content">
@@ -776,7 +841,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 </div>
             </div>
         </div>
-        
+
         <div class="footer">
             Generated by SQLite Memory Bank - {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         </div>
@@ -817,7 +882,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
         // Data for the network
         const nodes = new vis.DataSet({nodes_json});
         const edges = new vis.DataSet({edges_json});
-        
+
         // Network configuration
         const options = {{
             nodes: {{
@@ -888,7 +953,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 // Dynamic color assignment for different tables
             }}
         }};
-        
+
         // Assign colors to different tables/groups
         const tableColors = [
             '#4f46e5', '#7c3aed', '#dc2626', '#ea580c', '#ca8a04',
@@ -907,12 +972,12 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 }}
             }};
         }});
-        
+
         // Create the network
         const container = document.getElementById('mynetworkid');
         const data = {{ nodes: nodes, edges: edges }};
         const network = new vis.Network(container, data, options);
-        
+
         // Event handlers
         network.on('click', function(params) {{
             console.log('Network clicked. Params:', params);
@@ -926,35 +991,35 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 closeNodeDetails();
             }}
         }});
-        
+
         network.on('hoverNode', function(params) {{
             container.style.cursor = 'pointer';
         }});
-        
+
         network.on('blurNode', function(params) {{
             container.style.cursor = 'default';
         }});
-        
+
         // Enhanced node details display (same structure as help modal)
         function showNodeDetails(node) {{
             console.log('showNodeDetails called with:', node);
-            
+
             const modal = document.getElementById('nodeModal');
             const content = document.getElementById('nodeDetailsContent');
-            
+
             console.log('Modal element:', modal);
             console.log('Content element:', content);
-            
+
             if (!modal || !content) {{
                 console.error('Required elements not found!');
                 console.error('modal:', modal, 'content:', content);
                 return;
             }}
-            
+
             // Define color scheme for table types
             const tableTypeColors = {{
                 'project_structure': '#10b981',
-                'technical_decisions': '#f59e0b', 
+                'technical_decisions': '#f59e0b',
                 'user_preferences': '#8b5cf6',
                 'session_context': '#06b6d4',
                 'documentation': '#ef4444',
@@ -963,9 +1028,9 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 'unified_memory': '#6366f1',
                 'notes': '#ec4899'
             }};
-            
+
             const badgeColor = tableTypeColors[node.table] || '#64748b';
-            
+
             // Build detailed content (same format as help modal)
             let detailsHTML = `
                 <h2>🔍 Node Details</h2>
@@ -976,7 +1041,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                     <h3>${{node.label}}</h3>
                 </div>
             `;
-            
+
             // Basic info section
             detailsHTML += `
                 <div class="detail-section">
@@ -989,7 +1054,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                     </table>
                 </div>
             `;
-            
+
             // Data section
             if (node.data && Object.keys(node.data).length > 0) {{
                 detailsHTML += `
@@ -997,7 +1062,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                         <div class="detail-label">💾 Stored Data</div>
                         <table class="detail-table">
                 `;
-                
+
                 for (const [key, value] of Object.entries(node.data)) {{
                     if (value !== null && value !== undefined && value !== '') {{
                         let displayValue = String(value);
@@ -1009,13 +1074,13 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                         detailsHTML += `<tr><th>${{key}}</th><td>${{displayValue}}</td></tr>`;
                     }}
                 }}
-                
+
                 detailsHTML += `
                         </table>
                     </div>
                 `;
             }}
-            
+
             // Visual properties section
             detailsHTML += `
                 <div class="detail-section">
@@ -1030,7 +1095,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                     </table>
                 </div>
             `;
-            
+
             // JSON export section (collapsible)
             detailsHTML += `
                 <div class="detail-section">
@@ -1043,13 +1108,13 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                     </details>
                 </div>
             `;
-            
+
             content.innerHTML = detailsHTML;
             console.log('Setting modal display to block...');
             modal.style.display = 'block';
             console.log('Modal should now be visible');
         }}
-        
+
         function closeNodeDetails() {{
             console.log('closeNodeDetails called');
             const modal = document.getElementById('nodeModal');
@@ -1060,11 +1125,11 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 console.error('Modal element not found for closing');
             }}
         }}
-        
+
         // Control functions
         let physicsEnabled = true;
         let showNodeTypes = true;
-        
+
         function togglePhysics() {{
             physicsEnabled = !physicsEnabled;
             network.setOptions({{physics: {{enabled: physicsEnabled}}}});
@@ -1074,7 +1139,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 stabilizeNetwork();
             }}
         }}
-        
+
         function resetView() {{
             // Reset node positions and re-stabilize
             network.setData({{nodes: nodes, edges: edges}});
@@ -1086,7 +1151,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 network.fit();
             }}, 1000);
         }}
-        
+
         function stabilizeNetwork() {{
             network.setOptions({{
                 physics: {{
@@ -1100,7 +1165,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                     }}
                 }}
             }});
-            
+
             // Re-enable physics temporarily to stabilize
             setTimeout(() => {{
                 if (!physicsEnabled) {{
@@ -1108,7 +1173,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 }}
             }}, 2000);
         }}
-        
+
         function exportJSON() {{
             const graphData = {{
                 nodes: nodes.get(),
@@ -1128,7 +1193,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
             link.click();
             URL.revokeObjectURL(url);
         }}
-        
+
         function exportPNG() {{
             const canvas = document.querySelector('#mynetworkid canvas');
             const link = document.createElement('a');
@@ -1136,7 +1201,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
             link.href = canvas.toDataURL();
             link.click();
         }}
-        
+
         function toggleNodeTypes() {{
             showNodeTypes = !showNodeTypes;
             const nodeUpdate = nodes.get().map(node => ({{
@@ -1147,16 +1212,16 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
             const btn = event.target;
             btn.textContent = showNodeTypes ? '🏷️ Hide Types' : '🏷️ Show Types';
         }}
-        
+
         function showHelp() {{
             document.getElementById('helpModal').style.display = 'block';
             generateLegend();
         }}
-        
+
         function closeHelp() {{
             document.getElementById('helpModal').style.display = 'none';
         }}
-        
+
         function generateLegend() {{
             const tables = [...new Set(nodes.get().map(n => n.table))];
             const legendHtml = tables.map((table, index) => {{
@@ -1168,7 +1233,7 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
             }}).join('');
             document.getElementById('nodeLegend').innerHTML = legendHtml;
         }}
-        
+
         // Close modals when clicking outside
         window.onclick = function(event) {{
             const helpModal = document.getElementById('helpModal');
@@ -1180,10 +1245,10 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
                 nodeModal.style.display = 'none';
             }}
         }}
-        
+
         // Initialize
         console.log('Knowledge Graph initialized with', nodes.length, 'nodes and', edges.length, 'edges');
-        
+
         // Add keyboard shortcuts
         document.addEventListener('keydown', function(event) {{
             switch(event.key) {{
@@ -1216,5 +1281,5 @@ def _generate_html_visualization(graph_data: Dict[str, Any]) -> str:
     </script>
 </body>
 </html>"""
-    
+
     return html_template

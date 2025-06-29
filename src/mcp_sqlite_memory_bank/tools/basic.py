@@ -20,7 +20,9 @@ def create_table(
     """Create a new table in the SQLite memory bank."""
     from .. import server
 
-    return cast(ToolResponse, get_database(server.DB_PATH).create_table(table_name, columns))
+    return cast(
+        ToolResponse, get_database(server.DB_PATH).create_table(table_name, columns)
+    )
 
 
 @catch_errors
@@ -52,7 +54,9 @@ def rename_table(old_name: str, new_name: str) -> ToolResponse:
     """Rename a table in the SQLite memory bank."""
     from .. import server
 
-    return cast(ToolResponse, get_database(server.DB_PATH).rename_table(old_name, new_name))
+    return cast(
+        ToolResponse, get_database(server.DB_PATH).rename_table(old_name, new_name)
+    )
 
 
 @catch_errors
@@ -86,7 +90,9 @@ def update_rows(
     """Update rows in any table in the SQLite Memory Bank, matching the WHERE clause."""
     from .. import server
 
-    return cast(ToolResponse, get_database(server.DB_PATH).update_rows(table_name, data, where))
+    return cast(
+        ToolResponse, get_database(server.DB_PATH).update_rows(table_name, data, where)
+    )
 
 
 @catch_errors
@@ -97,7 +103,9 @@ def delete_rows(
     """Delete rows from any table in the SQLite Memory Bank, matching the WHERE clause."""
     from .. import server
 
-    return cast(ToolResponse, get_database(server.DB_PATH).delete_rows(table_name, where))
+    return cast(
+        ToolResponse, get_database(server.DB_PATH).delete_rows(table_name, where)
+    )
 
 
 @catch_errors
@@ -125,7 +133,9 @@ def list_all_columns() -> ToolResponse:
 
 
 @catch_errors
-def upsert_memory(table_name: str, data: Dict[str, Any], match_columns: List[str]) -> ToolResponse:
+def upsert_memory(
+    table_name: str, data: Dict[str, Any], match_columns: List[str]
+) -> ToolResponse:
     """
     Smart memory upsert: Update existing records or create new ones based on matching columns.
 
@@ -167,7 +177,7 @@ def upsert_memory(table_name: str, data: Dict[str, Any], match_columns: List[str
             if row_id:
                 # Get the original record to compare changes
                 original_record = existing_rows[0]
-                
+
                 update_result = db.update_rows(table_name, data, {"id": row_id})
                 if update_result.get("success"):
                     # Determine which fields were actually updated
@@ -177,9 +187,9 @@ def upsert_memory(table_name: str, data: Dict[str, Any], match_columns: List[str
                         if original_value != new_value:
                             updated_fields[key] = {
                                 "old": original_value,
-                                "new": new_value
+                                "new": new_value,
                             }
-                    
+
                     return cast(
                         ToolResponse,
                         {
@@ -263,7 +273,7 @@ def batch_create_memories(
         with db.get_connection() as conn:
             # Start transaction
             trans = conn.begin()
-            
+
             try:
                 for i, data in enumerate(data_list):
                     try:
@@ -313,7 +323,9 @@ def batch_create_memories(
                                     {
                                         "index": i,
                                         "action": "failed",
-                                        "error": insert_result.get("error", "Unknown error"),
+                                        "error": insert_result.get(
+                                            "error", "Unknown error"
+                                        ),
                                         "success": False,
                                     }
                                 )
@@ -329,9 +341,10 @@ def batch_create_memories(
                             }
                         )
 
-                # Commit transaction if all operations successful or partial success allowed
+                # Commit transaction if all operations successful or partial success
+                # allowed
                 trans.commit()
-                
+
             except Exception as batch_error:
                 # Rollback transaction on any critical error
                 trans.rollback()
@@ -532,7 +545,8 @@ def batch_delete_memories(
                 "failed": failed_count,
                 "total_conditions": len(where_conditions),
                 "results": results,
-                "message": f"Processed {len(where_conditions)} deletion conditions: {deleted_count} records deleted, {failed_count} operations failed",
+                "message": f"Processed {
+                    len(where_conditions)} deletion conditions: {deleted_count} records deleted, {failed_count} operations failed",
             },
         )
 

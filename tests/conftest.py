@@ -33,7 +33,11 @@ def extract_result(resp: Sequence[T]) -> Dict[str, Any]:
         except json.JSONDecodeError as e:
             return {
                 "success": False,
-                "error": f"Invalid JSON response in TextContent: {getattr(r, 'text')[:100]}...",
+                "error": f"Invalid JSON response in TextContent: {
+                    getattr(
+                        r,
+                        'text')[
+                        :100]}...",
                 "parse_error": str(e),
             }
 
@@ -195,28 +199,22 @@ class TestDataGenerator:
     @staticmethod
     def semantic_test_data() -> list:
         """Generate data specifically for semantic search testing."""
-        return [
-            {
-                "title": "Machine Learning Fundamentals",
-                "content": "Introduction to supervised and unsupervised learning algorithms, including neural networks and deep learning approaches.",
-            },
-            {
-                "title": "Database Design Principles",
-                "content": "Normalization, indexing, and query optimization techniques for relational database management systems.",
-            },
-            {
-                "title": "Web Development Best Practices",
-                "content": "Modern web frameworks, API design patterns, and frontend-backend integration strategies.",
-            },
-            {
-                "title": "Cloud Computing Architecture",
-                "content": "Scalable infrastructure design, microservices patterns, and distributed system principles.",
-            },
-            {
-                "title": "Cybersecurity Fundamentals",
-                "content": "Encryption protocols, authentication mechanisms, and secure software development practices.",
-            },
-        ]
+        return [{"title": "Machine Learning Fundamentals",
+                 "content": "Introduction to supervised and unsupervised learning algorithms, including neural networks and deep learning approaches.",
+                 },
+                {"title": "Database Design Principles",
+                 "content": "Normalization, indexing, and query optimization techniques for relational database management systems.",
+                 },
+                {"title": "Web Development Best Practices",
+                 "content": "Modern web frameworks, API design patterns, and frontend-backend integration strategies.",
+                 },
+                {"title": "Cloud Computing Architecture",
+                 "content": "Scalable infrastructure design, microservices patterns, and distributed system principles.",
+                 },
+                {"title": "Cybersecurity Fundamentals",
+                 "content": "Encryption protocols, authentication mechanisms, and secure software development practices.",
+                 },
+                ]
 
     @staticmethod
     def large_text_data(size_kb: int = 10) -> str:
@@ -247,17 +245,23 @@ class TestAssertions:
     @staticmethod
     def assert_success_response(response: Dict[str, Any], message: str = ""):
         """Assert that a response indicates success."""
-        assert response.get("success") is True, f"Expected success but got: {response}. {message}"
+        assert (
+            response.get("success") is True
+        ), f"Expected success but got: {response}. {message}"
 
     @staticmethod
     def assert_error_response(
-        response: Dict[str, Any], expected_error: Optional[str] = None, message: str = ""
+        response: Dict[str, Any],
+        expected_error: Optional[str] = None,
+        message: str = "",
     ):
         """Assert that a response indicates an error."""
         assert (
             response.get("success") is False
         ), f"Expected error but got success: {response}. {message}"
-        assert "error" in response, f"Error response missing 'error' field: {response}. {message}"
+        assert (
+            "error" in response
+        ), f"Error response missing 'error' field: {response}. {message}"
 
         if expected_error:
             assert (
@@ -269,7 +273,9 @@ class TestAssertions:
         """Assert that a table exists in the list_tables response."""
         TestAssertions.assert_success_response(client_response)
         tables = client_response.get("tables", [])
-        assert table_name in tables, f"Table '{table_name}' not found in tables list: {tables}"
+        assert (
+            table_name in tables
+        ), f"Table '{table_name}' not found in tables list: {tables}"
 
     @staticmethod
     def assert_row_count(client_response: Dict[str, Any], expected_count: int):
@@ -292,7 +298,9 @@ class TestAssertions:
         ), f"Expected at least {min_results} results but got {len(results)}"
 
         for i, result in enumerate(results):
-            assert "similarity_score" in result, f"Result {i} missing similarity_score: {result}"
+            assert (
+                "similarity_score" in result
+            ), f"Result {i} missing similarity_score: {result}"
             similarity = result["similarity_score"]
             assert (
                 similarity >= min_similarity
@@ -329,8 +337,9 @@ class PerformanceMonitor:
         """Assert that an operation completed within the expected time."""
         duration = self.metrics.get(operation, float("inf"))
         assert (
-            duration <= max_duration
-        ), f"Operation '{operation}' took {duration:.3f}s, expected <= {max_duration:.3f}s"
+            duration <= max_duration), f"Operation '{operation}' took {
+            duration:.3f}s, expected <= {
+            max_duration:.3f}s"
 
     def get_summary(self) -> Dict[str, float]:
         """Get performance summary for all measured operations."""

@@ -91,7 +91,7 @@ __all__ = [
     "smart_archiving_policy",
     # D3.js Visualization tools
     "create_interactive_d3_graph",
-    "create_advanced_d3_dashboard", 
+    "create_advanced_d3_dashboard",
     "export_graph_data",
     "create_3d_knowledge_graph",
 ]
