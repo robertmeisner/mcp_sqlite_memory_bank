@@ -215,7 +215,6 @@ class TestPerformance:
                 # SCENARIO 1: sentence-transformers unavailable (graceful degradation)
                 assert "sentence-transformers" in embed_out["error"] or "Semantic search" in embed_out["error"]
                 pytest.skip("sentence-transformers not available for performance test - tested graceful degradation")
-                return
             else:
                 # SCENARIO 2: sentence-transformers available (performance testing)
                 assert embed_out["success"]
