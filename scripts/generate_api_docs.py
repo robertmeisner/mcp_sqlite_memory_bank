@@ -158,7 +158,7 @@ class MCPDocumentationGenerator:
         doc_lines = [
             "# SQLite Memory Bank API Reference",
             "",
-            f"*Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*",
+            "*Auto-generated from source code*",
             "",
             "This document provides comprehensive API reference for all MCP tools in the SQLite Memory Bank.",
             "",
@@ -268,7 +268,7 @@ class MCPDocumentationGenerator:
                 "title": "SQLite Memory Bank MCP API",
                 "description": "MCP tools for intelligent memory management",
                 "version": "1.4.3",
-                "generated": datetime.now().isoformat()
+                "generated": "auto-generated"
             },
             "servers": [
                 {
@@ -406,7 +406,7 @@ class MCPDocumentationGenerator:
                 module: len([t for t in all_tools if t['module'] == module])
                 for module in set(tool['module'] for tool in all_tools)
             },
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": "auto-generated",
             "tools": [
                 {
                     "name": tool['name'],
