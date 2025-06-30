@@ -8,7 +8,7 @@ Cursor, and other LLM-powered tools to interact with structured data in a
 safe, explicit, and extensible way.
 
 Author: Robert Meisner
-Version: 1.6.5
+Version: 1.6.6
 License: MIT
 """
 
@@ -73,7 +73,7 @@ from .types import (
 )
 
 # Package metadata
-__version__ = "1.6.5"
+__version__ = "1.6.6"
 __author__ = "Robert Meisner"
 __all__ = [
     # Core tools

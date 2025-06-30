@@ -13,17 +13,16 @@ Requirements:
     - fastmcp (pip install fastmcp)
 """
 
+import asyncio
 from fastmcp.client import Client
 import pprint
 
 SERVER_URLS = [
     "http://localhost:8000/mcp/",  # Try with trailing slash
-    "http://localhost:8000/mcp",   # Try without trailing slash
-    "http://localhost:8000"        # Try root
+    "http://localhost:8000/mcp",  # Try without trailing slash
+    "http://localhost:8000",  # Try root
 ]
 
-
-import asyncio
 
 async def main():
 
@@ -77,6 +76,7 @@ async def main():
             print(f"Client error with {url}: {e}")
     else:
         print("All connection attempts failed. Please check the server URL and that the server is running.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

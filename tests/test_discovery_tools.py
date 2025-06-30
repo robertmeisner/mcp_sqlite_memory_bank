@@ -131,38 +131,32 @@ async def client_with_sample_data(temp_db):
         for project in sample_projects:
             await client.call_tool("create_row", {"table_name": "projects", "data": project})
 
-        sample_knowledge = [
-            {
-                "title": "Machine Learning Best Practices",
-                "content": "Deep dive into ML model development, training strategies, hyperparameter tuning, and deployment considerations for production systems",
-                "category": "technical",
-                "importance": 9,
-            },
-            {
-                "title": "API Design Principles",
-                "content": "RESTful API design patterns, versioning strategies, authentication methods, and documentation best practices for scalable web services",
-                "category": "architecture",
-                "importance": 8,
-            },
-            {
-                "title": "Database Optimization",
-                "content": "SQL query optimization techniques, indexing strategies, connection pooling, and performance monitoring for high-traffic applications",
-                "category": "performance",
-                "importance": 7,
-            },
-            {
-                "title": "Team Meeting Notes",
-                "content": "Weekly standup discussions, project updates, blockers, and action items for the development team",
-                "category": "management",
-                "importance": 5,
-            },
-            {
-                "title": "Security Guidelines",
-                "content": "Comprehensive security checklist including input validation, authentication, authorization, encryption, and vulnerability assessment",
-                "category": "security",
-                "importance": 10,
-            },
-        ]
+        sample_knowledge = [{"title": "Machine Learning Best Practices",
+                             "content": "Deep dive into ML model development, training strategies, hyperparameter tuning, and deployment considerations for production systems",
+                             "category": "technical",
+                             "importance": 9,
+                             },
+                            {"title": "API Design Principles",
+                             "content": "RESTful API design patterns, versioning strategies, authentication methods, and documentation best practices for scalable web services",
+                             "category": "architecture",
+                             "importance": 8,
+                             },
+                            {"title": "Database Optimization",
+                             "content": "SQL query optimization techniques, indexing strategies, connection pooling, and performance monitoring for high-traffic applications",
+                             "category": "performance",
+                             "importance": 7,
+                             },
+                            {"title": "Team Meeting Notes",
+                             "content": "Weekly standup discussions, project updates, blockers, and action items for the development team",
+                             "category": "management",
+                             "importance": 5,
+                             },
+                            {"title": "Security Guidelines",
+                             "content": "Comprehensive security checklist including input validation, authentication, authorization, encryption, and vulnerability assessment",
+                             "category": "security",
+                             "importance": 10,
+                             },
+                            ]
 
         for knowledge in sample_knowledge:
             await client.call_tool("create_row", {"table_name": "knowledge", "data": knowledge})

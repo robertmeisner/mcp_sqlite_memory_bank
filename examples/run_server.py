@@ -15,16 +15,16 @@ or that the package is installed in your environment.
 import sys
 
 
-
 # --- Import FastMCP app and FastAPI ---
 try:
     from mcp_sqlite_memory_bank.server import app as mcp_app
+
     try:
         print("[DEBUG-top] mcp_app type:", type(mcp_app))
-        print("[DEBUG-top] mcp_app._tools:", getattr(mcp_app, '_tools', None))
+        print("[DEBUG-top] mcp_app._tools:", getattr(mcp_app, "_tools", None))
         print("[DEBUG-top] mcp_app dir:", dir(mcp_app))
         for attr in dir(mcp_app):
-            if not attr.startswith('__'):
+            if not attr.startswith("__"):
                 try:
                     value = getattr(mcp_app, attr)
                     print(f"[DEBUG-top] mcp_app.{attr}: type={type(value)} value={str(value)[:120]}")
@@ -38,6 +38,7 @@ except ImportError as e:
     print("    pip install -e .")
     # Log the specific error for debugging
     import logging
+
     logging.error(f"Import error: {e}")
     sys.exit(1)
 
@@ -61,7 +62,7 @@ import argparse
 def main():
     parser = argparse.ArgumentParser(
         description="Run the MCP SQLite Memory Bank server with FastAPI docs and FastMCP API.",
-        epilog="Tip: For development, run with: uvicorn examples.run_server:fastapi_app --reload"
+        epilog="Tip: For development, run with: uvicorn examples.run_server:fastapi_app --reload",
     )
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=8000, help="Port to bind (default: 8000)")
@@ -70,24 +71,17 @@ def main():
     try:
         # --- Debug: Print mcp_app._tools at startup ---
         print("[DEBUG] mcp_app type:", type(mcp_app))
-        print("[DEBUG] mcp_app._tools:", getattr(mcp_app, '_tools', None))
+        print("[DEBUG] mcp_app._tools:", getattr(mcp_app, "_tools", None))
         # --- Create FastAPI app and mount FastMCP ---
         fastapi_app = FastAPI(
             title="MCP SQLite Memory Bank API",
             description="Interactive API docs for SQLite Memory Bank.\n\n- FastMCP API is available at `/mcp` (for LLMs/agents).\n- Interactive docs: `/docs` (Swagger UI), `/redoc` (ReDoc).",
-            version="1.0.0"
+            version="1.0.0",
         )
-
 
         @fastapi_app.get("/", tags=["root"])
         async def root():
-            return {
-                "message": "Welcome to the MCP SQLite Memory Bank API!",
-                "docs": "/docs",
-                "redoc": "/redoc",
-                "mcp_api": "/mcp",
-                "tools": "/tools"
-            }
+            return {"message": "Welcome to the MCP SQLite Memory Bank API!", "docs": "/docs", "redoc": "/redoc", "mcp_api": "/mcp", "tools": "/tools"}
 
         @fastapi_app.get("/tools", tags=["tools"], summary="List all FastMCP tools and their docstrings")
         async def list_tools():
@@ -97,8 +91,9 @@ def main():
                 Dict[str, Any]: {"success": True, "tools": [{"name": str, "doc": str}]} or error info.
             """
             import inspect
+
             try:
-                if hasattr(mcp_app, 'get_tools'):
+                if hasattr(mcp_app, "get_tools"):
                     tool_objs = mcp_app.get_tools()
                     if inspect.iscoroutine(tool_objs):
                         tool_objs = await tool_objs
@@ -109,15 +104,15 @@ def main():
                         tool_iter = tool_objs
                     tools = []
                     for tool in tool_iter:
-                        name = getattr(tool, 'name', None) or getattr(tool, '__name__', None) or str(tool)
+                        name = getattr(tool, "name", None) or getattr(tool, "__name__", None) or str(tool)
                         # Try to get docstring from likely attributes
                         doc = (
-                            getattr(tool, 'doc', None) or
-                            getattr(getattr(tool, 'fn', None), '__doc__', None) or
-                            getattr(getattr(tool, 'func', None), '__doc__', None) or
-                            getattr(getattr(tool, 'callback', None), '__doc__', None) or
-                            getattr(tool, '__doc__', None) or
-                            ''
+                            getattr(tool, "doc", None)
+                            or getattr(getattr(tool, "fn", None), "__doc__", None)
+                            or getattr(getattr(tool, "func", None), "__doc__", None)
+                            or getattr(getattr(tool, "callback", None), "__doc__", None)
+                            or getattr(tool, "__doc__", None)
+                            or ""
                         )
                         tools.append({"name": name, "doc": doc.strip()})
                     return {"success": True, "tools": tools, "tools_count": len(tools)}
@@ -141,8 +136,10 @@ def main():
         print("Unexpected error occurred during server operation")
         # Log full error to server logs but don't expose to users
         import logging
+
         logging.error(f"Server error: {e}", exc_info=True)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     try:
@@ -151,5 +148,6 @@ if __name__ == "__main__":
         print("Fatal error during startup")
         # Log full error to system logs but don't expose details to console
         import logging
+
         logging.error(f"Startup error: {e}", exc_info=True)
         sys.exit(1)
