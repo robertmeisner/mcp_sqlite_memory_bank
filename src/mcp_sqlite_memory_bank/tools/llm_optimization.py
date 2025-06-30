@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, cast
 from ..types import ToolResponse
 from ..database import get_database
 from .. import server
+from ..utils import filter_embedding_columns, filter_embedding_from_rows, get_content_columns
 
 
 def intelligent_duplicate_analysis(
@@ -153,24 +154,37 @@ def intelligent_optimization_strategy(
             count_row = count_result.fetchone()
             total_rows = count_row[0] if count_row else 0
 
-            # Get sample data characteristics
+            # Get sample data characteristics (exclude embeddings and large content)
             if total_rows > 0:
-                sample_result = conn.execute(text(f"SELECT * FROM `{table_name}` LIMIT 5"))
+                # Filter out embedding columns using centralized utility
+                safe_columns = filter_embedding_columns(columns)
+                safe_columns_str = ', '.join([f'`{col}`' for col in safe_columns])
+                
+                sample_result = conn.execute(text(f"SELECT {safe_columns_str} FROM `{table_name}` LIMIT 3"))
                 sample_rows = sample_result.fetchall()
-                sample_data = [dict(zip(columns, row)) for row in sample_rows]
+                sample_data = []
+                
+                for row in sample_rows:
+                    row_dict = dict(zip(safe_columns, row))
+                    # Truncate long text fields to avoid token waste
+                    for key, value in row_dict.items():
+                        if isinstance(value, str) and len(value) > 200:
+                            row_dict[key] = value[:200] + "..."
+                    sample_data.append(row_dict)
             else:
                 sample_data = []
 
-        # Prepare comprehensive analysis for LLM
+        # Prepare comprehensive analysis for LLM (safe columns only)
+        safe_columns = filter_embedding_columns(columns)
         table_analysis = {
             "table_name": table_name,
             "total_rows": total_rows,
             "column_count": len(columns),
-            "columns": columns,
+            "columns": safe_columns,  # Exclude embedding column from display
             "has_timestamp": "timestamp" in columns,
             "has_embedding": "embedding" in columns,
             "optimization_goals": optimization_goals,
-            "sample_data": sample_data[:3],  # First 3 rows for pattern analysis
+            "sample_data": sample_data,  # Already filtered and truncated
         }
 
         analysis_prompt = f"""
@@ -293,7 +307,7 @@ def smart_archiving_policy(
             temporal_data = [dict(zip(["date", "records", "earliest", "latest"], row)) for row in temporal_result.fetchall()]
 
             # Get content sample for relevance analysis
-            content_columns = [col for col in columns if col not in ["id", "timestamp", "embedding"]]
+            content_columns = get_content_columns(columns)
             if content_columns:
                 content_result = conn.execute(
                     text(

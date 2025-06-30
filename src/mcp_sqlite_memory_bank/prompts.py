@@ -14,6 +14,7 @@ Author: Robert Meisner
 from typing import Optional, Dict, List, Any, cast
 from fastmcp import FastMCP
 from .database import get_database
+from .utils import filter_embedding_from_row
 import json
 
 
@@ -40,11 +41,22 @@ class MemoryBankPrompts:
                     return f"Error: Could not access table '{table_name}'. Please check if it exists."
 
                 rows = result.get("rows", [])
+                
+                # Filter out embedding data and truncate large content for readability
+                filtered_rows = []
+                for row in rows:
+                    filtered_row = filter_embedding_from_row(row)
+                    # Truncate large text content for readability
+                    for key, value in filtered_row.items():
+                        if isinstance(value, str) and len(value) > 100:
+                            filtered_row[key] = value[:100] + "..."
+                    filtered_rows.append(filtered_row)
+                    
                 prompt = f"""Please analyze the content in the '{table_name}' table from the memory bank.
 
 Table: {table_name}
 Row count: {len(rows)}
-Sample data: {json.dumps(rows[:3], indent=2) if rows else "No data"}
+Sample data: {json.dumps(filtered_rows[:3], indent=2) if filtered_rows else "No data"}
 
 Please provide:
 1. A summary of the content patterns
@@ -66,12 +78,26 @@ Focus on actionable insights that could help improve how this information is sto
                     rows_result = cast(Dict[str, Any], db.read_rows(table, {}))
                     if rows_result.get("success"):
                         rows = rows_result.get("rows", [])
+                        
+                        # Filter out embedding data and truncate large content for sample
+                        filtered_sample = []
+                        for row in rows[:2]:  # Get 2 sample rows
+                            filtered_row = {}
+                            for key, value in row.items():
+                                if key != "embedding":  # Exclude embedding column
+                                    # Truncate large text content for readability
+                                    if isinstance(value, str) and len(value) > 100:
+                                        filtered_row[key] = value[:100] + "..."
+                                    else:
+                                        filtered_row[key] = value
+                            filtered_sample.append(filtered_row)
+                        
                         total_content = cast(List[Any], overview["total_content"])
                         total_content.append(
                             {
                                 "table": table,
                                 "rows": len(rows),
-                                "sample": rows[:2] if rows else [],
+                                "sample": filtered_sample,
                             }
                         )
 
