@@ -385,15 +385,15 @@ applyTo: '**'
 ## TERMINAL COMMAND EFFICIENCY PROTOCOL
 
 ### MANDATORY BACKGROUND TERMINAL USAGE
-**ALWAYS use isBackground=true for terminal commands and close them afterwards**:
+**ALWAYS use isBackground=true for ALL terminal commands - NO EXCEPTIONS**:
 
 #### Background Terminal Protocol
 ```python
-# ALWAYS use background terminals for all commands
+# ALWAYS use background terminals for ALL commands - NEVER use isBackground=false
 run_in_terminal(
     command="your command here",
     explanation="What the command does",
-    isBackground=true  # ← MANDATORY: Always use background=true
+    isBackground=true  # ← MANDATORY: ALWAYS use background=true - NO EXCEPTIONS
 )
 
 # After the operation is complete, close the terminal if needed
@@ -505,17 +505,16 @@ run_in_terminal: "if (Test-Path 'package.json') { npm install }; if (Test-Path '
 
 #### When to Use Separate Calls
 - **Long-running background processes** (servers, watch modes) - use `isBackground=true`
-- **Interactive commands** that require user input - use `isBackground=false` 
-- **Commands with complex output** that need individual analysis - use `isBackground=false`
-- **Error-prone operations** that need individual error handling - use `isBackground=false`
+- **All commands** - use `isBackground=true` (NO EXCEPTIONS)
+- **Commands with complex output** - use `isBackground=true` and get_terminal_output if needed
+- **Error-prone operations** - use `isBackground=true` and handle errors appropriately
 
-#### Background vs Foreground Terminal Usage
-- **Default**: Always use `isBackground=true` for maximum efficiency
-- **Use isBackground=false ONLY when**:
-  - You need to see and analyze command output immediately
-  - The command requires interactive user input
-  - You need to check command exit codes or error conditions
-  - The command output is needed for the next step in your logic
+#### Background Terminal Usage (MANDATORY)
+- **ALWAYS use `isBackground=true`** - NO EXCEPTIONS
+- **Never use isBackground=false** - Background terminals handle all scenarios
+- **For output analysis**: Use `get_terminal_output()` after background execution
+- **For interactive needs**: Design workflows to avoid interactive commands
+- **For error checking**: Monitor background execution and handle appropriately
 
 ### COMMAND EFFICIENCY BEST PRACTICES
 

@@ -10,6 +10,12 @@ Dynamic, agent-friendly SQLite memory bank as FastMCP server. Explicit, discover
 **Core Components**: server.py (FastMCP tools), types.py (exceptions), utils.py (error handling), examples/ (usage patterns)
 **Design Principles**: Explicit over implicit, type safety, discoverability, consistent error handling, input validation
 
+## 🚨 CRITICAL: TERMINAL USAGE PROTOCOL
+**ALWAYS use `isBackground=true` for ALL terminal commands - NO EXCEPTIONS**
+- Never use `isBackground=false` - background terminals handle all scenarios
+- Use `get_terminal_output()` for output analysis after background execution
+- Design workflows to avoid interactive commands requiring foreground execution
+
 ## PROJECT-SPECIFIC PATTERNS
 
 ### **FastMCP Architecture**
