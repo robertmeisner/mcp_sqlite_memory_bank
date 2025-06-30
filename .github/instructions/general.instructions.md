@@ -259,8 +259,9 @@ applyTo: '**'
 		└── temp/                 # Temporary/cache files
 
 ## DATABASE REQUIREMENTS
-	- **SQLite 3.46+**: Leverage JSON columns, generated columns, strict mode, foreign keys, check constraints, and transactions.
 	- **General**: Sanitize all user inputs thoroughly, parameterize database queries
+	- Use appropriate database-specific features and constraints
+	- Leverage modern database capabilities (JSON columns, generated columns, etc.)
 
 ## SECURITY CONSIDERATIONS
 	- Sanitize all user inputs thoroughly.
@@ -521,5 +522,162 @@ run_in_terminal: "npm install || (echo 'npm install failed, trying yarn'; yarn i
 	- **Document Changes**: Store instruction updates in the memory system with rationale
 	- **Verify Examples**: Ensure all code examples in instructions remain accurate and functional
 	- **Test Instructions**: Validate that updated instructions are clear and complete
+
+## GIT WORKFLOW (MANDATORY - NO EXCEPTIONS)
+
+### ⚠️ **FORBIDDEN ACTIONS - NO EXCEPTIONS:**
+- ❌ **NEVER commit directly to main branch**
+- ❌ **NEVER push directly to main branch**  
+- ❌ **NEVER deploy without PR approval**
+- ❌ **NEVER bypass workflow "because it's urgent"**
+
+### **Branch Protection Strategy**
+- **`main` branch**: Protected, production-ready code only - **ZERO DIRECT COMMITS**
+- **Feature branches**: ALL development work (`feature/descriptive-name`)
+- **Hotfix branches**: Critical fixes (`hotfix/security-patch`)
+
+### **MANDATORY Development Workflow**
+```bash
+# Starting new feature
+git checkout main && git pull origin main
+git checkout -b feature/descriptive-name
+
+# Development process
+# Make changes, commit with conventional messages
+git add . && git commit -m "feat: add new functionality"
+git push origin feature/descriptive-name
+
+# Create PR and wait for reviews
+gh pr create --title "Feature: Description" --body "Details"
+# MUST wait for CI/CD checks + code reviews + resolve ALL feedback
+# Only merge after approval + green checks + resolved reviews
+```
+
+### **Branch Naming Conventions**
+- **Features**: `feature/semantic-search-enhancement`
+- **Bug fixes**: `fix/type-error-in-database`  
+- **Tests**: `test/performance-benchmarks`
+- **Docs**: `docs/api-documentation-update`
+- **Hotfixes**: `hotfix/security-vulnerability`
+
+## DEPLOYMENT WORKFLOW
+
+### ⚠️ CRITICAL: PRE-DEPLOYMENT COMPLIANCE CHECKLIST
+**NEVER skip these steps - they prevent production failures**
+
+1. **Review CHANGELOG.md**: Verify all changes are documented
+2. **Quality Checks**: Run static analysis tools - fix all errors
+3. **Test Suite**: Run full test suite - **ALL TESTS MUST PASS**
+4. **Version Bump**: Update version in package configuration files if needed
+5. **Documentation**: Update README.md, docs/, instruction files
+6. **Clean Working Directory**: `git status` should show clean state
+
+### 🔒 MANDATORY: Professional Git Workflow for Releases
+**Follow this process exactly - NO SHORTCUTS ALLOWED**
+
+```bash
+# Step 1-5: Setup release branch
+git checkout main && git pull origin main
+git checkout -b release/v1.x.x
+git commit -m "chore: prepare release v1.x.x"
+git push origin release/v1.x.x
+gh pr create --title "Release v1.x.x" --body "Release notes"
+```
+
+### ⏳ CRITICAL: Wait for CI/CD Checks to Complete
+**🚫 NEVER MERGE WITHOUT GREEN CHECKS 🚫**
+
+**Monitor CI/CD Pipeline** - Wait for ALL automated checks:
+- ✅ **Tests**: All tests must pass
+- ✅ **Code quality**: Static analysis checks
+- ✅ **Security scans**: No vulnerabilities detected
+- ✅ **Coverage reports**: Maintain test coverage standards
+
+## MANDATORY GITHUB COMMENTS & CODE REVIEW PROTOCOL
+
+### 🔍 **CRITICAL REQUIREMENT: ALWAYS CHECK BEFORE MERGE**
+**Every PR merge MUST include comprehensive review of all GitHub comments and automated code reviews**
+
+### **GitHub Comments Checking Commands**
+```bash
+# Check PR comments and reviews
+gh pr view <PR_NUMBER> --comments
+
+# Check automated reviews and status
+gh pr status --repo <owner>/<repo_name>
+```
+
+### **Code Review Analysis Workflow**
+1. **Automated Reviews**: GitHub Copilot bot, security scanners, code quality tools
+2. **Priority Classification**:
+   - **CRITICAL (Must Fix)**: Security vulnerabilities, breaking changes, critical bugs
+   - **HIGH (Recommended)**: Code quality, performance issues, documentation
+   - **MEDIUM (Consider)**: Style improvements, non-critical refactoring
+
+### **Implementation Strategy**
+- Create implementation checklist for each recommendation
+- Implement fixes in release branch before merging
+- Mark all review comments as resolved
+- Re-run CI/CD checks after fixes
+
+### 🔍 MANDATORY: GitHub Comments & Code Review Analysis
+**🚫 NEVER MERGE WITHOUT REVIEWING ALL FEEDBACK 🚫**
+
+```bash
+# Check for automated and manual code reviews
+gh pr view <PR_NUMBER> --comments
+```
+
+**Address ALL feedback**:
+- 🤖 **GitHub Copilot Bot Reviews**: Automated code analysis
+- 👥 **Human Code Reviews**: All reviewer comments and suggestions
+- 🔒 **Security Findings**: Address ANY security vulnerabilities
+- ⚡ **Performance Issues**: Fix performance bottlenecks
+- ✅ **Review Resolution**: Mark all comments as resolved
+
+### 🚀 Deployment After Successful CI/CD AND Review Resolution
+**Only proceed after ALL checks pass AND reviews addressed**
+
+```bash
+# Final deployment steps (only after green CI/CD + resolved reviews)
+git checkout main && git pull origin main
+git tag v1.x.x && git push --tags
+# Add project-specific build and publish commands here
+gh release create v1.x.x --latest
+```
+
+### 🚨 DEPLOYMENT FAILURE PROTOCOLS
+**If CI/CD checks fail:**
+1. **STOP**: Do not proceed with deployment
+2. **Analyze**: Review failed check logs carefully
+3. **Fix**: Address root cause in release branch
+4. **Re-run**: Push fix and wait for checks to complete
+5. **Document**: Update CHANGELOG if fix affects functionality
+
+**Emergency Rollback**:
+- Revert to last known good version if production affected
+- Document violation and consequences
+- Update procedures to prevent recurrence
+
+## EMERGENCY PROTOCOLS
+
+### Crisis Recovery
+```bash
+# Mass fix (emergency only)
+git stash push -m "backup before recovery"
+# Run appropriate formatters and linters for the language
+# Verify fixes before proceeding
+```
+
+### Deployment Failure Protocols
+- **Immediate**: Stop deployments, assess impact, rollback if needed
+- **Analysis**: Root cause analysis, document violation consequences  
+- **Prevention**: Update procedures, strengthen protections, team education
+
+## UNIVERSAL QUALITY COMMITMENTS
+- **EVERY edit session** starts with validation
+- **EVERY commit** blocked if errors exist  
+- **EVERY PR** waits for CI/CD + resolves ALL code review feedback
+- **ZERO tolerance** for bypassing quality checks
 
 **Remember**: Efficient terminal usage reduces tool calls, improves performance, and makes the development process smoother. Always think about grouping related operations before executing them.
