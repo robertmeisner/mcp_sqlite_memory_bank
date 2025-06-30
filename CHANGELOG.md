@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.7] - UVX Compatibility Fix (2025-06-30)
+
+### Fixed
+- **CRITICAL**: Fixed uvx installation failures due to numpy build requirements
+- **Compatibility**: Updated numpy constraint from `<2.0` to `<1.27.0` to ensure wheel availability
+- **Installation**: Resolved C/C++ compiler dependency issues in uvx environments
+- **Deployment**: Guaranteed wheel-based installations across all supported Python versions (3.10+)
+
+### Technical Details
+- **Issue**: uvx attempting to build numpy 1.26.4 from source, failing without compilers
+- **Solution**: Restricted numpy to versions with comprehensive wheel support (1.21.0 to 1.26.x)
+- **Impact**: Enables seamless uvx installations without requiring development tools
+- **Compatibility**: Maintains full functionality with sentence-transformers and torch dependencies
+
 ## [1.6.6] - Security Enhancement & Code Quality Update (2025-06-30)
 
 ### Security
