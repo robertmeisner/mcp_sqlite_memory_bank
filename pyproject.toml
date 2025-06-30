@@ -2,14 +2,13 @@
 requires = [
     "sentence-transformers>=2.2.0",
     "torch>=1.9.0",
-    "numpy>=1.21.0,<1.26.4",
     "setuptools>=61.0"
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp_sqlite_memory_bank"
-version = "1.6.8"
+version = "1.6.12"
 description = "A dynamic, agent/LLM-friendly SQLite memory bank for MCP servers with semantic search capabilities."
 authors = [
     { name="Robert Meisner", email="robert@catchit.pl" }
@@ -29,8 +28,7 @@ dependencies = [
     "fastmcp>=2.9.0",
     "sqlalchemy>=2.0.0",
     "sentence-transformers>=2.2.0",
-    "torch>=1.9.0",
-    "numpy>=1.21.0,<1.26.4"
+    "torch>=1.9.0"
 ]
 
 [project.scripts]
