@@ -6,6 +6,13 @@ from typing import Any, Dict, cast, TypeVar, Sequence
 from fastmcp import Client
 from mcp_sqlite_memory_bank import server as smb
 
+# Check for semantic search dependencies
+try:
+    import sentence_transformers
+    SEMANTIC_SEARCH_AVAILABLE = True
+except ImportError:
+    SEMANTIC_SEARCH_AVAILABLE = False
+
 # Define a type variable for MCPContent or any other response type
 T = TypeVar("T")
 
@@ -609,6 +616,7 @@ async def test_explore_tables_functionality(temp_db):
         assert "posts" in table_names
 
 
+@pytest.mark.skipif(not SEMANTIC_SEARCH_AVAILABLE, reason="sentence-transformers not available")
 @pytest.mark.asyncio
 async def test_add_embeddings_functionality(temp_db):
     """Test semantic embedding generation."""
@@ -662,6 +670,7 @@ async def test_add_embeddings_functionality(temp_db):
         assert "model" in embed_out
 
 
+@pytest.mark.skipif(not SEMANTIC_SEARCH_AVAILABLE, reason="sentence-transformers not available")
 @pytest.mark.asyncio
 async def test_semantic_search_functionality(temp_db):
     """Test semantic search capabilities."""
@@ -732,6 +741,7 @@ async def test_semantic_search_functionality(temp_db):
         assert top_result["similarity_score"] > 0.3
 
 
+@pytest.mark.skipif(not SEMANTIC_SEARCH_AVAILABLE, reason="sentence-transformers not available")
 @pytest.mark.asyncio
 async def test_smart_search_hybrid_functionality(temp_db):
     """Test hybrid semantic + text search."""
@@ -798,6 +808,7 @@ async def test_smart_search_hybrid_functionality(temp_db):
         assert hybrid_out["search_type"] == "hybrid"
 
 
+@pytest.mark.skipif(not SEMANTIC_SEARCH_AVAILABLE, reason="sentence-transformers not available")
 @pytest.mark.asyncio
 async def test_auto_semantic_search_zero_setup(temp_db):
     """Test auto semantic search with automatic embedding generation."""
@@ -854,6 +865,7 @@ async def test_auto_semantic_search_zero_setup(temp_db):
         assert "auto_docs" in auto_out["auto_embedded_tables"]
 
 
+@pytest.mark.skipif(not SEMANTIC_SEARCH_AVAILABLE, reason="sentence-transformers not available")
 @pytest.mark.asyncio
 async def test_auto_smart_search_complete_workflow(temp_db):
     """Test complete auto smart search workflow with zero manual setup."""
@@ -921,6 +933,7 @@ async def test_auto_smart_search_complete_workflow(temp_db):
             assert "semantic_score" in result or "text_score" in result
 
 
+@pytest.mark.skipif(not SEMANTIC_SEARCH_AVAILABLE, reason="sentence-transformers not available")
 @pytest.mark.asyncio
 async def test_find_related_content(temp_db):
     """Test finding related content by semantic similarity."""
@@ -1041,16 +1054,42 @@ async def test_embedding_stats_and_coverage(temp_db):
             {"table_name": "test_stats", "text_columns": ["name", "description"]},
         )
         embed_out = extract_result(embed_result)
-        assert embed_out["success"]
 
-        # Check stats after embeddings (should be 100% coverage)
-        stats_after = await client.call_tool("embedding_stats", {"table_name": "test_stats"})
-        stats_after_out = extract_result(stats_after)
-        assert stats_after_out["success"]
-        assert stats_after_out["coverage_percent"] == 100.0
-        assert stats_after_out["total_rows"] == 5
-        assert stats_after_out["embedded_rows"] == 5
-        assert "embedding_dimensions" in stats_after_out
+        # Test BOTH scenarios: available and unavailable
+        if not embed_out["success"]:
+            # SCENARIO 1: sentence-transformers unavailable (current situation)
+            # This tests graceful degradation
+            assert "sentence-transformers" in embed_out["error"] or "Semantic search" in embed_out["error"]
+
+            # Verify the system still works for basic embedding stats
+            stats_after = await client.call_tool("embedding_stats", {"table_name": "test_stats"})
+            stats_after_out = extract_result(stats_after)
+
+            # Should still work but show 0 coverage since no embeddings were created
+            if stats_after_out["success"]:
+                assert stats_after_out["coverage_percent"] == 0.0
+                assert stats_after_out["total_rows"] == 5
+                assert stats_after_out["embedded_rows"] == 0
+            else:
+                # This is also acceptable - the function should gracefully fail
+                assert "sentence-transformers" in stats_after_out["error"] or "Semantic search" in stats_after_out["error"]
+
+            pytest.skip("sentence-transformers not available - tested graceful degradation")
+            return
+        else:
+            # SCENARIO 2: sentence-transformers available and working
+            # This tests the full semantic search functionality
+            assert embed_out["success"]
+            assert embed_out["processed"] == 5  # All 5 test rows should be processed
+
+            # Check stats after embeddings (should be 100% coverage)
+            stats_after = await client.call_tool("embedding_stats", {"table_name": "test_stats"})
+            stats_after_out = extract_result(stats_after)
+            assert stats_after_out["success"]
+            assert stats_after_out["coverage_percent"] == 100.0
+            assert stats_after_out["total_rows"] == 5
+            assert stats_after_out["embedded_rows"] == 5
+            assert "embedding_dimensions" in stats_after_out
 
 
 @pytest.mark.asyncio

@@ -422,7 +422,7 @@ class KnowledgeGraphAnalyzer:
         # Compare nodes within the same group (much more efficient)
         for group in grouped_nodes.values():
             for i, node1 in enumerate(group):
-                for node2 in group[i + 1 :]:
+                for node2 in group[i + 1:]:
                     if node1["table"] != node2["table"]:
                         # Check for shared categories or similar content
                         similarity = self._calculate_simple_similarity(node1, node2)
