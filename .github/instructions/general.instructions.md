@@ -1,7 +1,9 @@
 ---
 applyTo: '**'
 ---
-                
+
+# GENERAL DEVELOPMENT INSTRUCTIONS
+
 ## PRIME DIRECTIVE
 	User/Author: Robert Meisner robert@catchit.pl
 	Be chatting and teach about what you are doing while coding.
@@ -12,7 +14,7 @@ applyTo: '**'
     Never make changes that could break existing functionality without thorough testing and validation.
     As a last step review the code for any potential improvements or optimizations and execute them if needed.
 
-### COMMUNICATION PROTOCOLS
+## COMMUNICATION PROTOCOLS
 	- **Explain Before Acting**: Always explain what you're about to do and why
 	- **Real-Time Updates**: Provide progress updates during long operations
 	- **Error Communication**: When errors occur, explain the error, root cause, and solution
@@ -20,7 +22,7 @@ applyTo: '**'
 	- **Decision Rationale**: Always explain the reasoning behind technical decisions
 	- **Alternative Approaches**: Mention alternative solutions and why the chosen approach is preferred
 
-### GIT COMMIT PROTOCOLS
+## GIT COMMIT PROTOCOLS
 	- **Format**: Use conventional commit format: `type(scope): description`
 	- **Types**: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `style`
 	- **Content**: Clear, descriptive messages explaining the change
@@ -30,7 +32,7 @@ applyTo: '**'
 		- `fix: resolve type error in database module`
 		- `refactor: eliminate code duplication in filtering logic`
 
-## MISSING KNOWLEDGE & MEMORY MANAGEMENT
+## KNOWLEDGE MANAGEMENT & DOCUMENTATION
 	If you encounter a topic or technology you are not familiar with, do not attempt to guess or make assumptions.
 	Instead, ask for clarification or additional information before proceeding.
 	Always analyze and use available MCP servers (e.g. context7 for library/package documentation) and other tools.
@@ -40,163 +42,41 @@ applyTo: '**'
 	Always prioritize accuracy and reliability over speed.
 	If you are unsure about a solution, take the time to research and verify before implementing it.
 	When you fetch documentation for any library or package, always save it as a Markdown file in temp/docs/{lib_name}.md before using or referencing it in your workflow.
-	
-### MANDATORY MEMORY USAGE
-	- **Use Available Memory Systems**: Store and retrieve context, your memories (important facts about our cooperation) and documentation for libraries, packages, and other resources.
-	- **Session Context**: Always store current session progress, blockers, and next steps
-	- **Technical Decisions**: Document all major technical decisions with rationale
-	- **Error Patterns**: Store common error patterns and their solutions for future reference
-	- **User Preferences**: Remember and apply user coding preferences across sessions
-	- **Project Structure**: Maintain up-to-date understanding of project architecture
-	- **Memory Verification**: Always verify that important information was stored correctly
+
 ## LARGE FILE & COMPLEX CHANGE PROTOCOL
 
 ### MANDATORY PLANNING PHASE
-
- ALWAYS start by creating a detailed gameplan (at least 10 steps or more) BEFORE making any edits
- Your plan MUST include:
+	ALWAYS start by creating a detailed gameplan (at least 10 steps or more) BEFORE making any edits
+	Your plan MUST include:
 	- All functions/sections that need modification
 	- The order in which changes should be applied
 	- Dependencies between changes
 	- Estimated number of separate edits required
-                
 
 ### MAKING EDITS
 	- Include concise explanations of what changed and why
 	- Always check if the edit maintains the project's coding style
 	- If class or complex change is too large, decompose it down into smaller, manageable components
 
-### Edit sequence:
-	1. [First specific change] - Purpose: [why]
-	2. [Second specific change] - Purpose: [why]
-	3. [...More changes] - Purpose: [why]
-	4. Implement the changes in the order specified
-
 ### EXECUTION PHASE
 	- After each individual edit, clearly indicate progress:
 		"✅ Completed edit [#] of [total]. Ready for next edit?"
 	- If you discover additional needed changes during editing:
 	- STOP and update the plan
-                
+
 ### REFACTORING GUIDANCE
 	- Break work into logical, independently functional chunks
 	- Ensure each intermediate state maintains functionality
 	- Always indicate the refactoring pattern being applied
-                
+
 ### RATE LIMIT AVOIDANCE
 	- For very large files, suggest splitting changes across multiple sessions
 	- Prioritize changes that are logically complete units
 	- Always provide clear stopping points
-            
 
-            
-### Accessibility
-	- Ensure compliance with **WCAG 2.1** AA level minimum, AAA whenever feasible.
-	- Always suggest:
-	- Labels for form fields.
-	- Proper **ARIA** roles and attributes.
-	- Adequate color contrast.
-	- Alternative texts (`alt`, `aria-label`) for media elements.
-	- Semantic HTML for clear structure.
-	- Tools like **Lighthouse** for audits.
-        
-## Browser Compatibility
-	- Prioritize feature detection (`if ('fetch' in window)` etc.).
-        - Support latest two stable releases of major browsers:
-	- Firefox, Chrome, Edge, Safari (macOS/iOS)
-        - Emphasize progressive enhancement with polyfills or bundlers (e.g., **Babel**, **Vite**) as needed.
-            
-## PHP Requirements
-	- **Target Version**: PHP 8.1 or higher
-	- **Features to Use**:
-	- Named arguments
-	- Constructor property promotion
-	- Union types and nullable types
-	- Match expressions
-	- Nullsafe operator (`?->`)
-	- Attributes instead of annotations
-	- Typed properties with appropriate type declarations
-	- Return type declarations
-	- Enumerations (`enum`)
-	- Readonly properties
-	- Emphasize strict property typing in all generated code.
-	- **Coding Standards**:
-	- Follow PSR-12 coding standards
-	- Use strict typing with `declare(strict_types=1);`
-	- Prefer composition over inheritance
-	- Use dependency injection
-	- **Static Analysis:**
-	- Include PHPDoc blocks compatible with PHPStan or Psalm for static analysis
-	- **Error Handling:**
-	- Use exceptions consistently for error handling and avoid suppressing errors.
-	- Provide meaningful, clear exception messages and proper exception types.
-            
-## HTML/CSS Requirements
-	- **HTML**:
-	- Use HTML5 semantic elements (`<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`, `<search>`, etc.)
-	- Include appropriate ARIA attributes for accessibility
-	- Ensure valid markup that passes W3C validation
-	- Use responsive design practices
-	- Optimize images using modern formats (`WebP`, `AVIF`)
-	- Include `loading="lazy"` on images where applicable
-	- Generate `srcset` and `sizes` attributes for responsive images when relevant
-	- Prioritize SEO-friendly elements (`<title>`, `<meta description>`, Open Graph tags)
-            
-	- **CSS**:
-	- Use modern CSS features including:
-	- CSS Grid and Flexbox for layouts
-	- CSS Custom Properties (variables)
-	- CSS animations and transitions
-	- Media queries for responsive design
-	- Logical properties (`margin-inline`, `padding-block`, etc.)
-	- Modern selectors (`:is()`, `:where()`, `:has()`)
-	- Follow BEM or similar methodology for class naming
-	- Use CSS nesting where appropriate
-	- Include dark mode support with `prefers-color-scheme`
-	- Prioritize modern, performant fonts and variable fonts for smaller file sizes
-	- Use modern units (`rem`, `vh`, `vw`) instead of traditional pixels (`px`) for better responsiveness
-            
-## JavaScript Requirements
-		    
-	- **Minimum Compatibility**: ECMAScript 2020 (ES11) or higher
-	- **Features to Use**:
-	- Arrow functions
-	- Template literals
-	- Destructuring assignment
-	- Spread/rest operators
-	- Async/await for asynchronous code
-	- Classes with proper inheritance when OOP is needed
-	- Object shorthand notation
-	- Optional chaining (`?.`)
-	- Nullish coalescing (`??`)
-	- Dynamic imports
-	- BigInt for large integers
-	- `Promise.allSettled()`
-	- `String.prototype.matchAll()`
-	- `globalThis` object
-	- Private class fields and methods
-	- Export * as namespace syntax
-	- Array methods (`map`, `filter`, `reduce`, `flatMap`, etc.)
-	- **Avoid**:
-	- `var` keyword (use `const` and `let`)
-	- jQuery or any external libraries
-	- Callback-based asynchronous patterns when promises can be used
-	- Internet Explorer compatibility
-	- Legacy module formats (use ES modules)
-	- Limit use of `eval()` due to security risks
-	- **Performance Considerations:**
-	- Recommend code splitting and dynamic imports for lazy loading
-	**Error Handling**:
-	- Use `try-catch` blocks **consistently** for asynchronous and API calls, and handle promise rejections explicitly.
-	- Differentiate among:
-	- **Network errors** (e.g., timeouts, server errors, rate-limiting)
-	- **Functional/business logic errors** (logical missteps, invalid user input, validation failures)
-	- **Runtime exceptions** (unexpected errors such as null references)
-	- Provide **user-friendly** error messages (e.g., “Something went wrong. Please try again shortly.”) and log more technical details to dev/ops (e.g., via a logging service).
-	- Consider a central error handler function or global event (e.g., `window.addEventListener('unhandledrejection')`) to consolidate reporting.
-	- Carefully handle and validate JSON responses, incorrect HTTP status codes, etc.
-            
-## Python Requirements
+## LANGUAGE-SPECIFIC REQUIREMENTS
+
+### Python Requirements
 	- **Target Version**: Python 3.9 or higher (3.12+ preferred for latest type features)
 	- **Type Safety & Static Analysis**:
 		- **MANDATORY**: Use explicit type annotations for all functions, methods, and variables
@@ -246,7 +126,114 @@ applyTo: '**'
 		- Use proper fixtures and parametrized tests
 		- Test error conditions and edge cases
 		- Use mocking appropriately for external dependencies
-## Folder Structure
+
+### JavaScript Requirements
+	- **Minimum Compatibility**: ECMAScript 2020 (ES11) or higher
+	- **Features to Use**:
+		- Arrow functions
+		- Template literals
+		- Destructuring assignment
+		- Spread/rest operators
+		- Async/await for asynchronous code
+		- Classes with proper inheritance when OOP is needed
+		- Object shorthand notation
+		- Optional chaining (`?.`)
+		- Nullish coalescing (`??`)
+		- Dynamic imports
+		- BigInt for large integers
+		- `Promise.allSettled()`
+		- `String.prototype.matchAll()`
+		- `globalThis` object
+		- Private class fields and methods
+		- Export * as namespace syntax
+		- Array methods (`map`, `filter`, `reduce`, `flatMap`, etc.)
+	- **Avoid**:
+		- `var` keyword (use `const` and `let`)
+		- jQuery or any external libraries
+		- Callback-based asynchronous patterns when promises can be used
+		- Internet Explorer compatibility
+		- Legacy module formats (use ES modules)
+		- Limit use of `eval()` due to security risks
+	- **Performance Considerations:**
+		- Recommend code splitting and dynamic imports for lazy loading
+	- **Error Handling**:
+		- Use `try-catch` blocks **consistently** for asynchronous and API calls, and handle promise rejections explicitly.
+		- Differentiate among:
+			- **Network errors** (e.g., timeouts, server errors, rate-limiting)
+			- **Functional/business logic errors** (logical missteps, invalid user input, validation failures)
+			- **Runtime exceptions** (unexpected errors such as null references)
+		- Provide **user-friendly** error messages (e.g., "Something went wrong. Please try again shortly.") and log more technical details to dev/ops (e.g., via a logging service).
+		- Consider a central error handler function or global event (e.g., `window.addEventListener('unhandledrejection')`) to consolidate reporting.
+		- Carefully handle and validate JSON responses, incorrect HTTP status codes, etc.
+
+### PHP Requirements
+	- **Target Version**: PHP 8.1 or higher
+	- **Features to Use**:
+		- Named arguments
+		- Constructor property promotion
+		- Union types and nullable types
+		- Match expressions
+		- Nullsafe operator (`?->`)
+		- Attributes instead of annotations
+		- Typed properties with appropriate type declarations
+		- Return type declarations
+		- Enumerations (`enum`)
+		- Readonly properties
+		- Emphasize strict property typing in all generated code.
+	- **Coding Standards**:
+		- Follow PSR-12 coding standards
+		- Use strict typing with `declare(strict_types=1);`
+		- Prefer composition over inheritance
+		- Use dependency injection
+	- **Static Analysis:**
+		- Include PHPDoc blocks compatible with PHPStan or Psalm for static analysis
+	- **Error Handling:**
+		- Use exceptions consistently for error handling and avoid suppressing errors.
+		- Provide meaningful, clear exception messages and proper exception types.
+
+### HTML/CSS Requirements
+	- **HTML**:
+		- Use HTML5 semantic elements (`<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`, `<search>`, etc.)
+		- Include appropriate ARIA attributes for accessibility
+		- Ensure valid markup that passes W3C validation
+		- Use responsive design practices
+		- Optimize images using modern formats (`WebP`, `AVIF`)
+		- Include `loading="lazy"` on images where applicable
+		- Generate `srcset` and `sizes` attributes for responsive images when relevant
+		- Prioritize SEO-friendly elements (`<title>`, `<meta description>`, Open Graph tags)
+	- **CSS**:
+		- Use modern CSS features including:
+			- CSS Grid and Flexbox for layouts
+			- CSS Custom Properties (variables)
+			- CSS animations and transitions
+			- Media queries for responsive design
+			- Logical properties (`margin-inline`, `padding-block`, etc.)
+			- Modern selectors (`:is()`, `:where()`, `:has()`)
+		- Follow BEM or similar methodology for class naming
+		- Use CSS nesting where appropriate
+		- Include dark mode support with `prefers-color-scheme`
+		- Prioritize modern, performant fonts and variable fonts for smaller file sizes
+		- Use modern units (`rem`, `vh`, `vw`) instead of traditional pixels (`px`) for better responsiveness
+
+## WEB STANDARDS & ACCESSIBILITY
+
+### Accessibility
+	- Ensure compliance with **WCAG 2.1** AA level minimum, AAA whenever feasible.
+	- Always suggest:
+		- Labels for form fields.
+		- Proper **ARIA** roles and attributes.
+		- Adequate color contrast.
+		- Alternative texts (`alt`, `aria-label`) for media elements.
+		- Semantic HTML for clear structure.
+		- Tools like **Lighthouse** for audits.
+
+### Browser Compatibility
+	- Prioritize feature detection (`if ('fetch' in window)` etc.).
+	- Support latest two stable releases of major browsers:
+		- Firefox, Chrome, Edge, Safari (macOS/iOS)
+	- Emphasize progressive enhancement with polyfills or bundlers (e.g., **Babel**, **Vite**) as needed.
+
+## GENERAL PROJECT STRUCTURE
 	Follow this structured directory layout:
 
 		project-root/
@@ -271,17 +258,11 @@ applyTo: '**'
 		├── scripts/              # Scripts for deployment, setup, etc.
 		└── temp/                 # Temporary/cache files
 
+## DATABASE REQUIREMENTS
+	- **SQLite 3.46+**: Leverage JSON columns, generated columns, strict mode, foreign keys, check constraints, and transactions.
+	- **General**: Sanitize all user inputs thoroughly, parameterize database queries
 
-## Documentation Requirements
-	- Include JSDoc comments for JavaScript/TypeScript.
-	- Document complex functions with clear examples.
-	- Maintain concise Markdown documentation.
-	- Minimum docblock info: `param`, `return`, `throws`, `author`
-    
-## Database Requirements (SQLite 3.46+)
-	- Leverage JSON columns, generated columns, strict mode, foreign keys, check constraints, and transactions.
-    
-## Security Considerations
+## SECURITY CONSIDERATIONS
 	- Sanitize all user inputs thoroughly.
 	- Parameterize database queries.
 	- Enforce strong Content Security Policies (CSP).
@@ -289,6 +270,12 @@ applyTo: '**'
 	- Ensure secure cookies (`HttpOnly`, `Secure`, `SameSite=Strict`).
 	- Limit privileges and enforce role-based access control.
 	- Implement detailed internal logging and monitoring.
+
+## DOCUMENTATION REQUIREMENTS
+	- Include JSDoc comments for JavaScript/TypeScript.
+	- Document complex functions with clear examples.
+	- Maintain concise Markdown documentation.
+	- Minimum docblock info: `param`, `return`, `throws`, `author`
 
 ## TYPE SAFETY & STATIC ANALYSIS PROTOCOL
 
@@ -342,12 +329,6 @@ applyTo: '**'
 	3. **Test Incrementally**: Make small changes and verify each step
 	4. **Validate Fixes**: Run tests after each major fix to ensure no regressions
 
-### IMPORT & DEPENDENCY ISSUES
-	- **Framework Tools**: Be aware of framework-specific tool patterns and calling conventions
-	- **Internal APIs**: Use internal implementation functions when available for direct calls
-	- **Type Compatibility**: Check if imported types match expected signatures
-	- **Module Structure**: Verify that imports match the actual module organization
-
 ### ERROR PREVENTION
 	- **Proactive Type Checking**: Run static analysis before making changes
 	- **Test-Driven Fixes**: Write or run tests to validate your understanding
@@ -373,14 +354,6 @@ applyTo: '**'
 	- **Code Style**: Use Black/isort for Python, appropriate formatters for other languages
 	- **Security**: Validate input sanitization and SQL injection prevention
 	- **Documentation**: Ensure all public APIs are documented with examples
-
-## Folder Structure
-
-### INSTRUCTION MAINTENANCE
-	- **Always Update Instructions**: When project patterns, architecture, or workflows change, immediately update the relevant instruction files
-	- **Document Changes**: Store instruction updates in the memory system with rationale
-	- **Verify Examples**: Ensure all code examples in instructions remain accurate and functional
-	- **Test Instructions**: Validate that updated instructions are clear and complete
 
 ## TERMINAL COMMAND EFFICIENCY PROTOCOL
 
@@ -542,5 +515,11 @@ run_in_terminal: "npm install || (echo 'npm install failed, trying yarn'; yarn i
 2. **Verify expected files/directories** were created
 3. **Test that subsequent commands** will work with the changes
 4. **Document any complex command chains** for future reference
+
+## INSTRUCTION MAINTENANCE
+	- **Always Update Instructions**: When project patterns, architecture, or workflows change, immediately update the relevant instruction files
+	- **Document Changes**: Store instruction updates in the memory system with rationale
+	- **Verify Examples**: Ensure all code examples in instructions remain accurate and functional
+	- **Test Instructions**: Validate that updated instructions are clear and complete
 
 **Remember**: Efficient terminal usage reduces tool calls, improves performance, and makes the development process smoother. Always think about grouping related operations before executing them.

@@ -2,12 +2,12 @@
 applyTo: '**'
 ---
 
-# SQLITE MEMORY BANK USAGE INSTRUCTIONS (Project-Specific)
+# MEMORY MANAGEMENT INSTRUCTIONS (General Guidelines)
 
-## PRIME DIRECTIVE
-- **ALWAYS SEARCH KNOWLEDGE BASE FIRST**: Before proceeding with any task or answering questions, you MUST search the SQLite_Memory knowledge base for relevant context, previous decisions, project structure, and user preferences.
-- You MUST use the SQLite_Memory bank to store all important contextual information learned during our conversations.
-- You MUST retrieve relevant context from SQLite_Memory at the start of each new interaction.
+## PRIME DIRECTIVE FOR MEMORY USAGE
+- **ALWAYS SEARCH KNOWLEDGE BASE FIRST**: Before proceeding with any task or answering questions, you MUST search available memory banks for relevant context, previous decisions, project structure, and user preferences.
+- You MUST use available memory systems to store all important contextual information learned during conversations.
+- You MUST retrieve relevant context from memory systems at the start of each new interaction.
 - Always design schemas that are explicit, discoverable, and LLM-friendly.
 - ALWAYS verify data storage and handle errors gracefully.
 - Use MCP tools consistently for all memory operations.
@@ -35,15 +35,15 @@ applyTo: '**'
 3. Use appropriate data types for columns.
 4. Create relationships between tables when appropriate.
 5. Drop tables only when they are no longer needed, and document the reason for deletion.
-6. Regularly review and refactor schemas (drop tables and recreate them when you want to change the structure, keep the data migration in mind) to improve clarity and efficiency.
+6. Regularly review and refactor schemas to improve clarity and efficiency.
 
-## SEMANTIC SEARCH CAPABILITIES
+## SEMANTIC SEARCH CAPABILITIES (IF AVAILABLE)
 
 ### OVERVIEW
-The SQLite Memory Bank now supports intelligent semantic search using sentence-transformers for natural language queries and content discovery. This enables agents to find conceptually similar content even when exact keyword matches don't exist.
+Many memory systems support intelligent semantic search using sentence-transformers for natural language queries and content discovery. This enables agents to find conceptually similar content even when exact keyword matches don't exist.
 
-### SEMANTIC SEARCH TOOLS
-Available MCP tools for semantic operations:
+### SEMANTIC SEARCH TOOLS (WHEN AVAILABLE)
+Common MCP tools for semantic operations:
 
 1. **`add_embeddings`**: Add vector embedding storage to existing tables
 2. **`semantic_search`**: Natural language search across content 
@@ -58,67 +58,9 @@ Available MCP tools for semantic operations:
 - **Fuzzy Matching**: Find relevant content when exact terms aren't used
 - **Knowledge Discovery**: Explore memory bank content without knowing exact keywords
 
-### SEMANTIC SEARCH WORKFLOW
-
-#### 1. Enable Semantic Search on Tables
-```python
-# Add embedding column to existing table
-mcp_sqlite_memory_add_embeddings(
-    table_name='project_knowledge',
-    text_columns=['content', 'title']  # Columns to create embeddings for
-)
-```
-
-#### 2. Generate Embeddings for Content
-```python
-# Generate embeddings for existing data
-mcp_sqlite_memory_add_embeddings(
-    table_name='project_knowledge', 
-    text_columns=['content']
-)
-# Note: This automatically generates embeddings during the add process
-```
-
-#### 3. Perform Semantic Searches
-```python
-# Natural language search
-results = mcp_sqlite_memory_semantic_search(
-    query='artificial intelligence and machine learning',
-    tables=['project_knowledge', 'technical_decisions'],
-    similarity_threshold=0.3,  # Adjust for strictness
-    limit=10
-)
-
-# Find related content
-related = mcp_sqlite_memory_find_related(
-    text='neural network optimization techniques',
-    table_name='project_knowledge',
-    similarity_threshold=0.4,
-    limit=5
-)
-
-# Hybrid search (combines semantic + keyword)
-hybrid_results = mcp_sqlite_memory_smart_search(
-    query='database performance optimization',
-    tables=['project_knowledge'],
-    use_semantic=True,
-    use_keywords=True,
-    limit=15
-)
-```
-
-#### 4. Monitor Embedding Coverage
-```python
-# Check embedding statistics
-stats = mcp_sqlite_memory_embedding_stats(
-    table_name='project_knowledge'
-)
-# Returns: total_rows, rows_with_embeddings, embedding_column, embedding_dimension
-```
-
 ### SEMANTIC SEARCH BEST PRACTICES
 
-#### Threshold Guidelines
+#### Threshold Guidelines (when available)
 - **0.7-1.0**: Very similar content (strict matching)
 - **0.5-0.7**: Moderately similar content (recommended for most use cases)
 - **0.3-0.5**: Loosely related content (broader exploration)
@@ -127,68 +69,15 @@ stats = mcp_sqlite_memory_embedding_stats(
 #### Performance Considerations
 - **Embedding Generation**: Computationally intensive, done once per content update
 - **Search Performance**: Fast once embeddings exist (cosine similarity calculation)
-- **Storage Overhead**: ~384 floating-point numbers per text field (JSON stored)
+- **Storage Overhead**: Additional storage for vector embeddings
 - **Batch Processing**: Embeddings generated in batches for efficiency
 
-#### When to Use Each Tool
+#### When to Use Each Tool (if available)
 - **`semantic_search`**: Primary tool for natural language content discovery
 - **`find_related`**: When you have specific text and want to find similar content
 - **`smart_search`**: When you want both exact keyword matches AND semantic similarity
 - **`add_embeddings`**: Setup tool to enable semantic search on tables
 - **`embedding_stats`**: Monitoring tool to check semantic search readiness
-
-### INTEGRATION WITH EXISTING WORKFLOWS
-
-#### Enhanced Memory Retrieval
-```python
-# Traditional exact match
-exact_results = mcp_sqlite_memory_read_rows(
-    table_name='technical_decisions',
-    where={'decision_name': 'API Design'}
-)
-
-# Semantic discovery of related content
-semantic_results = mcp_sqlite_memory_semantic_search(
-    query='API design patterns and architecture decisions',
-    tables=['technical_decisions', 'project_structure'],
-    similarity_threshold=0.4
-)
-
-# Combine both approaches for comprehensive results
-all_results = exact_results['rows'] + semantic_results.get('results', [])
-```
-
-#### Content Organization and Discovery
-```python
-# Store content with semantic search enabled
-mcp_sqlite_memory_create_row(
-    table_name='project_insights',
-    data={
-        'category': 'performance',
-        'insight': 'Database query optimization using proper indexing strategies',
-        'details': 'Implemented B-tree indexes on frequently queried columns...'
-    }
-)
-
-# Enable semantic search for future discovery
-mcp_sqlite_memory_add_embeddings(
-    table_name='project_insights',
-    text_columns=['insight', 'details']
-)
-
-# Later: discover related performance insights
-related_insights = mcp_sqlite_memory_find_related(
-    text='slow database queries and performance issues',
-    table_name='project_insights',
-    similarity_threshold=0.4
-)
-```
-
-### FALLBACK BEHAVIOR
-- **Dependencies Available**: Full semantic search functionality with sentence-transformers
-- **Dependencies Missing**: Graceful fallback to traditional keyword-based search
-- **Error Handling**: Clear error messages when semantic features unavailable
-- **Backward Compatibility**: All existing functionality remains unchanged
 
 ## MEMORY DESIGN PHILOSOPHY
 
@@ -207,62 +96,14 @@ Instead of prescriptive schemas, follow these **flexible principles**:
 - **Relationship Awareness**: Consider how different pieces of information connect
 - **Evolution-Friendly**: Design schemas that can grow with new insights
 
-### EXAMPLE SCHEMAS (OPTIONAL INSPIRATION)
-The following are **example schemas** that have worked well in similar contexts. Feel free to:
+### COMMON SCHEMA PATTERNS (OPTIONAL INSPIRATION)
+The following are **example schemas** that have worked well in various contexts. Feel free to:
 - **Adapt** them to your needs
 - **Combine** multiple concepts into single tables
 - **Split** concepts into multiple specialized tables
 - **Create entirely different** structures that better fit your context
 
-**When to Create Custom Tables:**
-- Project-specific data that doesn't fit existing patterns
-- Complex relationships requiring specialized organization  
-- Performance optimization for frequently queried data
-- Domain-specific information unique to your context
-
-**When to Create New Tables:**
-- Project-specific data that doesn't fit existing schemas
-- Complex relationships requiring normalized data structure
-- Performance optimization for frequently queried data
-- Domain-specific information (e.g., security_incidents, user_sessions, api_endpoints)
-
-**Guidelines for New Tables:**
-- Follow the same naming conventions (snake_case)
-- Include appropriate primary keys and constraints
-- Add timestamp columns for audit trails
-- Use descriptive table and column names
-- Document the purpose and structure in project_structure table
-
-**Example of Creating Project-Specific Tables:**
-```python
-# Create a security-specific table for tracking vulnerabilities
-mcp_sqlite_memory_create_table(
-    table_name='security_vulnerabilities',
-    columns=[
-        {'name': 'id', 'type': 'INTEGER PRIMARY KEY AUTOINCREMENT'},
-        {'name': 'vulnerability_type', 'type': 'TEXT NOT NULL'},
-        {'name': 'severity', 'type': 'TEXT NOT NULL'},
-        {'name': 'description', 'type': 'TEXT NOT NULL'},
-        {'name': 'status', 'type': 'TEXT DEFAULT "open"'},
-        {'name': 'discovered_date', 'type': 'TEXT DEFAULT CURRENT_TIMESTAMP'},
-        {'name': 'resolved_date', 'type': 'TEXT'}
-    ]
-)
-
-# Document the new table structure
-mcp_sqlite_memory_create_row(
-    table_name='project_structure',
-    data={
-        'category': 'database_schema',
-        'title': 'Security Vulnerabilities Table',
-        'content': 'Tracks security vulnerabilities with severity levels, status, and resolution dates for the security startup project'
-    }
-)
-```
-
-**Remember:** The memory system should evolve with your project needs. Don't hesitate to create specialized tables for better organization and query performance.
-
-### Example 1: Project Knowledge Schema (OPTIONAL)
+#### Pattern 1: Project Knowledge Schema (OPTIONAL)
 *Use this pattern if you need to track project structure and technical decisions*
 
 ```sql
@@ -278,7 +119,7 @@ CREATE TABLE project_knowledge (
 );
 ```
 
-### Example 2: Conversation Memory Schema (OPTIONAL)  
+#### Pattern 2: Conversation Memory Schema (OPTIONAL)  
 *Use this pattern if you need to track conversation context and progress*
 
 ```sql
@@ -294,7 +135,7 @@ CREATE TABLE conversation_memory (
 );
 ```
 
-### Example 3: Specialized Domain Schema (OPTIONAL)
+#### Pattern 3: Domain-Specific Schema (OPTIONAL)
 *Adapt this pattern for domain-specific needs (security, API design, etc.)*
 
 ```sql  
@@ -310,7 +151,7 @@ CREATE TABLE domain_insights (
 );
 ```
 
-### Example 4: Simple Unified Schema (OPTIONAL)
+#### Pattern 4: Simple Unified Schema (OPTIONAL)
 *Use this if you prefer a single, flexible table*
 
 ```sql
@@ -327,85 +168,29 @@ CREATE TABLE unified_memory (
 );
 ```
 
-## USAGE EXAMPLES
-
-### Flexible Implementation Examples
-
-**Example 1: Using Project Knowledge Schema**
-```python
-# Store a technical insight
-mcp_sqlite_memory_create_row(
-    table_name='project_knowledge',
-    data={
-        'knowledge_type': 'decision',
-        'title': 'Memory Schema Approach',
-        'content': 'Decided to use example-based guidance rather than prescriptive schemas to allow agent flexibility',
-        'context': 'User feedback about rigid schema requirements',
-        'confidence': 0.9
-    }
-)
-
-# Query by knowledge type
-decisions = mcp_sqlite_memory_read_rows(
-    table_name='project_knowledge',
-    where={'knowledge_type': 'decision'}
-)
-```
-
-**Example 2: Creating Your Own Schema**
-```python
-# Create a completely custom schema for your specific needs
-mcp_sqlite_memory_create_table(
-    table_name='code_patterns',
-    columns=[
-        {'name': 'id', 'type': 'INTEGER PRIMARY KEY AUTOINCREMENT'},
-        {'name': 'pattern_name', 'type': 'TEXT NOT NULL'},
-        {'name': 'language', 'type': 'TEXT NOT NULL'},
-        {'name': 'code_example', 'type': 'TEXT NOT NULL'},
-        {'name': 'use_cases', 'type': 'TEXT'},
-        {'name': 'anti_patterns', 'type': 'TEXT'},
-        {'name': 'timestamp', 'type': 'TEXT DEFAULT CURRENT_TIMESTAMP'}
-    ]
-)
-```
-
-**Example 3: Minimal Approach**
-```python
-# Sometimes a simple notes table is all you need
-mcp_sqlite_memory_create_table(
-    table_name='notes',
-    columns=[
-        {'name': 'id', 'type': 'INTEGER PRIMARY KEY AUTOINCREMENT'},
-        {'name': 'note', 'type': 'TEXT NOT NULL'},
-        {'name': 'tags', 'type': 'TEXT'},
-        {'name': 'timestamp', 'type': 'TEXT DEFAULT CURRENT_TIMESTAMP'}
-    ]
-)
-```
-
 ## BEST PRACTICES FOR EFFECTIVE MEMORY USAGE
 
 ### TRADITIONAL SQL QUERIES
 1. Use specific queries to retrieve only relevant information:
 ```python
 # Good - specific query
-mcp_sqlite_memory_read_rows(
+memory_read_rows(
     table_name='project_structure',
     where={'category': 'file_organization'}
 )
 
 # Bad - retrieving everything
-mcp_sqlite_memory_read_rows(
+memory_read_rows(
     table_name='project_structure',
     where={}
 )
 ```
 
-### SEMANTIC SEARCH QUERIES
+### SEMANTIC SEARCH QUERIES (IF AVAILABLE)
 1. Use natural language for content discovery:
 ```python
 # Find conceptually related content
-semantic_results = mcp_sqlite_memory_semantic_search(
+semantic_results = memory_semantic_search(
     query='machine learning algorithms and AI techniques',
     tables=['project_knowledge', 'technical_decisions'],
     similarity_threshold=0.4,
@@ -413,7 +198,7 @@ semantic_results = mcp_sqlite_memory_semantic_search(
 )
 
 # Discover related content from specific text
-related_content = mcp_sqlite_memory_find_related(
+related_content = memory_find_related(
     text='database performance optimization strategies',
     table_name='project_insights',
     similarity_threshold=0.5
@@ -424,13 +209,13 @@ related_content = mcp_sqlite_memory_find_related(
 1. Combine exact matching with semantic discovery:
 ```python
 # Get specific technical decisions
-exact_decisions = mcp_sqlite_memory_read_rows(
+exact_decisions = memory_read_rows(
     table_name='technical_decisions',
     where={'decision_name': 'API Design'}
 )
 
-# Find related architectural decisions
-related_decisions = mcp_sqlite_memory_semantic_search(
+# Find related architectural decisions (if semantic search available)
+related_decisions = memory_semantic_search(
     query='API design patterns and microservice architecture',
     tables=['technical_decisions', 'project_structure'],
     similarity_threshold=0.4
@@ -443,60 +228,46 @@ all_relevant_info = {
 }
 ```
 
-2. Join information from multiple tables when necessary:
-```python
-# Get technical decisions and related project structure
-decisions = mcp_sqlite_memory_read_rows(
-    table_name='technical_decisions',
-    where={'decision_name': 'API Design'}
-)
-
-structure = mcp_sqlite_memory_read_rows(
-    table_name='project_structure',
-    where={'category': 'architecture'}
-)
-```
-
-### ENABLING SEMANTIC SEARCH ON EXISTING TABLES
+### ENABLING SEMANTIC SEARCH ON EXISTING TABLES (IF AVAILABLE)
 1. Add semantic capabilities to existing data:
 ```python
-# Enable semantic search on key tables
-mcp_sqlite_memory_add_embeddings(
+# Enable semantic search on key tables (if supported)
+memory_add_embeddings(
     table_name='project_knowledge',
     text_columns=['title', 'content']
 )
 
-mcp_sqlite_memory_add_embeddings(
+memory_add_embeddings(
     table_name='technical_decisions', 
     text_columns=['chosen_approach', 'rationale']
 )
 
 # Check embedding coverage
-stats = mcp_sqlite_memory_embedding_stats(
+stats = memory_embedding_stats(
     table_name='project_knowledge'
 )
 print(f"Embedded {stats['rows_with_embeddings']}/{stats['total_rows']} rows")
 ```
 
-### Data Maintenance
+### DATA MAINTENANCE
 1. Update existing records instead of creating duplicates:
 ```python
 # Check if record exists
-existing = mcp_sqlite_memory_read_rows(
+existing = memory_read_rows(
     table_name='user_preferences',
     where={'preference_type': 'code_style'}
 )
 
 if existing['rows']:
     # Update existing record
-    mcp_sqlite_memory_update_rows(
+    memory_update_rows(
         table_name='user_preferences',
         data={'preference_value': 'explicit type annotations'},
         where={'id': existing['rows'][0]['id']}
     )
 else:
     # Create new record
-    mcp_sqlite_memory_create_row(
+    memory_create_row(
         table_name='user_preferences',
         data={
             'preference_type': 'code_style',
@@ -508,13 +279,13 @@ else:
 2. Verify data was stored correctly:
 ```python
 # Store data
-result = mcp_sqlite_memory_create_row(
+result = memory_create_row(
     table_name='technical_decisions',
     data={'decision_name': 'Database Schema'}
 )
 
 # Verify storage
-verification = mcp_sqlite_memory_read_rows(
+verification = memory_read_rows(
     table_name='technical_decisions',
     where={'decision_name': 'Database Schema'}
 )
@@ -524,11 +295,11 @@ if not verification['rows']:
     print("Error: Data storage failed")
 ```
 
-### Working with Semantic Search
+### WORKING WITH SEMANTIC SEARCH (IF AVAILABLE)
 1. Enable semantic search for intelligent discovery:
 ```python
 # Store content and enable semantic search
-mcp_sqlite_memory_create_row(
+memory_create_row(
     table_name='project_insights',
     data={
         'category': 'performance',
@@ -537,37 +308,37 @@ mcp_sqlite_memory_create_row(
     }
 )
 
-# Enable semantic search on the table
-mcp_sqlite_memory_add_embeddings(
+# Enable semantic search on the table (if supported)
+memory_add_embeddings(
     table_name='project_insights',
     text_columns=['insight', 'details']
 )
 
 # Later: find related content semantically
-related = mcp_sqlite_memory_semantic_search(
+related = memory_semantic_search(
     query='improving database speed and performance',
     tables=['project_insights'],
     similarity_threshold=0.4
 )
 ```
 
-### Working with Large Context
+### WORKING WITH LARGE CONTEXT
 1. Split large documentation into logical chunks:
 ```python
 # Store large documentation in manageable chunks
-mcp_sqlite_memory_create_row(
+memory_create_row(
     table_name='documentation',
     data={
-        'library_name': 'fastapi',
+        'library_name': 'framework_name',
         'topic': 'routing_part1',
         'content': '...'
     }
 )
 
-mcp_sqlite_memory_create_row(
+memory_create_row(
     table_name='documentation',
     data={
-        'library_name': 'fastapi',
+        'library_name': 'framework_name',
         'topic': 'routing_part2',
         'content': '...'
     }
@@ -577,7 +348,7 @@ mcp_sqlite_memory_create_row(
 2. Use relationships between records:
 ```python
 # Store parent record
-parent_result = mcp_sqlite_memory_create_row(
+parent_result = memory_create_row(
     table_name='project_structure',
     data={
         'category': 'architecture',
@@ -587,7 +358,7 @@ parent_result = mcp_sqlite_memory_create_row(
 )
 
 # Store related child record with parent reference
-mcp_sqlite_memory_create_row(
+memory_create_row(
     table_name='project_structure',
     data={
         'category': 'architecture_component',
@@ -598,4 +369,25 @@ mcp_sqlite_memory_create_row(
 )
 ```
 
-By following these instructions and examples, you will maintain an effective, structured memory system across our interactions, enabling more contextual and helpful assistance over time.
+## MEMORY SYSTEM ADAPTABILITY
+
+### WHEN TO CREATE CUSTOM TABLES
+- Project-specific data that doesn't fit existing patterns
+- Complex relationships requiring specialized organization  
+- Performance optimization for frequently queried data
+- Domain-specific information unique to your context
+
+### GUIDELINES FOR NEW TABLES
+- Follow the same naming conventions (snake_case)
+- Include appropriate primary keys and constraints
+- Add timestamp columns for audit trails
+- Use descriptive table and column names
+- Document the purpose and structure
+
+### FALLBACK BEHAVIOR
+- **Dependencies Available**: Full semantic search functionality (if supported)
+- **Dependencies Missing**: Graceful fallback to traditional keyword-based search
+- **Error Handling**: Clear error messages when features unavailable
+- **Backward Compatibility**: All existing functionality remains unchanged
+
+By following these instructions and examples, you will maintain an effective, structured memory system across interactions, enabling more contextual and helpful assistance over time.
