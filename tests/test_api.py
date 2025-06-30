@@ -8,7 +8,7 @@ from mcp_sqlite_memory_bank import server as smb
 
 # Check for semantic search dependencies
 try:
-    pass
+    import sentence_transformers
 
     SEMANTIC_SEARCH_AVAILABLE = True
 except ImportError:
