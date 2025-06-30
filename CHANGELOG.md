@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.8] - Enhanced UVX Compatibility Hotfix (2025-06-30)
+
+### Fixed
+- **CRITICAL UVX HOTFIX**: More aggressive numpy constraint to completely prevent source compilation
+- **Dependency Resolution**: Updated numpy constraint from `<1.27.0` to `<1.26.4` to avoid problematic versions
+- **UVX Cache Issues**: Stricter constraints force uvx to use known-good wheel-only numpy versions
+- **Fresh Project Compatibility**: Resolves persistent uvx installation failures in new environments
+
+### Technical Details
+- **Root Cause**: numpy 1.26.4 requires meson build system and C++ compiler in uvx environments
+- **Enhanced Solution**: Exclude 1.26.4+ completely, limit to numpy 1.21.0 through 1.26.3
+- **UVX Behavior**: Stricter constraints prevent uvx from attempting problematic source builds
+- **Wheel Guarantee**: All constrained numpy versions have comprehensive wheel coverage for Python 3.10+
+
+### Installation Commands for Fresh Projects
+```bash
+# Clear uvx cache and install with specific version
+uvx cache clear
+uvx --python 3.10 run --spec mcp-sqlite-memory-bank==1.6.8 mcp-sqlite-memory-bank --help
+
+# Alternative: Use pipx for more reliable installation
+pip install --user pipx
+pipx install mcp-sqlite-memory-bank==1.6.8
+```
+
+### Impact
+- **Guaranteed UVX Compatibility**: No more numpy compilation failures in fresh environments
+- **Robust Dependency Resolution**: Prevents uvx from selecting problematic numpy versions
+- **Production Ready**: Seamless installation across all supported deployment scenarios
+
 ## [1.6.7] - UVX Compatibility Fix (2025-06-30)
 
 ### Fixed
