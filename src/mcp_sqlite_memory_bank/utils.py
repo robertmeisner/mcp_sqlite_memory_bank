@@ -13,7 +13,7 @@ import sys
 import traceback
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Dict, List, TypeVar, cast, Union, Tuple
+from typing import Any, Callable, Dict, List, TypeVar, cast, Union, Tuple, Optional
 from .types import (
     ValidationError,
     DatabaseError,
@@ -24,6 +24,79 @@ from .types import (
 
 T = TypeVar("T", bound=Callable[..., ToolResponse])
 
+
+# ============================================================================
+# EMBEDDING FILTERING UTILITIES
+# ============================================================================
+
+def filter_embedding_columns(columns: List[str], exclude_columns: Optional[List[str]] = None) -> List[str]:
+    """
+    Filter out embedding and other specified columns from a column list.
+    
+    Args:
+        columns: List of column names to filter
+        exclude_columns: Additional columns to exclude (default: ["embedding"])
+        
+    Returns:
+        List of column names with embedding and excluded columns removed
+    """
+    if exclude_columns is None:
+        exclude_columns = ["embedding"]
+    else:
+        exclude_columns = list(exclude_columns) + ["embedding"]
+    
+    return [col for col in columns if col not in exclude_columns]
+
+
+def filter_embedding_from_row(row_data: Dict[str, Any], exclude_columns: Optional[List[str]] = None) -> Dict[str, Any]:
+    """
+    Filter out embedding and other specified columns from row data.
+    
+    Args:
+        row_data: Dictionary representing a database row
+        exclude_columns: Additional columns to exclude (default: ["embedding"])
+        
+    Returns:
+        Dictionary with embedding and excluded columns removed
+    """
+    if exclude_columns is None:
+        exclude_columns = ["embedding"]
+    else:
+        exclude_columns = list(exclude_columns) + ["embedding"]
+    
+    return {key: value for key, value in row_data.items() if key not in exclude_columns}
+
+
+def filter_embedding_from_rows(rows: List[Dict[str, Any]], exclude_columns: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+    """
+    Filter out embedding and other specified columns from multiple rows.
+    
+    Args:
+        rows: List of dictionaries representing database rows
+        exclude_columns: Additional columns to exclude (default: ["embedding"])
+        
+    Returns:
+        List of dictionaries with embedding and excluded columns removed
+    """
+    return [filter_embedding_from_row(row, exclude_columns) for row in rows]
+
+
+def get_content_columns(columns: List[str]) -> List[str]:
+    """
+    Get content columns excluding system and embedding columns.
+    
+    Args:
+        columns: List of all column names
+        
+    Returns:
+        List of content column names (excludes id, timestamp, embedding)
+    """
+    return [col for col in columns if col not in ["id", "timestamp", "embedding"]]
+
+
+# ============================================================================
+# ERROR HANDLING DECORATORS
+# ============================================================================
 
 def catch_errors(f: T) -> T:
     """

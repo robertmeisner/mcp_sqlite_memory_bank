@@ -41,6 +41,11 @@ from .types import (
     HybridSearchResponse,
 )
 from .semantic import get_semantic_engine, is_semantic_search_available
+from .utils import (
+    filter_embedding_columns,
+    filter_embedding_from_rows,
+    get_content_columns,
+)
 
 
 class SQLiteMemoryDatabase:
@@ -548,6 +553,9 @@ class SQLiteMemoryDatabase:
                         if "TEXT" in str(col.type).upper() or "VARCHAR" in str(col.type).upper():
                             text_columns.append(col.name)
 
+                    # Filter out embedding columns from text_columns for user-facing operations
+                    text_columns = filter_embedding_columns(text_columns)
+
                     table_info: Dict[str, Any] = {
                         "name": table_name,
                         "columns": columns,
@@ -561,11 +569,18 @@ class SQLiteMemoryDatabase:
                         table_info["row_count"] = row_count
                         exploration["total_rows"] += row_count
 
-                    # Add sample data
+                    # Add sample data (exclude embedding columns for readability)
                     sample_result = conn.execute(select(table).limit(3))
                     sample_rows = [dict(row._mapping) for row in sample_result.fetchall()]
                     if sample_rows:
-                        table_info["sample_data"] = sample_rows
+                        # Filter out embedding columns using centralized utility
+                        filtered_sample_rows = filter_embedding_from_rows(sample_rows)
+                        # Truncate large text content for readability
+                        for row in filtered_sample_rows:
+                            for key, value in row.items():
+                                if isinstance(value, str) and len(value) > 100:
+                                    row[key] = value[:100] + "..."
+                        table_info["sample_data"] = filtered_sample_rows
 
                     # Add content preview for text columns
                     if text_columns:

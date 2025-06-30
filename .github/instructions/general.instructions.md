@@ -20,6 +20,16 @@ applyTo: '**'
 	- **Decision Rationale**: Always explain the reasoning behind technical decisions
 	- **Alternative Approaches**: Mention alternative solutions and why the chosen approach is preferred
 
+### GIT COMMIT PROTOCOLS
+	- **Format**: Use conventional commit format: `type(scope): description`
+	- **Types**: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `style`
+	- **Content**: Clear, descriptive messages explaining the change
+	- **Co-authored**: **NEVER include `Co-authored-by` lines** - commits should reflect actual human authorship only
+	- **Examples**: 
+		- `feat: add semantic search functionality`
+		- `fix: resolve type error in database module`
+		- `refactor: eliminate code duplication in filtering logic`
+
 ## MISSING KNOWLEDGE & MEMORY MANAGEMENT
 	If you encounter a topic or technology you are not familiar with, do not attempt to guess or make assumptions.
 	Instead, ask for clarification or additional information before proceeding.

@@ -31,6 +31,7 @@ from sqlalchemy import text
 from ..database import get_database
 from .. import server
 from ..types import ToolResponse
+from ..utils import filter_embedding_columns, get_content_columns
 
 
 def create_interactive_d3_graph(
@@ -443,6 +444,8 @@ def _collect_graph_data(
             count_row = count_result.fetchone()
             row_count = count_row[0] if count_row else 0
 
+            # Filter out embedding columns from sample data for readability
+            safe_columns = filter_embedding_columns(columns)
             nodes.append(
                 {
                     "id": node_id_map[table_node_id],
@@ -450,13 +453,17 @@ def _collect_graph_data(
                     "type": "table",
                     "table": table_name,
                     "row_count": row_count,
-                    "columns": columns,
-                    "sample_data": [dict(zip(columns, row)) for row in sample_rows[:3]],
+                    "columns": safe_columns,  # Exclude embedding column from display
+                    "sample_data": [
+                        {col: (str(value)[:100] + "..." if isinstance(value, str) and len(str(value)) > 100 else value)
+                         for col, value in dict(zip(columns, row)).items() if col in safe_columns}
+                        for row in sample_rows[:3]
+                    ],
                 }
             )
 
             # Create row nodes for important content
-            text_columns = [col for col in columns if col not in ["id", "timestamp", "embedding"]]
+            text_columns = get_content_columns(columns)
             if text_columns and row_count > 0:
                 # Get important rows (recent or with good content)
                 content_query = f"SELECT id, {', '.join(text_columns[:3])} FROM `{table_name}` ORDER BY id DESC LIMIT 5"

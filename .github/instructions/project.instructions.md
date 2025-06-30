@@ -157,6 +157,16 @@ gh pr create --title "Feature: Description" --body "Details"
 - **Docs**: `docs/api-documentation-update`
 - **Hotfixes**: `hotfix/security-vulnerability`
 
+### **Commit Message Guidelines**
+- **Format**: Use conventional commit format: `type(scope): description`
+- **Types**: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `style`
+- **Content**: Clear, descriptive messages explaining the change
+- **Co-authored**: **NEVER include `Co-authored-by` lines** - commits should reflect actual human authorship only
+- **Examples**: 
+  - `feat: add semantic search functionality`
+  - `fix: resolve type error in database module`
+  - `refactor: eliminate code duplication in filtering logic`
+
 ## DEPLOYMENT WORKFLOW
 
 When you say **"DEPLOY!"**, follow these steps in order:
