@@ -523,17 +523,15 @@ def batch_delete_memories(table_name: str, where_conditions: List[Dict[str, Any]
                         }
                     )
 
-        return cast(
-            ToolResponse,
-            {
-                "success": True,
-                "deleted": deleted_count,
-                "failed": failed_count,
-                "total_conditions": len(where_conditions),
-                "results": results,
-                "message": f"Processed {len(where_conditions)} deletion conditions: {deleted_count} records deleted, {failed_count} operations failed",
-            },
-        )
+        return cast(ToolResponse,
+                    {"success": True,
+                     "deleted": deleted_count,
+                     "failed": failed_count,
+                     "total_conditions": len(where_conditions),
+                     "results": results,
+                     "message": f"Processed {len(where_conditions)} deletion conditions: {deleted_count} records deleted, {failed_count} operations failed",
+                     },
+                    )
 
     except Exception as e:
         return cast(
