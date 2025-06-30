@@ -29,14 +29,16 @@ try:
                     value = getattr(mcp_app, attr)
                     print(f"[DEBUG-top] mcp_app.{attr}: type={type(value)} value={str(value)[:120]}")
                 except Exception as attr_e:
-                    print(f"[DEBUG-top] mcp_app.{attr}: <error: {attr_e}>")
+                    print(f"[DEBUG-top] mcp_app.{attr}: <access error>")
     except Exception as debug_e:
-        print("[DEBUG-top] Error accessing mcp_app attributes:", debug_e)
+        print("[DEBUG-top] Error accessing mcp_app attributes")
 except ImportError as e:
     print("ERROR: Could not import 'app' from 'mcp_sqlite_memory_bank.server'.")
-    print("Details:", e)
     print("Tip: Run this script from the project root or install the package with:")
     print("    pip install -e .")
+    # Log the specific error for debugging
+    import logging
+    logging.error(f"Import error: {e}")
     sys.exit(1)
 
 try:
@@ -122,7 +124,9 @@ def main():
                 else:
                     return {"success": False, "error": "mcp_app.get_tools() not found"}
             except Exception as e:
-                return {"success": False, "error": str(e)}
+                # Log the full error for debugging but don't expose to users
+                print(f"ERROR: Failed to get tools: {str(e)}")
+                return {"success": False, "error": "Internal server error occurred while retrieving tools"}
 
         # Mount FastMCP ASGI app at /mcp
         fastapi_app.mount("/mcp", mcp_app.http_app())
@@ -134,16 +138,18 @@ def main():
         print("\nServer stopped by user.")
         sys.exit(0)
     except Exception as e:
-        import traceback
-        print("Unexpected error:", e)
-        traceback.print_exc()
+        print("Unexpected error occurred during server operation")
+        # Log full error to server logs but don't expose to users
+        import logging
+        logging.error(f"Server error: {e}", exc_info=True)
         sys.exit(1)
 
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        import traceback
-        print("Fatal error during startup:", e)
-        traceback.print_exc()
+        print("Fatal error during startup")
+        # Log full error to system logs but don't expose details to console
+        import logging
+        logging.error(f"Startup error: {e}", exc_info=True)
         sys.exit(1)
