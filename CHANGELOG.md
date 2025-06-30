@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.5] - Semantic Search Functionality Restored (2025-06-30)
+
+### Fixed
+- **Critical**: Resolved NumPy compatibility issues preventing semantic search functionality
+- **Dependencies**: Downgraded to NumPy 1.x series (1.26.4) for compatibility with sentence-transformers
+- **Testing**: Fixed 3 failing tests related to semantic search functionality
+- **Test Coverage**: All 84 tests now passing (was 75/84 with 9 skipped)
+
+### Changed
+- **Dependencies**: Updated to NumPy 1.x compatible versions:
+  - `numpy>=1.21.0,<2.0` (was `>=2.0.0,<3.0.0`)
+  - `sentence-transformers>=2.2.0` (was `>=3.0.0`)
+  - `torch>=1.9.0` (was `>=2.0.0`)
+- **Project Configuration**: Corrected line length settings in project instructions to 150 characters
+- **Code Formatting**: Applied Black formatting with 150-character line length
+
+### Technical Details
+- **Root Cause**: NumPy 2.3.1 incompatible with packages compiled against NumPy 1.x
+- **Solution**: Maintain NumPy 1.x series until full ecosystem support for NumPy 2.x
+- **Testing Strategy**: Comprehensive testing of both graceful degradation and full functionality scenarios
+
+## [1.6.4] - Documentation & Quality Improvements (2025-06-30)
+
+### Documentation
+- **README.md**: Comprehensive review and improvements
+  - Updated tool count to accurate "40+ tools"  
+  - Added `--refresh` flag to Claude Desktop Quick Start configuration
+  - Consolidated duplicate transport sections for clarity
+  - Removed placeholder email from support section
+- **Code Quality**: Applied automated formatting (Black, autopep8, autoflake)
+- **Standards**: Verified project uses 150-character line length (not 88)
+
+### Quality Assurance
+- **Zero syntax errors** confirmed via flake8 validation
+- **75/84 tests passing** - all core functionality operational
+- **9 semantic search tests** gracefully fail when sentence-transformers not installed
+- **Professional deployment standards** maintained
+
 ## [1.6.3] - 3D Visualization Fix (2025-06-29)
 
 ### Fixed

@@ -667,7 +667,7 @@ class SQLiteMemoryDatabase:
 
                 processed = 0
                 for i in range(0, len(rows), batch_size):
-                    batch = rows[i : i + batch_size]
+                    batch = rows[i: i + batch_size]
 
                     for row in batch:
                         row_dict = dict(row._mapping)

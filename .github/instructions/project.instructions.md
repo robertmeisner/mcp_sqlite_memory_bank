@@ -94,17 +94,17 @@ flake8 src/ tests/ --select=E999 --count  # Must still be 0
 ### Pre-Commit Requirements (MANDATORY)
 ```powershell
 # Complete quality check before every commit
-flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503 --count
+flake8 src/ tests/ --max-line-length=150 --extend-ignore=E203,W503 --count
 
 # If violations found, run automated fixes:
-black src/ tests/ --line-length=88; autopep8 --in-place --aggressive --recursive src/ tests/; autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive src/ tests/
+black src/ tests/ --line-length=150; autopep8 --in-place --aggressive --recursive src/ tests/; autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive src/ tests/
 ```
 
 ### VS Code Configuration
 ```json
 {
     "python.linting.flake8Enabled": true,
-    "python.linting.flake8Args": ["--select=E999,F821,F822,F823", "--max-line-length=88"],
+    "python.linting.flake8Args": ["--select=E999,F821,F822,F823", "--max-line-length=150"],
     "python.linting.lintOnSave": true,
     "python.linting.lintOnType": true,
     "python.formatting.provider": "black"
@@ -264,7 +264,7 @@ gh release create v1.x.x --latest
 ```powershell
 # Mass fix (emergency only)
 git stash push -m "backup before recovery"
-black src/ tests/ --line-length=88
+black src/ tests/ --line-length=150
 autopep8 --in-place --aggressive --recursive src/ tests/
 autoflake --in-place --remove-unused-variables --remove-all-unused-imports --recursive src/ tests/
 flake8 src/ tests/ --select=E999 --count  # Verify 0 errors

@@ -1230,7 +1230,7 @@ __all__ = [
     "discover_relationships",
     # Internal implementation functions for testing
     "_create_row_impl",
-    "_read_rows_impl", 
+    "_read_rows_impl",
     "_update_rows_impl",
     "_delete_rows_impl",
     "_create_table_impl",
@@ -1647,6 +1647,7 @@ def create_3d_knowledge_graph(
 
 # Internal implementation functions for testing
 # These are non-decorated versions that can be called directly in tests
+
 
 @catch_errors
 def _create_row_impl(table_name: str, data: Dict[str, Any]) -> ToolResponse:

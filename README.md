@@ -19,7 +19,7 @@ This project provides a robust, discoverable API for creating, exploring, and ma
 - Integrate with FastMCP, Claude Desktop, and other agent platforms for seamless tool discovery
 
 **Why mcp_sqlite_memory_bank?**
-- **Full MCP Compliance:** Resources, Prompts, and 20+ organized tools
+- **Full MCP Compliance:** Resources, Prompts, and 40+ organized tools
 - **Semantic Search:** Natural language content discovery with AI-powered similarity matching
 - **Explicit, discoverable APIs** for LLMs and agents with enhanced categorization
 - Safe, parameterized queries and schema management
@@ -64,7 +64,7 @@ uvx mcp-sqlite-memory-bank
   "mcpServers": {
     "sqlite_memory": {
       "command": "uvx",
-      "args": ["mcp-sqlite-memory-bank"],
+      "args": ["--refresh", "mcp-sqlite-memory-bank"],
       "env": {
         "DB_PATH": "/path/to/your/memory.db"
       }
@@ -108,7 +108,7 @@ Restart your IDE and try asking your AI assistant:
 
 SQLite Memory Bank v1.6.4+ provides full Model Context Protocol (MCP) compliance with advanced features for enhanced LLM and agent integration:
 
-### 🔧 MCP Tools (30+ Available)
+### 🔧 MCP Tools (40+ Available)
 Organized into logical categories for easy discovery:
 - **Schema Management** (6 tools): Table creation, modification, and inspection
 - **Data Operations** (11 tools): CRUD operations with validation and advanced batch processing
@@ -219,7 +219,7 @@ All tools are designed for explicit, discoverable use by LLMs, agents, and devel
 
 ## [1.6.4] - 3D Visualization & Comprehensive Features (2025-06-29)
 
-**Current Version**: The most advanced SQLite Memory Bank release with 30+ MCP tools, 3D visualization, LLM-assisted optimization, and enterprise-scale features.
+**Current Version**: The most advanced SQLite Memory Bank release with 40+ MCP tools, 3D visualization, LLM-assisted optimization, and enterprise-scale features.
 
 ### 🚀 Recent Major Features
 - **3D Knowledge Graphs**: Immersive Three.js/WebGL visualizations with real-time lighting
@@ -406,9 +406,7 @@ uvx --refresh mcp-sqlite-memory-bank
 
 ---
 
-### Transport Options
-
-SQLite Memory Bank currently supports **stdio transport** for MCP clients:
+### Running Commands
 
 **Stdio Transport (Default - for MCP clients like VS Code, Claude Desktop):**
 ```bash
@@ -510,6 +508,55 @@ If you were using v1.2.4 or earlier, your data was stored in `./test.db` in the 
 }
 ```
 
+### Cursor Integration
+
+Cursor uses the same configuration as VS Code. Add to `.vscode/mcp.json`:
+
+**Option 1: Use Default User Database (Recommended)**
+```jsonc
+{
+  "servers": {
+    "SQLite_Memory": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--refresh", "mcp-sqlite-memory-bank"]
+    }
+  }
+}
+```
+
+**Option 2: Project-Specific Database**
+```jsonc
+{
+  "servers": {
+    "SQLite_Memory": {
+      "type": "stdio",
+      "command": "uvx", 
+      "args": ["--refresh", "mcp-sqlite-memory-bank"],
+      "env": {
+        "DB_PATH": "${workspaceFolder}/.mcp_memory.db"
+      }
+    }
+  }
+}
+```
+
+**Option 3: Custom Database Location**
+```jsonc
+{
+  "servers": {
+    "SQLite_Memory": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--refresh", "mcp-sqlite-memory-bank"],
+      "env": {
+        "DB_PATH": "/path/to/your/custom/memory.db"
+      }
+    }
+  }
+}
+```
+
 ### Claude Desktop Integration
 
 Add to your `claude_desktop_config.json`:
@@ -519,7 +566,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "sqlite_memory": {
       "command": "uvx",
-      "args": ["mcp-sqlite-memory-bank"],
+      "args": ["--refresh", "mcp-sqlite-memory-bank"],
       "env": {
         "DB_PATH": "/path/to/your/memory.db"
       }
@@ -934,7 +981,6 @@ If you see lint errors, fix them before committing. You can configure linting ru
 
 - [GitHub Issues](https://github.com/robertmeisner/mcp_sqlite_memory_bank/issues) — Bug reports & feature requests
 - [GitHub Discussions](https://github.com/robertmeisner/mcp_sqlite_memory_bank/discussions) — Q&A and community support
-- Email: your@email.com
 
 ---
 

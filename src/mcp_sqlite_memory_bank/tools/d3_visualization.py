@@ -533,7 +533,7 @@ def _find_semantic_relationships(nodes: List[Dict], conn) -> List[Dict]:
     content_nodes = [node for node in nodes if node["type"] == "row"]
 
     for i, node1 in enumerate(content_nodes):
-        for node2 in content_nodes[i + 1 :]:
+        for node2 in content_nodes[i + 1:]:
             # Simple text similarity check
             content1 = " ".join(str(v) for v in node1.get("content", {}).values() if v)
             content2 = " ".join(str(v) for v in node2.get("content", {}).values() if v)
@@ -616,19 +616,19 @@ def _generate_d3_html(
             padding: 0;
             box-sizing: border-box;
         }}
-        
+
         body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: {background_color};
             color: {text_color};
             overflow: hidden;
         }}
-        
+
         .container {{
             display: flex;
             height: 100vh;
         }}
-        
+
         .sidebar {{
             width: 300px;
             background: white;
@@ -637,27 +637,27 @@ def _generate_d3_html(
             overflow-y: auto;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         }}
-        
+
         .main-graph {{
             flex: 1;
             position: relative;
         }}
-        
+
         .controls {{
             margin-bottom: 20px;
         }}
-        
+
         .control-group {{
             margin-bottom: 15px;
         }}
-        
+
         .control-group label {{
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
             color: {text_color};
         }}
-        
+
         .control-group input, .control-group select {{
             width: 100%;
             padding: 8px;
@@ -665,7 +665,7 @@ def _generate_d3_html(
             border-radius: 4px;
             font-size: 14px;
         }}
-        
+
         .btn {{
             background: {accent_color};
             color: white;
@@ -677,47 +677,47 @@ def _generate_d3_html(
             margin: 5px 5px 5px 0;
             transition: background 0.2s;
         }}
-        
+
         .btn:hover {{
             background: {table_nodes_color};
         }}
-        
+
         .btn-secondary {{
             background: #6c757d;
         }}
-        
+
         .legend {{
             background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
             margin-top: 20px;
         }}
-        
+
         .legend-item {{
             display: flex;
             align-items: center;
             margin-bottom: 8px;
         }}
-        
+
         .legend-color {{
             width: 16px;
             height: 16px;
             border-radius: 50%;
             margin-right: 8px;
         }}
-        
+
         .stats {{
             background: #e9ecef;
             padding: 15px;
             border-radius: 8px;
             margin-top: 20px;
         }}
-        
+
         .stats h4 {{
             margin-bottom: 10px;
             color: {table_nodes_color};
         }}
-        
+
         .tooltip {{
             position: absolute;
             padding: 10px;
@@ -729,25 +729,25 @@ def _generate_d3_html(
             z-index: 1000;
             max-width: 300px;
         }}
-        
+
         .node {{
             cursor: pointer;
             transition: all 0.2s ease;
         }}
-        
+
         .node:hover {{
             stroke-width: 3px;
         }}
-        
+
         .link {{
             transition: all 0.2s ease;
         }}
-        
+
         .search-highlight {{
             stroke: #ff6b6b !important;
             stroke-width: 4px !important;
         }}
-        
+
         .zoom-controls {{
             position: absolute;
             top: 20px;
@@ -756,7 +756,7 @@ def _generate_d3_html(
             flex-direction: column;
             gap: 5px;
         }}
-        
+
         .zoom-btn {{
             width: 40px;
             height: 40px;
@@ -771,7 +771,7 @@ def _generate_d3_html(
             font-size: 18px;
             font-weight: bold;
         }}
-        
+
         .fullscreen-btn {{
             position: absolute;
             top: 20px;
@@ -783,7 +783,7 @@ def _generate_d3_html(
             cursor: pointer;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }}
-        
+
         @media (max-width: 768px) {{
             .sidebar {{
                 width: 250px;
@@ -795,13 +795,13 @@ def _generate_d3_html(
     <div class="container">
         <div class="sidebar">
             <h2>Knowledge Graph Explorer</h2>
-            
+
             <div class="controls">
                 <div class="control-group">
                     <label for="searchInput">Search Nodes</label>
                     <input type="text" id="searchInput" placeholder="Type to search...">
                 </div>
-                
+
                 <div class="control-group">
                     <label for="nodeFilter">Node Type</label>
                     <select id="nodeFilter">
@@ -810,7 +810,7 @@ def _generate_d3_html(
                         <option value="row">Content Only</option>
                     </select>
                 </div>
-                
+
                 <div class="control-group">
                     <label for="linkFilter">Link Type</label>
                     <select id="linkFilter">
@@ -819,12 +819,12 @@ def _generate_d3_html(
                         <option value="semantic">Semantic Links</option>
                     </select>
                 </div>
-                
+
                 <div class="control-group">
                     <button class="btn" onclick="resetGraph()">Reset View</button>
                     <button class="btn btn-secondary" onclick="fitToScreen()">Fit to Screen</button>
                 </div>
-                
+
                 {export_buttons}
             </div>
 
@@ -3085,7 +3085,7 @@ def _calculate_semantic_connections(nodes_data: List[Dict]) -> List[Dict]:
         connections_added = 0
         max_connections = min(4, len(nodes_data) // 10)  # Adaptive connection limit
 
-        for j, node_b in enumerate(nodes_data[i + 1 :], i + 1):
+        for j, node_b in enumerate(nodes_data[i + 1:], i + 1):
             if connections_added >= max_connections:
                 break
 
